@@ -184,6 +184,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [msg91AuthKeyInput, setMsg91AuthKeyInput] = useState(msg91AuthKey);
   const [msg91SenderInput, setMsg91SenderInput] = useState(msg91Sender);
   const [msg91TemplateIdInput, setMsg91TemplateIdInput] = useState(msg91TemplateId);
+  const [testingMsg91, setTestingMsg91] = useState(false);
+  const [msg91TestResult, setMsg91TestResult] = useState<{ status: 'success' | 'error'; message: string } | null>(null);
 
   const [smsLogs, setSmsLogs] = useState<SMSLog[]>(() => {
     try {
@@ -316,6 +318,44 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
     setIsConfiguringMsg91(false);
     showToast('MSG91 Gateway Credentials Saved Successfully');
+  };
+
+  const handleTestMsg91 = async () => {
+    setTestingMsg91(true);
+    setMsg91TestResult(null);
+    try {
+      const key = msg91AuthKeyInput.trim();
+      if (!key) {
+        setMsg91TestResult({
+          status: 'error',
+          message: 'Please enter an AuthKey to test connection.'
+        });
+        setTestingMsg91(false);
+        return;
+      }
+      const res = await fetch('https://control.msg91.com/api/v5/widget/getBalance', {
+        headers: { 'authkey': key }
+      });
+      const data = await res.json().catch(() => null);
+      if (data && (data.type === 'error' || data.message === 'AuthenticationFailure')) {
+        setMsg91TestResult({
+          status: 'error',
+          message: `MSG91 Server Response: "${data.message || 'AuthenticationFailure'}". Please verify the AuthKey from MSG91 Dashboard → Authkey.`
+        });
+      } else {
+        setMsg91TestResult({
+          status: 'success',
+          message: 'MSG91 Gateway Connected & Authenticated Successfully!'
+        });
+      }
+    } catch {
+      setMsg91TestResult({
+        status: 'error',
+        message: 'Could not connect directly to MSG91 API (Check AuthKey validity or CORS settings).'
+      });
+    } finally {
+      setTestingMsg91(false);
+    }
   };
 
   const handleUnlock = (e: React.FormEvent) => {
@@ -2671,8 +2711,39 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 </div>
               </div>
 
+              {/* Test Connection Button & Result */}
+              <div className="pt-2 border-t border-navy-100 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-navy-500 font-medium">Verify MSG91 API Status:</span>
+                  <button
+                    type="button"
+                    onClick={handleTestMsg91}
+                    disabled={testingMsg91}
+                    className="text-xs text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${testingMsg91 ? 'animate-spin' : ''}`} />
+                    <span>{testingMsg91 ? 'Testing...' : 'Test Connection'}</span>
+                  </button>
+                </div>
+
+                {msg91TestResult && (
+                  <div className={`p-2.5 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2 ${
+                    msg91TestResult.status === 'success'
+                      ? 'bg-academic-emerald/10 text-academic-emerald border-academic-emerald/20'
+                      : 'bg-red-50 text-red-700 border-red-200'
+                  }`}>
+                    {msg91TestResult.status === 'success' ? (
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-academic-emerald mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                    )}
+                    <span>{msg91TestResult.message}</span>
+                  </div>
+                )}
+              </div>
+
               <div className="p-3 bg-brand-50/70 border border-brand-200/80 rounded-xl text-navy-700 leading-relaxed text-[11px]">
-                ℹ <strong>Direct Flow Route:</strong> <code>https://control.msg91.com/api/v5/flow/</code>. Messages will be dispatched through MSG91's high-speed transactional routes.
+                ℹ <strong>Direct Flow Route:</strong> <code>https://control.msg91.com/api/v5/flow/</code>.
               </div>
 
               <div className="pt-2 border-t border-navy-100 flex items-center justify-end gap-2">
