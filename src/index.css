@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --paper: #f4ebd7;
+    --paper-light: #fbf8f2;
+    --ink: #17191c;
+    --cjp-orange: #c9561e;
+    --cjp-green: #166534;
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', Inter, sans-serif;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-marquee-reverse {
+  display: flex;
+  width: max-content;
+  animation: marquee-reverse 32s linear infinite;
+}
+
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* Brutalist / CJP style UI elements */
+.brutal-border {
+  border: 2px solid #17191c;
+}
+
+.brutal-card {
+  border: 2px solid #17191c;
+  background-color: #fbf8f2;
+  box-shadow: 4px 4px 0px #17191c;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.brutal-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #17191c;
+}
+
+.brutal-btn {
+  border: 2px solid #17191c;
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 3px 3px 0px #17191c;
+  transition: all 0.12s ease;
+}
+
+.brutal-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #17191c;
+}
+
+.brutal-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #17191c;
+}
+
+.brutal-pill {
+  border: 1.5px solid #17191c;
+  border-radius: 9999px;
+  background-color: #fbf8f2;
+  box-shadow: 2px 2px 0px #17191c;
+  transition: all 0.15s ease;
+}
+
+.brutal-pill:hover {
+  background-color: #17191c;
+  color: #f4ebd7;
+}
+
+/* Tricolor Banner Accent */
+.tricolor-border {
+  border-top: 4px solid #c9561e;
+  border-bottom: 4px solid #166534;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e8dcbe;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #17191c;
+  border: 2px solid #e8dcbe;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c9561e;
+}
+
