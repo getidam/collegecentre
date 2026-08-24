@@ -175,7 +175,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
   // Fast2SMS API Gateway Configuration State
   const [fast2smsApiKey, setFast2smsApiKey] = useState<string>(() => {
-    return localStorage.getItem('cc_fast2sms_apikey') || '';
+    return localStorage.getItem('cc_fast2sms_apikey') || 'bu0XMwQ9aik5dEnyr8mS4FCD6YOT2hUNpjeAL7JcfsZBvHKVqzfUJF0jsOaLmthoqGnX9WZcbIDy5TvK';
   });
   const [fast2smsRoute, setFast2smsRoute] = useState<string>(() => {
     return localStorage.getItem('cc_fast2sms_route') || 'q'; // 'q' = Quick SMS (no DLT required)
