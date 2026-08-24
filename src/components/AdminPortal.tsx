@@ -4,7 +4,8 @@ import {
   Clock, Eye, Trash2, Printer, ShieldCheck, 
   User, Plus, Edit3, Save, X, Sliders,
   ToggleLeft, ToggleRight, Database, RefreshCw,
-  Globe, ExternalLink, Copy, Check, Sparkles, Building2
+  Globe, ExternalLink, Copy, Check, Sparkles, Building2,
+  Phone, Mail
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { formatSubdomainUrl } from '../lib/subdomain';
@@ -1526,71 +1527,248 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
         </div>
       )}
 
-      {/* Student Dossier Modal */}
+      {/* Comprehensive Student Dossier Modal */}
       {selectedStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border border-navy-200 rounded-2xl shadow-modal max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto space-y-5">
-            <div className="flex items-center justify-between border-b border-navy-100 pb-3">
-              <div>
-                <h3 className="font-display font-bold text-lg text-navy-950">Official Student Dossier</h3>
-                <span className="text-xs text-navy-500 font-mono">Ref ID: {selectedStudent.id}</span>
-              </div>
-              <button onClick={() => setSelectedStudent(null)} className="p-1 rounded-lg text-navy-400 hover:text-navy-700">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-navy-50/50 rounded-2xl border border-navy-200">
-              <div className="w-20 h-24 rounded-xl border border-navy-200 bg-white overflow-hidden shrink-0">
-                {selectedStudent.photo_url ? (
-                  <img src={selectedStudent.photo_url} alt={selectedStudent.full_name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-navy-400">
-                    <User className="w-7 h-7" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-navy-200 rounded-3xl shadow-modal max-w-3xl w-full p-5 sm:p-8 relative max-h-[92vh] overflow-y-auto space-y-6">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-navy-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-navy-900 text-white font-display font-bold flex items-center justify-center text-sm shadow-xs">
+                  CC
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-lg sm:text-xl text-navy-950">Official Student Intake Dossier</h3>
+                  <div className="flex items-center gap-2 text-xs text-navy-500 font-mono">
+                    <span>LEDGER REF: <strong className="text-brand-700">{selectedStudent.id}</strong></span>
+                    {selectedStudent.submission_date && <span>• {selectedStudent.submission_date}</span>}
                   </div>
-                )}
+                </div>
               </div>
-              <div className="space-y-1">
-                <h4 className="font-display font-bold text-xl text-navy-950">{selectedStudent.full_name}</h4>
-                <p className="text-xs font-semibold text-brand-700">{selectedStudent.degree_program}</p>
-                <p className="text-xs text-navy-500">
-                  Campus: <strong>{selectedStudent.campus_name || selectedStudent.campus_slug || 'Main Campus'}</strong> • Status: <strong>{selectedStudent.status}</strong>
-                </p>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => window.print()}
+                  className="univ-btn-secondary text-xs px-3 py-1.5 hidden sm:flex items-center gap-1.5"
+                  title="Print official admission dossier copy"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Dossier</span>
+                </button>
+
+                <button 
+                  onClick={() => setSelectedStudent(null)} 
+                  className="p-1.5 rounded-xl text-navy-400 hover:text-navy-700 hover:bg-navy-100 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-2.5 bg-white border border-navy-200 rounded-xl">
-                <span className="text-[10px] text-navy-400 uppercase font-semibold block">DOB / Blood Group</span>
-                <span className="text-navy-900 font-medium">{selectedStudent.dob || '—'} ({selectedStudent.blood_group || '—'})</span>
+            {/* Scholar Identity Banner */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 bg-navy-50/60 rounded-2xl border border-navy-200/80">
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-2xl border-2 border-white bg-white overflow-hidden shrink-0 shadow-md relative group">
+                  {selectedStudent.photo_url ? (
+                    <img src={selectedStudent.photo_url} alt={selectedStudent.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-navy-400">
+                      <User className="w-8 h-8" />
+                    </div>
+                  )}
+                  {selectedStudent.photo_url && (
+                    <a
+                      href={selectedStudent.photo_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="absolute inset-0 bg-navy-950/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-semibold transition-opacity"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-brand-50 text-brand-700 border border-brand-200">
+                    <Globe className="w-3 h-3" />
+                    <span>{selectedStudent.campus_name || selectedStudent.campus_slug || 'Main Campus Portal'}</span>
+                  </div>
+                  <h4 className="font-display font-bold text-xl sm:text-2xl text-navy-950 leading-tight">
+                    {selectedStudent.full_name}
+                  </h4>
+                  <p className="text-xs sm:text-sm font-semibold text-brand-700">
+                    {selectedStudent.degree_program}
+                  </p>
+                  <p className="text-[11px] text-navy-500 font-mono">
+                    Batch Year: {selectedStudent.admission_year || '2026'}
+                  </p>
+                </div>
               </div>
-              <div className="p-2.5 bg-white border border-navy-200 rounded-xl">
-                <span className="text-[10px] text-navy-400 uppercase font-semibold block">Contact Phone & Email</span>
-                <span className="text-navy-900 font-medium">{selectedStudent.phone || '—'} • {selectedStudent.email || '—'}</span>
-              </div>
-              <div className="p-2.5 bg-white border border-navy-200 rounded-xl">
-                <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian</span>
-                <span className="text-navy-900 font-medium">{selectedStudent.guardian_name || '—'} ({selectedStudent.guardian_relation || '—'})</span>
-              </div>
-              <div className="p-2.5 bg-white border border-navy-200 rounded-xl">
-                <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Phone</span>
-                <span className="text-navy-900 font-medium">{selectedStudent.guardian_phone || '—'}</span>
-              </div>
-              <div className="col-span-2 p-2.5 bg-white border border-navy-200 rounded-xl">
-                <span className="text-[10px] text-navy-400 uppercase font-semibold block">Permanent Address</span>
-                <span className="text-navy-900 font-medium">{selectedStudent.address || '—'}, {selectedStudent.city || '—'} - {selectedStudent.pincode || '—'}</span>
+
+              {/* Status Controller */}
+              <div className="w-full sm:w-auto bg-white p-3 rounded-xl border border-navy-200 shadow-xs space-y-1.5 shrink-0">
+                <span className="text-[10px] text-navy-400 font-bold uppercase tracking-wider block">Intake Status</span>
+                <select
+                  value={selectedStudent.status}
+                  onChange={(e) => handleStatusChange(selectedStudent.id, e.target.value as any)}
+                  className="w-full bg-navy-50 border border-navy-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                >
+                  <option value="Pending Review">⏳ Pending Review</option>
+                  <option value="Verified">✓ Verified Document</option>
+                  <option value="Enrolled">🎓 Enrolled Active</option>
+                </select>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-navy-100 flex items-center justify-between">
-              <button onClick={() => window.print()} className="univ-btn-secondary text-xs">
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print Copy</span>
-              </button>
-              <button onClick={() => setSelectedStudent(null)} className="univ-btn-primary text-xs">
-                Done
-              </button>
+            {/* SECTION 1: Personal Identity */}
+            <div className="space-y-2.5">
+              <span className="text-xs font-bold text-brand-700 uppercase tracking-wider flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" />
+                <span>01. Personal Identity & Biometric Record</span>
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 bg-white border border-navy-200/80 rounded-xl">
+                  <span className="text-[10px] text-navy-400 uppercase font-semibold block">Full Legal Name</span>
+                  <span className="text-navy-950 font-semibold text-sm">{selectedStudent.full_name}</span>
+                </div>
+                <div className="p-3 bg-white border border-navy-200/80 rounded-xl">
+                  <span className="text-[10px] text-navy-400 uppercase font-semibold block">Date of Birth & Gender</span>
+                  <span className="text-navy-900 font-medium">{selectedStudent.dob || '—'} ({selectedStudent.gender || '—'})</span>
+                </div>
+                <div className="p-3 bg-white border border-navy-200/80 rounded-xl">
+                  <span className="text-[10px] text-navy-400 uppercase font-semibold block">Blood Group Group</span>
+                  <span className="text-navy-900 font-bold text-brand-700">{selectedStudent.blood_group || '—'}</span>
+                </div>
+              </div>
             </div>
+
+            {/* SECTION 2: Contact & Residential Details */}
+            <div className="space-y-2.5">
+              <span className="text-xs font-bold text-brand-700 uppercase tracking-wider flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5" />
+                <span>02. Student Contact & Permanent Residence</span>
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 bg-white border border-navy-200/80 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-navy-400 uppercase font-semibold block">Student Mobile Number</span>
+                    <a href={`tel:${selectedStudent.phone}`} className="text-navy-950 font-semibold hover:text-brand-600">
+                      {selectedStudent.phone || '—'}
+                    </a>
+                  </div>
+                  {selectedStudent.phone && (
+                    <a href={`tel:${selectedStudent.phone}`} className="p-2 rounded-lg bg-navy-50 text-brand-600 hover:bg-brand-50" title="Call Student">
+                      <Phone className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+
+                <div className="p-3 bg-white border border-navy-200/80 rounded-xl flex items-center justify-between">
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-navy-400 uppercase font-semibold block">Student Official Email</span>
+                    <a href={`mailto:${selectedStudent.email}`} className="text-navy-950 font-semibold hover:text-brand-600 truncate block max-w-[200px]">
+                      {selectedStudent.email || '—'}
+                    </a>
+                  </div>
+                  {selectedStudent.email && (
+                    <a href={`mailto:${selectedStudent.email}`} className="p-2 rounded-lg bg-navy-50 text-brand-600 hover:bg-brand-50 shrink-0" title="Email Student">
+                      <Mail className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2 p-3 bg-white border border-navy-200/80 rounded-xl">
+                  <span className="text-[10px] text-navy-400 uppercase font-semibold block">Permanent Residential Address</span>
+                  <span className="text-navy-900 font-medium leading-relaxed block mt-0.5">
+                    {selectedStudent.address || '—'}, {selectedStudent.city || '—'} - {selectedStudent.pincode || '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 3: Guardian & Family Information */}
+            <div className="space-y-2.5">
+              <span className="text-xs font-bold text-brand-700 uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>03. Guardian & Emergency Information</span>
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 bg-white border border-navy-200/80 rounded-xl">
+                  <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Full Name & Relationship</span>
+                  <span className="text-navy-950 font-semibold text-sm">
+                    {selectedStudent.guardian_name || '—'} <span className="text-xs text-navy-500 font-normal">({selectedStudent.guardian_relation || 'Guardian'})</span>
+                  </span>
+                </div>
+
+                <div className="p-3 bg-white border border-navy-200/80 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Emergency Phone</span>
+                    <a href={`tel:${selectedStudent.guardian_phone}`} className="text-navy-950 font-semibold hover:text-brand-600">
+                      {selectedStudent.guardian_phone || '—'}
+                    </a>
+                  </div>
+                  {selectedStudent.guardian_phone && (
+                    <a href={`tel:${selectedStudent.guardian_phone}`} className="p-2 rounded-lg bg-navy-50 text-brand-600 hover:bg-brand-50" title="Call Guardian">
+                      <Phone className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 4: Custom / Extra Fields Submitted */}
+            {selectedStudent.custom_fields && Object.keys(selectedStudent.custom_fields).length > 0 && (
+              <div className="space-y-2.5">
+                <span className="text-xs font-bold text-brand-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>04. Additional Form Metadata & Custom Attributes</span>
+                </span>
+                <div className="p-3.5 bg-navy-50/70 border border-navy-200/80 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {Object.entries(selectedStudent.custom_fields)
+                    .filter(([k]) => !['fullName', 'photoUrl', 'dob', 'gender', 'bloodGroup', 'phone', 'email', 'address', 'city', 'pincode', 'guardianName', 'guardianRelation', 'guardianPhone', 'degreeProgram', 'admissionYear'].includes(k))
+                    .map(([key, val]) => (
+                      <div key={key} className="bg-white p-2.5 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">{key}</span>
+                        <span className="text-navy-900 font-medium">{String(val || '—')}</span>
+                      </div>
+                    ))}
+                  {Object.entries(selectedStudent.custom_fields).filter(([k]) => !['fullName', 'photoUrl', 'dob', 'gender', 'bloodGroup', 'phone', 'email', 'address', 'city', 'pincode', 'guardianName', 'guardianRelation', 'guardianPhone', 'degreeProgram', 'admissionYear'].includes(k)).length === 0 && (
+                    <div className="col-span-2 text-navy-500 text-xs py-1">
+                      All standard institutional admission attributes are indexed above.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Modal Bottom Actions */}
+            <div className="pt-4 border-t border-navy-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button
+                onClick={() => handleDeleteStudent(selectedStudent.id)}
+                className="univ-btn-secondary text-xs text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200 w-full sm:w-auto px-4 py-2 flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Dossier</span>
+              </button>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button
+                  onClick={() => window.print()}
+                  className="univ-btn-secondary text-xs w-full sm:w-auto px-4 py-2 flex items-center justify-center gap-1.5 sm:hidden"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Copy</span>
+                </button>
+                <button 
+                  onClick={() => setSelectedStudent(null)} 
+                  className="univ-btn-primary text-xs w-full sm:w-auto px-6 py-2"
+                >
+                  Close Dossier
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
