@@ -173,7 +173,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [emailSubject, setEmailSubject] = useState('Official Student Admission & Enrollment Notice - CollegeCentre');
   const [emailContent, setEmailContent] = useState('Dear Student,\n\nGreetings from the Admissions Registry at CollegeCentre.\n\nWe are pleased to confirm that your student intake application has been reviewed and approved. Please check your student portal for your enrolled timetable and orientation schedule.\n\nSincerely,\nRegistrar & Admissions Council\nCollegeCentre Central University');
   const [resendApiKey, setResendApiKey] = useState<string>(() => {
-    return localStorage.getItem('cc_resend_apikey') || '';
+    return localStorage.getItem('cc_resend_apikey') || (import.meta as any).env?.VITE_RESEND_API_KEY || '';
   });
   const [resendFromEmail, setResendFromEmail] = useState<string>(() => {
     return localStorage.getItem('cc_resend_from') || 'onboarding@resend.dev';
