@@ -176,7 +176,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     return localStorage.getItem('cc_resend_apikey') || (import.meta as any).env?.VITE_RESEND_API_KEY || '';
   });
   const [resendFromEmail, setResendFromEmail] = useState<string>(() => {
-    return localStorage.getItem('cc_resend_from') || 'onboarding@resend.dev';
+    return localStorage.getItem('cc_resend_from') || (import.meta as any).env?.VITE_RESEND_FROM || 'verify@collegecentre.in';
   });
   const [isConfiguringResend, setIsConfiguringResend] = useState(false);
   const [resendApiKeyInput, setResendApiKeyInput] = useState(resendApiKey);
@@ -468,6 +468,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     fetchData();
     if (resendApiKey && !localStorage.getItem('cc_resend_apikey')) {
       localStorage.setItem('cc_resend_apikey', resendApiKey);
+    }
+    if (resendFromEmail && (!localStorage.getItem('cc_resend_from') || localStorage.getItem('cc_resend_from') === 'onboarding@resend.dev')) {
+      localStorage.setItem('cc_resend_from', resendFromEmail);
     }
   }, []);
 
@@ -2726,10 +2729,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   value={resendFromInput}
                   onChange={(e) => setResendFromInput(e.target.value.trim())}
                   className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  placeholder="onboarding@resend.dev or admissions@collegecentre.in"
+                  placeholder="verify@collegecentre.in"
                 />
                 <span className="text-[10px] text-navy-400 mt-0.5 block">
-                  Use <code>onboarding@resend.dev</code> for instant free testing, or your custom domain.
+                  Default verified sender: <code>verify@collegecentre.in</code> (COLLEGECENTRE Admissions).
                 </span>
               </div>
 
