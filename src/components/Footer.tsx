@@ -159,16 +159,6 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo, onOpenDa
         <div className="border-t border-navy-800/80 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-navy-400">
           <div className="flex items-center gap-3">
             <span>© 2026 CollegeCentre (getidam/collegecentre). All rights reserved.</span>
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="text-[11px] text-navy-500 hover:text-navy-300 font-mono flex items-center gap-1 transition-colors"
-                title="Registrar Console"
-              >
-                <Shield className="w-3 h-3 text-brand-500" />
-                <span>Console</span>
-              </button>
-            )}
           </div>
 
           <div className="flex items-center gap-4">
