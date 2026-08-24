@@ -1482,7 +1482,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   value={campusProgramsInput}
                   onChange={(e) => setCampusProgramsInput(e.target.value)}
                   className="w-full bg-navy-50/50 border border-navy-200 rounded-xl p-3 text-xs text-navy-900 font-mono leading-relaxed"
-                  placeholder="MBBS - Medicine & Surgery&#10;BDS - Dental Surgery&#10;B.Pharm - Pharmacy"
+                  placeholder="B.Tech - Computer Science&#10;B.Tech - Electronics&#10;B.A. - Economics"
                 />
                 <span className="text-[11px] text-navy-400">
                   These academic programs will appear in the degree discipline dropdown for this specific subdomain.

@@ -598,31 +598,39 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                       </div>
                     </div>
 
-                    {/* Academic Program */}
+                    {/* Academic Program (Clean Text Input) */}
                     <div>
                       <label className="block text-xs font-semibold text-navy-700 mb-1">
                         Academic Discipline / Degree Program *
                       </label>
-                      <select
+                      <input
+                        type="text"
+                        required
+                        list="programs-list"
                         value={formData.degreeProgram}
                         onChange={(e) => setFormData({ ...formData, degreeProgram: e.target.value })}
-                        className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-                      >
+                        className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-medium"
+                        placeholder="e.g. B.Tech Computer Science & Engineering"
+                      />
+                      <datalist id="programs-list">
                         {(campus?.programs && campus.programs.length > 0) ? (
                           campus.programs.map((prog, i) => (
-                            <option key={i} value={prog}>{prog}</option>
+                            <option key={i} value={prog} />
                           ))
                         ) : (
                           <>
-                            <option>B.Tech - Computer Science & Engineering</option>
-                            <option>B.Tech - Artificial Intelligence & Data Science</option>
-                            <option>B.Tech - Electronics & Communication</option>
-                            <option>MBBS - Medicine & Surgery</option>
-                            <option>B.A. LL.B (Honours) - Integrated Law</option>
-                            <option>MBA - Business Administration</option>
+                            <option value="B.Tech - Computer Science & Engineering" />
+                            <option value="B.Tech - Artificial Intelligence & Data Science" />
+                            <option value="B.Tech - Electronics & Communication" />
+                            <option value="MBBS - Medicine & Surgery" />
+                            <option value="B.A. LL.B (Honours) - Integrated Law" />
+                            <option value="MBA - Business Administration" />
                           </>
                         )}
-                      </select>
+                      </datalist>
+                      {errors.degreeProgram && (
+                        <p className="text-xs text-red-600 font-medium mt-1">{errors.degreeProgram}</p>
+                      )}
                     </div>
                   </div>
                 )}
