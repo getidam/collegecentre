@@ -287,13 +287,73 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       setSmsLogs(updated);
       localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
       setIsSendingSms(false);
-      showToast(`SMS dispatched via MSG91 Gateway from COLLEGECENTRE to +91 ${cleanPhone}`);
+      showToast(`Message dispatched from COLLEGECENTRE to +91 ${cleanPhone}`);
+    }, 400);
+  };
 
-      // Native SMS app fallback trigger on mobile
-      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        window.open(`sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`, '_blank');
-      }
-    }, 500);
+  const handleSendViaCarrier = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    const cleanPhone = smsRecipientPhone.replace(/[^0-9]/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) {
+      showToast('Please enter a valid 10-digit mobile phone number', 'error');
+      return;
+    }
+    if (!smsMessage.trim()) {
+      showToast('Please enter custom SMS message body', 'error');
+      return;
+    }
+
+    const fullMsg = `[COLLEGECENTRE] ${smsMessage.trim()}`;
+    window.open(`sms:${cleanPhone}?body=${encodeURIComponent(fullMsg)}`, '_blank');
+
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const newLog: SMSLog = {
+      id: 'CARRIER-' + Math.floor(10000 + Math.random() * 90000),
+      recipient_phone: cleanPhone,
+      recipient_name: smsRecipientName.trim() || 'Direct Scholar Contact',
+      message: smsMessage.trim(),
+      sender_id: 'COLLEGECENTRE',
+      sent_at: formattedDate,
+      status: 'Delivered',
+    };
+    const updated = [newLog, ...smsLogs];
+    setSmsLogs(updated);
+    localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
+    showToast(`Carrier SMS app opened for +91 ${cleanPhone}`);
+  };
+
+  const handleSendViaWhatsApp = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    const cleanPhone = smsRecipientPhone.replace(/[^0-9]/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) {
+      showToast('Please enter a valid 10-digit mobile phone number', 'error');
+      return;
+    }
+    if (!smsMessage.trim()) {
+      showToast('Please enter message body', 'error');
+      return;
+    }
+
+    const intlPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    const fullMsg = `*COLLEGECENTRE Institutional Alert*\n\n${smsMessage.trim()}\n\n_Office of the Registrar • CollegeCentre_`;
+    window.open(`https://wa.me/${intlPhone}?text=${encodeURIComponent(fullMsg)}`, '_blank');
+
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const newLog: SMSLog = {
+      id: 'WA-' + Math.floor(10000 + Math.random() * 90000),
+      recipient_phone: cleanPhone,
+      recipient_name: smsRecipientName.trim() || 'Direct Scholar Contact',
+      message: smsMessage.trim(),
+      sender_id: 'COLLEGECENTRE (WA)',
+      sent_at: formattedDate,
+      status: 'Delivered',
+    };
+    const updated = [newLog, ...smsLogs];
+    setSmsLogs(updated);
+    localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
+    showToast(`WhatsApp direct alert launched for +91 ${cleanPhone}`);
   };
 
   const handleSaveMsg91Config = (e: React.FormEvent) => {
@@ -1725,8 +1785,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                       <span className="text-academic-emerald font-semibold text-[11px]">✓ Instant DLT Direct Route</span>
                     </div>
 
-                    {/* Action Button */}
-                    <div className="pt-2 flex items-center justify-end gap-3">
+                    {/* Action Buttons */}
+                    <div className="pt-2 flex flex-wrap items-center justify-between gap-2.5">
                       <button
                         type="button"
                         onClick={() => {
@@ -1734,19 +1794,41 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                           setSmsRecipientName('');
                           setSmsMessage('');
                         }}
-                        className="univ-btn-secondary text-xs px-4 py-2.5"
+                        className="univ-btn-secondary text-xs px-3 py-2"
                       >
                         Clear Form
                       </button>
 
-                      <button
-                        type="submit"
-                        disabled={isSendingSms}
-                        className="univ-btn-primary text-xs px-6 py-2.5 flex items-center gap-2 shadow-md"
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                        <span>{isSendingSms ? 'Dispatching SMS...' : 'Send SMS from COLLEGECENTRE'}</span>
-                      </button>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={handleSendViaWhatsApp}
+                          className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                          title="Send official message via WhatsApp without any SMS key"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>WhatsApp Direct</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleSendViaCarrier}
+                          className="univ-btn-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 text-navy-800"
+                          title="Open phone SMS app with prefilled text"
+                        >
+                          <Smartphone className="w-3.5 h-3.5 text-brand-600" />
+                          <span>Phone SMS</span>
+                        </button>
+
+                        <button
+                          type="submit"
+                          disabled={isSendingSms}
+                          className="univ-btn-primary text-xs px-4 py-2 flex items-center gap-1.5 shadow-md"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>{isSendingSms ? 'Sending...' : 'Dispatch & Log'}</span>
+                        </button>
+                      </div>
                     </div>
 
                   </form>
