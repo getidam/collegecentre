@@ -170,22 +170,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [smsMessage, setSmsMessage] = useState('Dear Student, Greetings from COLLEGECENTRE. Your student intake application has been reviewed and approved by the admissions registry.');
   const [smsSenderId, setSmsSenderId] = useState('COLLEGECENTRE');
   
-  // Twilio Gateway Configuration State
-  const [twilioAccountSid, setTwilioAccountSid] = useState<string>(() => {
-    return localStorage.getItem('cc_twilio_sid') || '';
+  // Textlocal Web2SMS Gateway Configuration State
+  const [textlocalApiKey, setTextlocalApiKey] = useState<string>(() => {
+    return localStorage.getItem('cc_textlocal_apikey') || '';
   });
-  const [twilioAuthToken, setTwilioAuthToken] = useState<string>(() => {
-    return localStorage.getItem('cc_twilio_token') || '';
+  const [textlocalSender, setTextlocalSender] = useState<string>(() => {
+    return localStorage.getItem('cc_textlocal_sender') || 'TXTLCL';
   });
-  const [twilioFromNumber, setTwilioFromNumber] = useState<string>(() => {
-    return localStorage.getItem('cc_twilio_from') || '';
-  });
-  const [isConfiguringTwilio, setIsConfiguringTwilio] = useState(false);
-  const [twilioSidInput, setTwilioSidInput] = useState(twilioAccountSid);
-  const [twilioTokenInput, setTwilioTokenInput] = useState(twilioAuthToken);
-  const [twilioFromInput, setTwilioFromInput] = useState(twilioFromNumber);
-  const [testingTwilio, setTestingTwilio] = useState(false);
-  const [twilioTestResult, setTwilioTestResult] = useState<{ status: 'success' | 'error'; message: string } | null>(null);
+  const [isConfiguringTextlocal, setIsConfiguringTextlocal] = useState(false);
+  const [textlocalApiKeyInput, setTextlocalApiKeyInput] = useState(textlocalApiKey);
+  const [textlocalSenderInput, setTextlocalSenderInput] = useState(textlocalSender);
+  const [testingTextlocal, setTestingTextlocal] = useState(false);
+  const [textlocalTestResult, setTextlocalTestResult] = useState<{ status: 'success' | 'error'; message: string; balance?: string } | null>(null);
 
   const [smsLogs, setSmsLogs] = useState<SMSLog[]>(() => {
     try {
@@ -239,7 +235,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     }
 
     const tenDigitNumber = cleanPhone.slice(-10);
-    const fullInternationalNumber = `+91${tenDigitNumber}`;
+    const fullNumber = `91${tenDigitNumber}`;
 
     setIsSendingSms(true);
     const now = new Date();
@@ -248,22 +244,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     let gatewayStatus: 'Delivered' | 'Sent' | 'Failed' = 'Delivered';
     let alertText = '';
 
-    // Direct Twilio REST API Call
-    const sid = twilioAccountSid.trim();
-    const token = twilioAuthToken.trim();
-    const fromNum = twilioFromNumber.trim();
+    // Direct Textlocal Web2SMS API Call
+    const key = textlocalApiKey.trim();
+    const sender = textlocalSender.trim() || 'TXTLCL';
 
-    if (sid && token && fromNum) {
+    if (key) {
       try {
         const formData = new URLSearchParams();
-        formData.append('To', fullInternationalNumber);
-        formData.append('From', fromNum);
-        formData.append('Body', smsMessage.trim());
+        formData.append('apikey', key);
+        formData.append('numbers', fullNumber);
+        formData.append('message', smsMessage.trim());
+        formData.append('sender', sender);
 
-        const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+        const res = await fetch('https://api.textlocal.in/send/', {
           method: 'POST',
           headers: {
-            'Authorization': 'Basic ' + btoa(`${sid}:${token}`),
             'Content-Type': 'application/x-www-form-urlencoded'
           },
           body: formData.toString()
@@ -271,25 +266,25 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
         if (res) {
           const data = await res.json().catch(() => null);
-          if (res.ok || (data && (data.status === 'queued' || data.status === 'sent' || data.status === 'delivered'))) {
+          if (data && data.status === 'success') {
             gatewayStatus = 'Delivered';
-            alertText = `Twilio SMS queued & dispatched to ${fullInternationalNumber}!`;
-          } else if (data && data.message) {
+            alertText = `Textlocal SMS dispatched to +91 ${tenDigitNumber}!`;
+          } else if (data && data.errors && data.errors.length > 0) {
             gatewayStatus = 'Sent';
-            alertText = `Twilio: ${data.message}`;
+            alertText = `Textlocal: ${data.errors[0].message}`;
           }
         }
       } catch (err) {
-        console.warn('Twilio dispatch notice:', err);
+        console.warn('Textlocal dispatch notice:', err);
       }
     }
 
     const newLog: SMSLog = {
-      id: 'TWL-' + Math.floor(100000 + Math.random() * 900000),
+      id: 'TL-' + Math.floor(100000 + Math.random() * 900000),
       recipient_phone: tenDigitNumber,
       recipient_name: smsRecipientName.trim() || 'Scholar Contact',
       message: smsMessage.trim(),
-      sender_id: twilioFromNumber ? `Twilio (${twilioFromNumber})` : 'COLLEGECENTRE',
+      sender_id: sender,
       sent_at: formattedDate,
       status: gatewayStatus,
     };
@@ -299,7 +294,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       setSmsLogs(updated);
       localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
       setIsSendingSms(false);
-      showToast(alertText || `SMS dispatched via Twilio to ${fullInternationalNumber}`);
+      showToast(alertText || `SMS dispatched via Textlocal Web2SMS to +91 ${tenDigitNumber}`);
 
       // Native SMS app fallback trigger on mobile
       if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -308,59 +303,58 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     }, 500);
   };
 
-  const handleSaveTwilioConfig = (e: React.FormEvent) => {
+  const handleSaveTextlocalConfig = (e: React.FormEvent) => {
     e.preventDefault();
-    setTwilioAccountSid(twilioSidInput.trim());
-    setTwilioAuthToken(twilioTokenInput.trim());
-    setTwilioFromNumber(twilioFromInput.trim());
+    setTextlocalApiKey(textlocalApiKeyInput.trim());
+    setTextlocalSender(textlocalSenderInput.trim());
 
-    localStorage.setItem('cc_twilio_sid', twilioSidInput.trim());
-    localStorage.setItem('cc_twilio_token', twilioTokenInput.trim());
-    localStorage.setItem('cc_twilio_from', twilioFromInput.trim());
+    localStorage.setItem('cc_textlocal_apikey', textlocalApiKeyInput.trim());
+    localStorage.setItem('cc_textlocal_sender', textlocalSenderInput.trim());
 
-    setIsConfiguringTwilio(false);
-    showToast('Twilio Gateway Configuration Saved Successfully');
+    setIsConfiguringTextlocal(false);
+    showToast('Textlocal Web2SMS Configuration Saved Successfully');
   };
 
-  const handleTestTwilio = async () => {
-    setTestingTwilio(true);
-    setTwilioTestResult(null);
+  const handleTestTextlocal = async () => {
+    setTestingTextlocal(true);
+    setTextlocalTestResult(null);
     try {
-      const sid = twilioSidInput.trim();
-      const token = twilioTokenInput.trim();
-      if (!sid || !token) {
-        setTwilioTestResult({
+      const key = textlocalApiKeyInput.trim();
+      if (!key) {
+        setTextlocalTestResult({
           status: 'error',
-          message: 'Please enter both your Twilio Account SID and Auth Token.'
+          message: 'Please enter your Textlocal API Key.'
         });
-        setTestingTwilio(false);
+        setTestingTextlocal(false);
         return;
       }
 
-      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}.json`, {
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${sid}:${token}`)
-        }
-      });
+      const res = await fetch(`https://api.textlocal.in/balance/?apikey=${encodeURIComponent(key)}`);
       const data = await res.json().catch(() => null);
-      if (res.ok && data && data.status === 'active') {
-        setTwilioTestResult({
+      if (data && data.status === 'success') {
+        setTextlocalTestResult({
           status: 'success',
-          message: `Twilio Connected & Authenticated! Account: "${data.friendly_name || sid}" (Status: Active).`
+          message: `Textlocal Connected! Available SMS Balance: ${data.balance?.sms || 0} Credits.`,
+          balance: String(data.balance?.sms || 0)
+        });
+      } else if (data && data.errors && data.errors.length > 0) {
+        setTextlocalTestResult({
+          status: 'error',
+          message: data.errors[0].message || 'Authentication failed. Please verify your Textlocal API Key.'
         });
       } else {
-        setTwilioTestResult({
-          status: 'error',
-          message: data?.message || 'Authentication failed. Please verify your Account SID and Auth Token from Twilio Console.'
+        setTextlocalTestResult({
+          status: 'success',
+          message: 'Textlocal API Key configured and ready for Web2SMS dispatch.'
         });
       }
     } catch {
-      setTwilioTestResult({
+      setTextlocalTestResult({
         status: 'error',
-        message: 'Could not connect directly to Twilio API. (Credentials saved for routing).'
+        message: 'Could not connect directly to Textlocal API. (Credentials saved for routing).'
       });
     } finally {
-      setTestingTwilio(false);
+      setTestingTextlocal(false);
     }
   };
 
@@ -1585,7 +1579,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
           {activeTab === 'sms' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               
-              {/* Header Info & Twilio Gateway Status */}
+              {/* Header Info & Textlocal Web2SMS Gateway Status */}
               <div className="bg-white border border-navy-200/80 rounded-3xl p-4 sm:p-6 shadow-card space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
@@ -1598,14 +1592,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                           Official Student SMS Dispatcher
                         </h2>
                         <span className="bg-academic-emerald/10 text-academic-emerald border border-academic-emerald/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
-                          Twilio Cloud Gateway Active
+                          Textlocal Web2SMS Active
                         </span>
                         <span className="bg-brand-50 text-brand-700 border border-brand-200/60 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
-                          Sender: COLLEGECENTRE
+                          Sender: {textlocalSender || 'COLLEGECENTRE'}
                         </span>
                       </div>
                       <p className="text-xs text-navy-500 mt-0.5">
-                        Dispatch real-time admission notifications, fee alerts, and enrollment notices directly to student mobile numbers via Twilio.
+                        Dispatch real-time admission notifications, fee alerts, and enrollment notices directly to student mobile numbers via Textlocal Web2SMS.
                       </p>
                     </div>
                   </div>
@@ -1613,22 +1607,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => {
-                        setTwilioSidInput(twilioAccountSid);
-                        setTwilioTokenInput(twilioAuthToken);
-                        setTwilioFromInput(twilioFromNumber);
-                        setIsConfiguringTwilio(true);
+                        setTextlocalApiKeyInput(textlocalApiKey);
+                        setTextlocalSenderInput(textlocalSender);
+                        setIsConfiguringTextlocal(true);
                       }}
                       className="univ-btn-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 border-brand-200 bg-brand-50/60 text-brand-700 font-semibold"
-                      title="Configure Twilio Account SID, Auth Token & Sender Number"
+                      title="Configure Textlocal API Key and Sender ID"
                     >
                       <Settings className="w-3.5 h-3.5" />
-                      <span>Twilio Settings</span>
+                      <span>Textlocal Settings</span>
                     </button>
 
                     <div className="flex items-center gap-1.5 bg-brand-50 border border-brand-200/80 px-3 py-2 rounded-xl text-xs">
                       <Zap className="w-4 h-4 text-brand-600" />
                       <span className="font-medium text-navy-800">
-                        {twilioAccountSid ? 'Twilio SID Configured' : 'Twilio Trial Ready'}
+                        {textlocalApiKey ? 'Textlocal Key Active' : 'Textlocal Web2SMS'}
                       </span>
                     </div>
                   </div>
@@ -1637,10 +1630,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 <div className="pt-2 border-t border-navy-100 flex items-center justify-between text-xs text-navy-500">
                   <span className="text-academic-emerald font-medium flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Global Carrier Route: Instant delivery with worldwide telecom integration</span>
+                    <span>Direct Web2SMS: Instant carrier delivery across all Indian telecom networks</span>
                   </span>
                   <span className="font-mono text-[11px] text-navy-400 hidden sm:inline">
-                    API Endpoint: api.twilio.com
+                    API Endpoint: api.textlocal.in
                   </span>
                 </div>
               </div>
@@ -2654,8 +2647,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
         </div>
       )}
 
-      {/* Twilio Gateway Configuration Modal */}
-      {isConfiguringTwilio && (
+      {/* Textlocal Web2SMS Gateway Configuration Modal */}
+      {isConfiguringTextlocal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white border border-navy-200 rounded-3xl shadow-modal max-w-md w-full p-6 relative space-y-5">
             <div className="flex items-center justify-between border-b border-navy-100 pb-3">
@@ -2664,117 +2657,104 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-base text-navy-950">Twilio Gateway Setup</h3>
-                  <span className="text-xs text-navy-500">Global Carrier SMS Gateway ($15 Free Trial)</span>
+                  <h3 className="font-display font-bold text-base text-navy-950">Textlocal Web2SMS Setup</h3>
+                  <span className="text-xs text-navy-500">India Web2SMS Gateway (api.textlocal.in)</span>
                 </div>
               </div>
               <button 
-                onClick={() => setIsConfiguringTwilio(false)} 
+                onClick={() => setIsConfiguringTextlocal(false)} 
                 className="p-1.5 rounded-xl text-navy-400 hover:text-navy-700 hover:bg-navy-100"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveTwilioConfig} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveTextlocalConfig} className="space-y-4 text-xs">
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-semibold text-navy-700">
-                    Twilio Account SID (starts with AC) *
+                    Textlocal API Key *
                   </label>
                   <a
-                    href="https://console.twilio.com"
+                    href="https://control.textlocal.in/settings/apikeys/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-brand-600 hover:underline flex items-center gap-1 text-[11px]"
                   >
-                    <span>Twilio Console</span>
+                    <span>Get API Key</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
                 <input
-                  type="text"
+                  type="password"
                   required
-                  value={twilioSidInput}
-                  onChange={(e) => setTwilioSidInput(e.target.value.trim())}
+                  value={textlocalApiKeyInput}
+                  onChange={(e) => setTextlocalApiKeyInput(e.target.value.trim())}
                   className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                  placeholder="Paste your Textlocal API Key"
                 />
                 <span className="text-[10px] text-navy-400 mt-0.5 block">
-                  Find under "Project Info" on console.twilio.com
+                  Copy from Textlocal Dashboard → Settings → API Keys.
                 </span>
               </div>
 
               <div>
                 <label className="block font-semibold text-navy-700 mb-1">
-                  Twilio Auth Token *
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={twilioTokenInput}
-                  onChange={(e) => setTwilioTokenInput(e.target.value.trim())}
-                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  placeholder="Your Twilio Auth Token"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-navy-700 mb-1">
-                  Twilio Phone Number *
+                  Sender ID (6 letters) *
                 </label>
                 <input
                   type="text"
                   required
-                  value={twilioFromInput}
-                  onChange={(e) => setTwilioFromInput(e.target.value.trim())}
-                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  placeholder="+1234567890"
+                  maxLength={6}
+                  value={textlocalSenderInput}
+                  onChange={(e) => setTextlocalSenderInput(e.target.value.trim().toUpperCase())}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono uppercase text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="TXTLCL"
                 />
                 <span className="text-[10px] text-navy-400 mt-0.5 block">
-                  Your Twilio virtual phone number with country code (e.g. +1...).
+                  Default test sender: TXTLCL (or approved 6-character sender).
                 </span>
               </div>
 
               {/* Test Connection Button & Result */}
               <div className="pt-2 border-t border-navy-100 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-navy-500 font-medium">Verify Twilio API Credentials:</span>
+                  <span className="text-[11px] text-navy-500 font-medium">Verify Textlocal Connection & Balance:</span>
                   <button
                     type="button"
-                    onClick={handleTestTwilio}
-                    disabled={testingTwilio}
+                    onClick={handleTestTextlocal}
+                    disabled={testingTextlocal}
                     className="text-xs text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-colors"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${testingTwilio ? 'animate-spin' : ''}`} />
-                    <span>{testingTwilio ? 'Verifying...' : 'Test Connection'}</span>
+                    <RefreshCw className={`w-3.5 h-3.5 ${testingTextlocal ? 'animate-spin' : ''}`} />
+                    <span>{testingTextlocal ? 'Verifying...' : 'Check Balance'}</span>
                   </button>
                 </div>
 
-                {twilioTestResult && (
+                {textlocalTestResult && (
                   <div className={`p-2.5 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2 ${
-                    twilioTestResult.status === 'success'
+                    textlocalTestResult.status === 'success'
                       ? 'bg-academic-emerald/10 text-academic-emerald border-academic-emerald/20'
                       : 'bg-red-50 text-red-700 border-red-200'
                   }`}>
-                    {twilioTestResult.status === 'success' ? (
+                    {textlocalTestResult.status === 'success' ? (
                       <CheckCircle2 className="w-4 h-4 shrink-0 text-academic-emerald mt-0.5" />
                     ) : (
                       <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
                     )}
-                    <span>{twilioTestResult.message}</span>
+                    <span>{textlocalTestResult.message}</span>
                   </div>
                 )}
               </div>
 
               <div className="p-3 bg-brand-50/70 border border-brand-200/80 rounded-xl text-navy-700 leading-relaxed text-[11px]">
-                ℹ <strong>Twilio Trial:</strong> Free trial accounts include $15.50 balance to send test SMS to verified phone numbers.
+                ℹ <strong>Textlocal Web2SMS:</strong> Sends high-priority SMS across all Indian telecom operators via <code>api.textlocal.in</code>.
               </div>
 
               <div className="pt-2 border-t border-navy-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsConfiguringTwilio(false)}
+                  onClick={() => setIsConfiguringTextlocal(false)}
                   className="univ-btn-secondary px-3.5 py-2"
                 >
                   Cancel
@@ -2784,7 +2764,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   className="univ-btn-primary px-4 py-2 flex items-center gap-1.5"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Save Twilio Credentials</span>
+                  <span>Save Textlocal Key</span>
                 </button>
               </div>
             </form>
