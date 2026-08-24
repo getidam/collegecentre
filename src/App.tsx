@@ -15,6 +15,7 @@ import { DemoModal } from './components/DemoModal';
 import { Footer } from './components/Footer';
 import { StudentDataCollection } from './components/StudentDataCollection';
 import { AdminPortal } from './components/AdminPortal';
+import { getSubdomain } from './lib/subdomain';
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -26,20 +27,9 @@ export function App() {
     const path = window.location.pathname.toLowerCase();
     const search = window.location.search.toLowerCase();
     const hash = window.location.hash.toLowerCase();
-    const hostname = window.location.hostname.toLowerCase();
 
-    // Check for custom subdomain in host (e.g. medical.collegecentre.in)
-    let hostSubdomain = '';
-    if (hostname.includes('.') && !hostname.startsWith('www') && !hostname.startsWith('localhost')) {
-      const parts = hostname.split('.');
-      if (parts.length >= 2 && parts[0] !== 'collegecentre') {
-        hostSubdomain = parts[0];
-      }
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const queryCampus = urlParams.get('campus') || urlParams.get('subdomain');
-    const detectedCampus = queryCampus || hostSubdomain;
+    // Check for custom subdomain in host, query or path
+    const detectedCampus = getSubdomain();
 
     if (detectedCampus) {
       setActiveCampusSlug(detectedCampus);

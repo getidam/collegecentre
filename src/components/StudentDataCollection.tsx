@@ -8,6 +8,7 @@ import {
 import confetti from 'canvas-confetti';
 import { supabase } from '../lib/supabase';
 import type { FormFieldConfig } from './AdminPortal';
+import { getSubdomain } from '../lib/subdomain';
 
 interface StudentDataCollectionProps {
   onBackToHome?: () => void;
@@ -69,21 +70,8 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // Detect campus from prop, query parameter, or hostname subdomain
-    const urlParams = new URLSearchParams(window.location.search);
-    const queryCampus = urlParams.get('campus') || urlParams.get('subdomain');
-    
-    // Subdomain host detection (e.g. engineering.collegecentre.in)
-    const hostname = window.location.hostname.toLowerCase();
-    let hostSubdomain = '';
-    if (hostname.includes('.') && !hostname.startsWith('www') && !hostname.startsWith('localhost')) {
-      const parts = hostname.split('.');
-      if (parts.length >= 2 && parts[0] !== 'collegecentre') {
-        hostSubdomain = parts[0];
-      }
-    }
-
-    const targetSlug = propCampusSlug || queryCampus || hostSubdomain || 'main';
+    // Detect campus from prop or universal getSubdomain resolver
+    const targetSlug = propCampusSlug || getSubdomain() || 'main';
 
     const fetchCampusAndSchema = async () => {
       try {

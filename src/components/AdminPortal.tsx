@@ -7,6 +7,7 @@ import {
   Globe, ExternalLink, Copy, Check, Sparkles, Building2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { formatSubdomainUrl } from '../lib/subdomain';
 
 export interface FormFieldConfig {
   id: string;
@@ -758,12 +759,29 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 </button>
               </div>
 
+              {/* Subdomain DNS Helper Notice */}
+              <div className="bg-brand-50/70 border border-brand-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold shrink-0">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-navy-950 block">
+                      Production Wildcard Subdomain DNS Routing
+                    </span>
+                    <span className="text-navy-600 leading-relaxed block mt-0.5">
+                      All subdomains (<strong className="font-mono text-brand-800">*.collegecentre.in</strong>) resolve dynamically to their dedicated campus forms.
+                      Add wildcard domain <code className="bg-brand-100/80 text-brand-900 px-1 py-0.2 rounded font-mono">*.collegecentre.in</code> in Vercel & DNS CNAME for direct resolution.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               {/* Campuses & Subdomains List */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {campuses.map((campus) => {
                   const campusRecordsCount = records.filter(r => r.campus_slug === campus.slug || (!r.campus_slug && campus.slug === 'main')).length;
-                  const livePortalUrl = `${window.location.origin}/?campus=${campus.slug}`;
-                  const customSubdomainHost = `${campus.slug}.collegecentre.in`;
+                  const urls = formatSubdomainUrl(campus.slug);
 
                   return (
                     <div 
@@ -818,20 +836,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                           <div className="flex items-center justify-between text-[11px] text-navy-600">
                             <span className="font-medium flex items-center gap-1">
                               <Globe className="w-3.5 h-3.5 text-brand-600" />
-                              <span className="font-mono text-navy-900 font-bold">{customSubdomainHost}</span>
+                              <span className="font-mono text-navy-900 font-bold">{campus.slug}.collegecentre.in</span>
                             </span>
                             <button
-                              onClick={() => handleCopyLink(campus.slug)}
+                              onClick={() => handleCopyLink(urls.subdomainUrl)}
                               className="text-[10px] text-brand-600 hover:text-brand-800 font-semibold flex items-center gap-0.5 bg-white px-2 py-0.5 rounded border border-navy-200"
                               title="Copy URL"
                             >
-                              {copiedSlug === campus.slug ? <Check className="w-3 h-3 text-academic-emerald" /> : <Copy className="w-3 h-3" />}
-                              <span>{copiedSlug === campus.slug ? 'Copied' : 'Copy'}</span>
+                              {copiedSlug === urls.subdomainUrl ? <Check className="w-3 h-3 text-academic-emerald" /> : <Copy className="w-3 h-3" />}
+                              <span>{copiedSlug === urls.subdomainUrl ? 'Copied' : 'Copy'}</span>
                             </button>
                           </div>
 
                           <div className="text-[10px] text-navy-400 font-mono truncate">
-                            Direct: {livePortalUrl}
+                            URL: {urls.subdomainUrl}
                           </div>
                         </div>
 
