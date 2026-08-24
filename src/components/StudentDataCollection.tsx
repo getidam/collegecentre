@@ -320,7 +320,17 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
               <Lock className="w-3.5 h-3.5 text-academic-emerald" />
               <span>DPDPA Encrypted</span>
             </div>
-            {onBackToHome && (
+            {campus?.slug && campus.slug !== 'main' ? (
+              <a
+                href="https://collegecentre.in"
+                className="text-xs font-semibold text-navy-700 hover:text-navy-950 flex items-center gap-1 bg-white hover:bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200 shadow-xs transition-colors"
+                title="Visit Central University Website"
+              >
+                <Globe className="w-3.5 h-3.5 text-navy-500" />
+                <span className="hidden sm:inline">Central University</span>
+                <span className="sm:hidden">Main</span>
+              </a>
+            ) : onBackToHome ? (
               <button
                 onClick={onBackToHome}
                 className="text-xs font-semibold text-navy-700 hover:text-navy-950 flex items-center gap-1 bg-white hover:bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200 shadow-xs transition-colors"
@@ -328,7 +338,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Home</span>
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </header>
@@ -408,7 +418,15 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                   <span>Submit Another Application</span>
                 </button>
 
-                {onBackToHome && (
+                {campus?.slug && campus.slug !== 'main' ? (
+                  <a
+                    href="https://collegecentre.in"
+                    className="univ-btn-secondary w-full sm:w-auto px-6 py-3 text-xs sm:text-sm flex items-center justify-center gap-2"
+                  >
+                    <Globe className="w-4 h-4 text-navy-500" />
+                    <span>Visit Central University Portal</span>
+                  </a>
+                ) : onBackToHome ? (
                   <button
                     onClick={onBackToHome}
                     className="univ-btn-secondary w-full sm:w-auto px-6 py-3 text-xs sm:text-sm flex items-center justify-center gap-2"
@@ -416,7 +434,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                     <ArrowLeft className="w-4 h-4" />
                     <span>Return to Main Website</span>
                   </button>
-                )}
+                ) : null}
               </div>
 
             </div>

@@ -19,8 +19,36 @@ import { getSubdomain } from './lib/subdomain';
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'landing' | 'data_collection' | 'admin'>('landing');
-  const [activeCampusSlug, setActiveCampusSlug] = useState<string | undefined>(undefined);
+  const detectedSubdomain = getSubdomain();
+
+  const [currentView, setCurrentView] = useState<'landing' | 'data_collection' | 'admin'>(() => {
+    if (typeof window === 'undefined') return 'landing';
+    const path = window.location.pathname.toLowerCase();
+    const search = window.location.search.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+
+    if (path.includes('admin') || search.includes('admin') || hash.includes('admin')) {
+      return 'admin';
+    }
+    // Any subdomain or direct form query/path directly renders the dedicated form
+    if (detectedSubdomain) {
+      return 'data_collection';
+    }
+    if (
+      path.includes('form') ||
+      path.includes('register') ||
+      path.includes('student') ||
+      path.includes('portal') ||
+      search.includes('form') ||
+      search.includes('register') ||
+      hash.includes('form')
+    ) {
+      return 'data_collection';
+    }
+    return 'landing';
+  });
+
+  const [activeCampusSlug, setActiveCampusSlug] = useState<string | undefined>(detectedSubdomain || undefined);
 
   // Detect URL path or parameter on initial load
   useEffect(() => {
@@ -28,11 +56,14 @@ export function App() {
     const search = window.location.search.toLowerCase();
     const hash = window.location.hash.toLowerCase();
 
-    // Check for custom subdomain in host, query or path
     const detectedCampus = getSubdomain();
 
     if (detectedCampus) {
       setActiveCampusSlug(detectedCampus);
+      if (!path.includes('admin') && !search.includes('admin') && !hash.includes('admin')) {
+        setCurrentView('data_collection');
+        return;
+      }
     }
 
     if (
@@ -61,9 +92,10 @@ export function App() {
 
     const handlePopState = () => {
       const p = window.location.pathname.toLowerCase();
+      const dSub = getSubdomain();
       if (p.includes('admin') || p.includes('record')) {
         setCurrentView('admin');
-      } else if (p.includes('form') || p.includes('register') || p.includes('student')) {
+      } else if (dSub || p.includes('form') || p.includes('register') || p.includes('student')) {
         setCurrentView('data_collection');
       } else {
         setCurrentView('landing');
@@ -73,7 +105,7 @@ export function App() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         e.preventDefault();
-        setCurrentView(prev => (prev === 'admin' ? 'landing' : 'admin'));
+        setCurrentView(prev => (prev === 'admin' ? (detectedCampus ? 'data_collection' : 'landing') : 'admin'));
       }
     };
 
@@ -113,6 +145,11 @@ export function App() {
   };
 
   const backToLandingPage = () => {
+    if (detectedSubdomain) {
+      // If on a custom subdomain, redirect to central university
+      window.location.href = 'https://collegecentre.in';
+      return;
+    }
     setActiveCampusSlug(undefined);
     setCurrentView('landing');
     try {
