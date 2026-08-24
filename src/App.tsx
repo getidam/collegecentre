@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TopStrip } from './components/TopStrip';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
@@ -19,6 +19,56 @@ export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'landing' | 'data_collection'>('landing');
 
+  // Detect URL path or parameter on initial load (e.g., /form or /register or ?page=form)
+  useEffect(() => {
+    const path = window.location.pathname.toLowerCase();
+    const search = window.location.search.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    if (
+      path.includes('form') ||
+      path.includes('register') ||
+      path.includes('student') ||
+      search.includes('form') ||
+      search.includes('register') ||
+      hash.includes('form') ||
+      hash.includes('register')
+    ) {
+      setCurrentView('data_collection');
+    }
+
+    const handlePopState = () => {
+      const p = window.location.pathname.toLowerCase();
+      if (p.includes('form') || p.includes('register') || p.includes('student')) {
+        setCurrentView('data_collection');
+      } else {
+        setCurrentView('landing');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const openDataCollectionPage = () => {
+    setCurrentView('data_collection');
+    try {
+      window.history.pushState({}, '', '/form');
+    } catch {
+      // ignore
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const backToLandingPage = () => {
+    setCurrentView('landing');
+    try {
+      window.history.pushState({}, '', '/');
+    } catch {
+      // ignore
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const scrollToSection = (id: string) => {
     if (currentView !== 'landing') {
       setCurrentView('landing');
@@ -32,6 +82,12 @@ export function App() {
     }
   };
 
+  // IF ON STUDENT DATA COLLECTION PAGE: Render ONLY the form page (completely isolated, no landing page elements)
+  if (currentView === 'data_collection') {
+    return <StudentDataCollection onBackToHome={backToLandingPage} />;
+  }
+
+  // OTHERWISE: Render the Landing Page
   return (
     <div className="min-h-screen bg-paper-200 text-ink flex flex-col selection:bg-cjpOrange selection:text-white">
       <TopStrip onOpenDemo={() => setDemoModalOpen(true)} />
@@ -39,40 +95,25 @@ export function App() {
       <Navbar
         onOpenDemo={() => setDemoModalOpen(true)}
         onScrollTo={scrollToSection}
-        onOpenDataCollection={() => {
-          setCurrentView('data_collection');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onOpenDataCollection={openDataCollectionPage}
       />
 
-      {currentView === 'data_collection' ? (
-        <main className="flex-grow">
-          <StudentDataCollection onBackToHome={() => {
-            setCurrentView('landing');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }} />
-        </main>
-      ) : (
-        <main className="flex-grow">
-          <HeroSection
-            onOpenDemo={() => setDemoModalOpen(true)}
-            onScrollTo={scrollToSection}
-            onOpenDataCollection={() => {
-              setCurrentView('data_collection');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-          <MarqueeTicker />
-          <StudentCardGenerator />
-          <VisionSection />
-          <ManifestoSection />
-          <LiveMetricsSection />
-          <ModulesSection />
-          <ChecklistSection onOpenDemo={() => setDemoModalOpen(true)} />
-          <TestimonialsSection />
-          <FAQSection />
-        </main>
-      )}
+      <main className="flex-grow">
+        <HeroSection
+          onOpenDemo={() => setDemoModalOpen(true)}
+          onScrollTo={scrollToSection}
+          onOpenDataCollection={openDataCollectionPage}
+        />
+        <MarqueeTicker />
+        <StudentCardGenerator />
+        <VisionSection />
+        <ManifestoSection />
+        <LiveMetricsSection />
+        <ModulesSection />
+        <ChecklistSection onOpenDemo={() => setDemoModalOpen(true)} />
+        <TestimonialsSection />
+        <FAQSection />
+      </main>
 
       <Footer
         onScrollTo={scrollToSection}
