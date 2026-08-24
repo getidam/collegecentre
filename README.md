@@ -1,9 +1,9 @@
 # CollegeCentre (collegecentre.in)
 > **The High-Integrity Student Data Management System & Universal Campus Operating System for Universities.**
 
-[![Build Status](https://img.shields.io/badge/Build-Passing-22c55e?style=for-the-badge)](https://github.com/getidam/collegecentre.in.git)
-[![Version](https://img.shields.io/badge/Release-v3.2_Live-c9561e?style=for-the-badge)](https://github.com/getidam/collegecentre.in.git)
-[![Compliance](https://img.shields.io/badge/Compliance-UGC_|_NAAC_|_DPDPA_2023-17191c?style=for-the-badge)](https://github.com/getidam/collegecentre.in.git)
+[![Build Status](https://img.shields.io/badge/Build-Passing-22c55e?style=for-the-badge)](https://github.com/getidam/collegecentre.git)
+[![Version](https://img.shields.io/badge/Release-v3.2_Live-c9561e?style=for-the-badge)](https://github.com/getidam/collegecentre.git)
+[![Compliance](https://img.shields.io/badge/Compliance-UGC_|_NAAC_|_DPDPA_2023-17191c?style=for-the-badge)](https://github.com/getidam/collegecentre.git)
 
 ---
 
@@ -42,7 +42,7 @@
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/getidam/collegecentre.in.git
+git clone https://github.com/getidam/collegecentre.git
 cd collegecentre.in
 npm install
 ```
