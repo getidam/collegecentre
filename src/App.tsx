@@ -14,10 +14,11 @@ import { FAQSection } from './components/FAQSection';
 import { DemoModal } from './components/DemoModal';
 import { Footer } from './components/Footer';
 import { AdminPanel } from './components/AdminPanel';
+import { CyberAwarenessModule } from './components/CyberAwarenessModule';
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'landing' | 'admin'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'admin' | 'cyber_drill'>('landing');
 
   const scrollToSection = (id: string) => {
     if (currentView !== 'landing') {
@@ -36,6 +37,10 @@ export function App() {
     return <AdminPanel onBackToHome={() => setCurrentView('landing')} />;
   }
 
+  if (currentView === 'cyber_drill') {
+    return <CyberAwarenessModule onBackToHome={() => setCurrentView('landing')} />;
+  }
+
   return (
     <div className="min-h-screen bg-paper-200 text-ink flex flex-col selection:bg-cjpOrange selection:text-white">
       <TopStrip onOpenDemo={() => setDemoModalOpen(true)} />
@@ -44,6 +49,7 @@ export function App() {
         onOpenDemo={() => setDemoModalOpen(true)}
         onScrollTo={scrollToSection}
         onOpenAdmin={() => setCurrentView('admin')}
+        onOpenCyberDrill={() => setCurrentView('cyber_drill')}
       />
 
       <main className="flex-grow">

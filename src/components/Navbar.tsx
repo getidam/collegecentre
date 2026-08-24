@@ -1,13 +1,14 @@
 ﻿import React, { useState } from 'react';
-import { Menu, X, ChevronDown, GraduationCap, FileCheck, Layers, Database, ArrowUpRight, FolderLock } from 'lucide-react';
+import { Menu, X, ChevronDown, GraduationCap, FileCheck, Layers, Database, ArrowUpRight, FolderLock, ShieldAlert } from 'lucide-react';
 
 interface NavbarProps {
   onOpenDemo: () => void;
   onScrollTo: (id: string) => void;
   onOpenAdmin: () => void;
+  onOpenCyberDrill: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenAdmin }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenAdmin, onOpenCyberDrill }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modulesDropdownOpen, setModulesDropdownOpen] = useState(false);
 
@@ -118,10 +119,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenAd
             ))}
           </nav>
 
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2.5">
+            <button
+              onClick={onOpenCyberDrill}
+              className="px-3 py-2 border-2 border-ink bg-red-50 hover:bg-red-600 hover:text-white transition-colors text-xs font-mono font-bold flex items-center gap-1.5 shadow-brutal-sm uppercase text-red-700"
+              title="Interactive Phishing Awareness Drill"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Cyber Drill</span>
+            </button>
+
             <button
               onClick={onOpenAdmin}
-              className="px-3.5 py-2 border-2 border-ink bg-paper-200 hover:bg-ink hover:text-paper-100 transition-colors text-xs font-mono font-bold flex items-center gap-1.5 shadow-brutal-sm uppercase"
+              className="px-3 py-2 border-2 border-ink bg-paper-200 hover:bg-ink hover:text-paper-100 transition-colors text-xs font-mono font-bold flex items-center gap-1.5 shadow-brutal-sm uppercase"
             >
               <FolderLock className="w-3.5 h-3.5 text-cjpOrange" />
               <span>Admin Root</span>
@@ -129,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenAd
 
             <button
               onClick={onOpenDemo}
-              className="brutal-btn bg-cjpOrange text-paper-100 hover:bg-ink px-5 py-2.5 text-sm font-display tracking-wider flex items-center gap-2"
+              className="brutal-btn bg-cjpOrange text-paper-100 hover:bg-ink px-4 py-2.5 text-sm font-display tracking-wider flex items-center gap-1.5"
             >
               <span>Deploy Campus</span>
               <ArrowUpRight className="w-4 h-4" />
@@ -169,12 +179,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenAd
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
+                onOpenCyberDrill();
+              }}
+              className="w-full text-left px-3 py-2.5 text-sm uppercase font-bold border-b border-ink/10 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white flex items-center gap-2"
+            >
+              <ShieldAlert className="w-4 h-4" />
+              <span>Cyber Awareness Drill</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
                 onOpenAdmin();
               }}
               className="w-full text-left px-3 py-2.5 text-sm uppercase font-bold border-b border-ink/10 bg-paper-200 hover:bg-ink hover:text-paper-100 flex items-center gap-2"
             >
               <FolderLock className="w-4 h-4 text-cjpOrange" />
-              <span>Admin Root (Create /Folder)</span>
+              <span>Admin Root (/Folder Manager)</span>
             </button>
           </div>
 
