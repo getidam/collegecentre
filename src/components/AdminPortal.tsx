@@ -275,23 +275,28 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
           `
         };
 
-        const res = await fetch('https://api.resend.com/emails', {
+        const res = await fetch('https://nwzgthsmmimjtgnpqqjf.supabase.co/functions/v1/send-email', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${key}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(payload)
-        }).catch(() => null);
+          body: JSON.stringify({
+            ...payload,
+            apiKey: key,
+          })
+        }).catch((err) => {
+          console.error('Email dispatch error:', err);
+          return null;
+        });
 
         if (res) {
           const data = await res.json().catch(() => null);
           if (res.ok && data && data.id) {
             deliveryStatus = 'Delivered';
-            alertMsg = `Email delivered to ${cleanEmail} via Resend (ID: ${data.id})`;
-          } else if (data && data.message) {
-            deliveryStatus = 'Sent';
-            alertMsg = `Resend Notice: ${data.message}`;
+            alertMsg = `Email delivered to ${cleanEmail} (ID: ${data.id})`;
+          } else if (data && (data.message || data.error)) {
+            deliveryStatus = 'Failed';
+            alertMsg = `Error: ${data.message || data.error}`;
           }
         }
       } catch (err) {
@@ -345,19 +350,28 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
         return;
       }
 
-      const res = await fetch('https://api.resend.com/api-keys', {
-        headers: { 'Authorization': `Bearer ${key}` }
-      });
-      const data = await res.json().catch(() => null);
-      if (res.ok) {
+      const res = await fetch('https://nwzgthsmmimjtgnpqqjf.supabase.co/functions/v1/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: key,
+          to: 'delivered@resend.dev',
+          subject: 'Resend Connection Test - CollegeCentre',
+          html: '<p>Testing connection from CollegeCentre admin console.</p>',
+          text: 'Testing connection from CollegeCentre admin console.'
+        })
+      }).catch(() => null);
+
+      const data = await res?.json().catch(() => null);
+      if (res?.ok && data?.id) {
         setResendTestResult({
           status: 'success',
-          message: 'Resend API Key Verified & Connected! 3,000 Free Monthly Emails Active.'
+          message: 'Resend API Key & Domain Verified! Official email delivery is active.'
         });
       } else {
         setResendTestResult({
           status: 'error',
-          message: data?.message || 'Authentication failed. Please check your Resend API Key.'
+          message: data?.message || data?.error || 'Verification failed. Please check your Resend API Key.'
         });
       }
     } catch {
