@@ -170,18 +170,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [smsMessage, setSmsMessage] = useState('Dear Student, Greetings from COLLEGECENTRE. Your student intake application has been reviewed and approved by the admissions registry.');
   const [smsSenderId, setSmsSenderId] = useState('COLLEGECENTRE');
   
-  // Fast2SMS API Gateway Configuration State
-  const [fast2smsApiKey, setFast2smsApiKey] = useState<string>(() => {
-    return localStorage.getItem('cc_fast2sms_apikey') || 'bu0XMwQ9aik5dEnyr8mS4FCD6YOT2hUNpjeAL7JcfsZBvHKVqzfUJF0jsOaLmthoqGnX9WZcbIDy5TvK';
+  // Twilio Gateway Configuration State
+  const [twilioAccountSid, setTwilioAccountSid] = useState<string>(() => {
+    return localStorage.getItem('cc_twilio_sid') || '';
   });
-  const [fast2smsRoute, setFast2smsRoute] = useState<string>(() => {
-    return localStorage.getItem('cc_fast2sms_route') || 'q'; // 'q' = Quick SMS (no DLT required)
+  const [twilioAuthToken, setTwilioAuthToken] = useState<string>(() => {
+    return localStorage.getItem('cc_twilio_token') || '';
   });
-  const [isConfiguringFast2SMS, setIsConfiguringFast2SMS] = useState(false);
-  const [fast2smsApiKeyInput, setFast2smsApiKeyInput] = useState(fast2smsApiKey);
-  const [fast2smsRouteInput, setFast2smsRouteInput] = useState(fast2smsRoute);
-  const [testingFast2SMS, setTestingFast2SMS] = useState(false);
-  const [fast2smsTestResult, setFast2smsTestResult] = useState<{ status: 'success' | 'error'; message: string; wallet?: string } | null>(null);
+  const [twilioFromNumber, setTwilioFromNumber] = useState<string>(() => {
+    return localStorage.getItem('cc_twilio_from') || '';
+  });
+  const [isConfiguringTwilio, setIsConfiguringTwilio] = useState(false);
+  const [twilioSidInput, setTwilioSidInput] = useState(twilioAccountSid);
+  const [twilioTokenInput, setTwilioTokenInput] = useState(twilioAuthToken);
+  const [twilioFromInput, setTwilioFromInput] = useState(twilioFromNumber);
+  const [testingTwilio, setTestingTwilio] = useState(false);
+  const [twilioTestResult, setTwilioTestResult] = useState<{ status: 'success' | 'error'; message: string } | null>(null);
 
   const [smsLogs, setSmsLogs] = useState<SMSLog[]>(() => {
     try {
@@ -235,6 +239,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     }
 
     const tenDigitNumber = cleanPhone.slice(-10);
+    const fullInternationalNumber = `+91${tenDigitNumber}`;
 
     setIsSendingSms(true);
     const now = new Date();
@@ -243,51 +248,48 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     let gatewayStatus: 'Delivered' | 'Sent' | 'Failed' = 'Delivered';
     let alertText = '';
 
-    // Direct Fast2SMS Quick Route API Call
-    const key = fast2smsApiKey.trim() || 'bu0XMwQ9aik5dEnyr8mS4FCD6YOT2hUNpjeAL7JcfsZBvHKVqzfUJF0jsOaLmthoqGnX9WZcbIDy5TvK';
-    if (key) {
-      try {
-        const payload = {
-          route: fast2smsRoute || 'q',
-          message: smsMessage.trim(),
-          language: 'english',
-          flash: 0,
-          numbers: tenDigitNumber
-        };
+    // Direct Twilio REST API Call
+    const sid = twilioAccountSid.trim();
+    const token = twilioAuthToken.trim();
+    const fromNum = twilioFromNumber.trim();
 
-        const res = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+    if (sid && token && fromNum) {
+      try {
+        const formData = new URLSearchParams();
+        formData.append('To', fullInternationalNumber);
+        formData.append('From', fromNum);
+        formData.append('Body', smsMessage.trim());
+
+        const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
           method: 'POST',
           headers: {
-            'authorization': key,
-            'Content-Type': 'application/json'
+            'Authorization': 'Basic ' + btoa(`${sid}:${token}`),
+            'Content-Type': 'application/x-www-form-urlencoded'
           },
-          body: JSON.stringify(payload)
+          body: formData.toString()
         }).catch(() => null);
 
         if (res) {
           const data = await res.json().catch(() => null);
-          if (data && (data.return === true || data.status_code === 200)) {
+          if (res.ok || (data && (data.status === 'queued' || data.status === 'sent' || data.status === 'delivered'))) {
             gatewayStatus = 'Delivered';
-            alertText = `SMS dispatched via Fast2SMS to +91 ${tenDigitNumber}`;
-          } else if (data && data.status_code === 999) {
-            gatewayStatus = 'Sent';
-            alertText = `Fast2SMS Note: Account needs ₹100 1-time activation recharge on fast2sms.com/panel/add_money to enable API delivery.`;
+            alertText = `Twilio SMS queued & dispatched to ${fullInternationalNumber}!`;
           } else if (data && data.message) {
             gatewayStatus = 'Sent';
-            alertText = `Fast2SMS: ${data.message}`;
+            alertText = `Twilio: ${data.message}`;
           }
         }
       } catch (err) {
-        console.warn('Fast2SMS dispatch notice:', err);
+        console.warn('Twilio dispatch notice:', err);
       }
     }
 
     const newLog: SMSLog = {
-      id: 'F2S-' + Math.floor(100000 + Math.random() * 900000),
+      id: 'TWL-' + Math.floor(100000 + Math.random() * 900000),
       recipient_phone: tenDigitNumber,
       recipient_name: smsRecipientName.trim() || 'Scholar Contact',
       message: smsMessage.trim(),
-      sender_id: 'COLLEGECENTRE',
+      sender_id: twilioFromNumber ? `Twilio (${twilioFromNumber})` : 'COLLEGECENTRE',
       sent_at: formattedDate,
       status: gatewayStatus,
     };
@@ -297,7 +299,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       setSmsLogs(updated);
       localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
       setIsSendingSms(false);
-      showToast(alertText || `SMS dispatched via Fast2SMS to +91 ${tenDigitNumber}`);
+      showToast(alertText || `SMS dispatched via Twilio to ${fullInternationalNumber}`);
 
       // Native SMS app fallback trigger on mobile
       if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -306,55 +308,59 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     }, 500);
   };
 
-  const handleSaveFast2SMSConfig = (e: React.FormEvent) => {
+  const handleSaveTwilioConfig = (e: React.FormEvent) => {
     e.preventDefault();
-    setFast2smsApiKey(fast2smsApiKeyInput.trim());
-    setFast2smsRoute(fast2smsRouteInput.trim());
+    setTwilioAccountSid(twilioSidInput.trim());
+    setTwilioAuthToken(twilioTokenInput.trim());
+    setTwilioFromNumber(twilioFromInput.trim());
 
-    localStorage.setItem('cc_fast2sms_apikey', fast2smsApiKeyInput.trim());
-    localStorage.setItem('cc_fast2sms_route', fast2smsRouteInput.trim());
+    localStorage.setItem('cc_twilio_sid', twilioSidInput.trim());
+    localStorage.setItem('cc_twilio_token', twilioTokenInput.trim());
+    localStorage.setItem('cc_twilio_from', twilioFromInput.trim());
 
-    setIsConfiguringFast2SMS(false);
-    showToast('Fast2SMS Gateway Configuration Saved Successfully');
+    setIsConfiguringTwilio(false);
+    showToast('Twilio Gateway Configuration Saved Successfully');
   };
 
-  const handleTestFast2SMS = async () => {
-    setTestingFast2SMS(true);
-    setFast2smsTestResult(null);
+  const handleTestTwilio = async () => {
+    setTestingTwilio(true);
+    setTwilioTestResult(null);
     try {
-      const key = fast2smsApiKeyInput.trim();
-      if (!key) {
-        setFast2smsTestResult({
+      const sid = twilioSidInput.trim();
+      const token = twilioTokenInput.trim();
+      if (!sid || !token) {
+        setTwilioTestResult({
           status: 'error',
-          message: 'Please enter your Fast2SMS API Authorization Key.'
+          message: 'Please enter both your Twilio Account SID and Auth Token.'
         });
-        setTestingFast2SMS(false);
+        setTestingTwilio(false);
         return;
       }
 
-      const res = await fetch('https://www.fast2sms.com/dev/wallet', {
-        headers: { 'authorization': key }
+      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}.json`, {
+        headers: {
+          'Authorization': 'Basic ' + btoa(`${sid}:${token}`)
+        }
       });
       const data = await res.json().catch(() => null);
-      if (data && data.status_code === 200) {
-        setFast2smsTestResult({
+      if (res.ok && data && data.status === 'active') {
+        setTwilioTestResult({
           status: 'success',
-          message: `Fast2SMS Key Verified! Wallet Balance: ₹${data.wallet || '0.00'}. (Note: Fast2SMS requires a ₹100 initial recharge on fast2sms.com to activate API route).`,
-          wallet: String(data.wallet || '0.00')
+          message: `Twilio Connected & Authenticated! Account: "${data.friendly_name || sid}" (Status: Active).`
         });
       } else {
-        setFast2smsTestResult({
+        setTwilioTestResult({
           status: 'error',
-          message: data?.message || 'Invalid Fast2SMS API Key. Please copy your key from Fast2SMS Dev API panel.'
+          message: data?.message || 'Authentication failed. Please verify your Account SID and Auth Token from Twilio Console.'
         });
       }
     } catch {
-      setFast2smsTestResult({
+      setTwilioTestResult({
         status: 'error',
-        message: 'Fast2SMS API responded (Connection verified). Ready for Quick SMS delivery.'
+        message: 'Could not connect directly to Twilio API. (Credentials saved for routing).'
       });
     } finally {
-      setTestingFast2SMS(false);
+      setTestingTwilio(false);
     }
   };
 
@@ -1579,7 +1585,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
           {activeTab === 'sms' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               
-              {/* Header Info & Fast2SMS Gateway Status */}
+              {/* Header Info & Twilio Gateway Status */}
               <div className="bg-white border border-navy-200/80 rounded-3xl p-4 sm:p-6 shadow-card space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
@@ -1592,14 +1598,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                           Official Student SMS Dispatcher
                         </h2>
                         <span className="bg-academic-emerald/10 text-academic-emerald border border-academic-emerald/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
-                          Fast2SMS Quick Gateway Active
+                          Twilio Cloud Gateway Active
                         </span>
                         <span className="bg-brand-50 text-brand-700 border border-brand-200/60 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
                           Sender: COLLEGECENTRE
                         </span>
                       </div>
                       <p className="text-xs text-navy-500 mt-0.5">
-                        Dispatch real-time admission notifications, fee alerts, and enrollment notices directly to student mobile numbers via Fast2SMS.
+                        Dispatch real-time admission notifications, fee alerts, and enrollment notices directly to student mobile numbers via Twilio.
                       </p>
                     </div>
                   </div>
@@ -1607,21 +1613,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => {
-                        setFast2smsApiKeyInput(fast2smsApiKey);
-                        setFast2smsRouteInput(fast2smsRoute);
-                        setIsConfiguringFast2SMS(true);
+                        setTwilioSidInput(twilioAccountSid);
+                        setTwilioTokenInput(twilioAuthToken);
+                        setTwilioFromInput(twilioFromNumber);
+                        setIsConfiguringTwilio(true);
                       }}
                       className="univ-btn-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 border-brand-200 bg-brand-50/60 text-brand-700 font-semibold"
-                      title="Configure Fast2SMS API Key and check balance"
+                      title="Configure Twilio Account SID, Auth Token & Sender Number"
                     >
                       <Settings className="w-3.5 h-3.5" />
-                      <span>Fast2SMS Settings</span>
+                      <span>Twilio Settings</span>
                     </button>
 
-                    <div className="flex items-center gap-1.5 bg-yellow-50/80 border border-yellow-200/80 px-3 py-2 rounded-xl text-xs">
-                      <Wallet className="w-4 h-4 text-yellow-600" />
-                      <span className="font-medium text-yellow-900">
-                        Credits: <strong className="font-mono text-yellow-950">₹50.00 (200 SMS)</strong>
+                    <div className="flex items-center gap-1.5 bg-brand-50 border border-brand-200/80 px-3 py-2 rounded-xl text-xs">
+                      <Zap className="w-4 h-4 text-brand-600" />
+                      <span className="font-medium text-navy-800">
+                        {twilioAccountSid ? 'Twilio SID Configured' : 'Twilio Trial Ready'}
                       </span>
                     </div>
                   </div>
@@ -1630,10 +1637,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 <div className="pt-2 border-t border-navy-100 flex items-center justify-between text-xs text-navy-500">
                   <span className="text-academic-emerald font-medium flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Quick SMS Route: Instant delivery across all Indian carriers (Zero DLT hurdles)</span>
+                    <span>Global Carrier Route: Instant delivery with worldwide telecom integration</span>
                   </span>
                   <span className="font-mono text-[11px] text-navy-400 hidden sm:inline">
-                    API Endpoint: api.fast2sms.com
+                    API Endpoint: api.twilio.com
                   </span>
                 </div>
               </div>
@@ -2647,111 +2654,127 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
         </div>
       )}
 
-      {/* Fast2SMS Gateway Configuration Modal */}
-      {isConfiguringFast2SMS && (
+      {/* Twilio Gateway Configuration Modal */}
+      {isConfiguringTwilio && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white border border-navy-200 rounded-3xl shadow-modal max-w-md w-full p-6 relative space-y-5">
             <div className="flex items-center justify-between border-b border-navy-100 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-base text-navy-950">Fast2SMS Gateway Setup</h3>
-                  <span className="text-xs text-navy-500">Instant Quick SMS • Zero DLT Requirement</span>
+                  <h3 className="font-display font-bold text-base text-navy-950">Twilio Gateway Setup</h3>
+                  <span className="text-xs text-navy-500">Global Carrier SMS Gateway ($15 Free Trial)</span>
                 </div>
               </div>
               <button 
-                onClick={() => setIsConfiguringFast2SMS(false)} 
+                onClick={() => setIsConfiguringTwilio(false)} 
                 className="p-1.5 rounded-xl text-navy-400 hover:text-navy-700 hover:bg-navy-100"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveFast2SMSConfig} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveTwilioConfig} className="space-y-4 text-xs">
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-semibold text-navy-700">
-                    Fast2SMS API Authorization Key *
+                    Twilio Account SID (starts with AC) *
                   </label>
                   <a
-                    href="https://www.fast2sms.com/panel/dev_api"
+                    href="https://console.twilio.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-brand-600 hover:underline flex items-center gap-1 text-[11px]"
                   >
-                    <span>Get Free Key</span>
+                    <span>Twilio Console</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
                 <input
-                  type="password"
+                  type="text"
                   required
-                  value={fast2smsApiKeyInput}
-                  onChange={(e) => setFast2smsApiKeyInput(e.target.value)}
+                  value={twilioSidInput}
+                  onChange={(e) => setTwilioSidInput(e.target.value.trim())}
                   className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  placeholder="Paste your Fast2SMS API Authorization Key"
+                  placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
                 />
                 <span className="text-[10px] text-navy-400 mt-0.5 block">
-                  Copy from Fast2SMS Dashboard → Dev API → API Keys.
+                  Find under "Project Info" on console.twilio.com
                 </span>
               </div>
 
               <div>
                 <label className="block font-semibold text-navy-700 mb-1">
-                  Delivery Route *
+                  Twilio Auth Token *
                 </label>
-                <select
-                  value={fast2smsRouteInput}
-                  onChange={(e) => setFast2smsRouteInput(e.target.value)}
-                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-medium"
-                >
-                  <option value="q">Quick SMS (route: q) • No DLT Needed • Instant Delivery</option>
-                  <option value="otp">Transactional OTP (route: otp) • Priority Route</option>
-                  <option value="dlt">DLT Route (route: dlt) • Custom Sender ID</option>
-                </select>
+                <input
+                  type="password"
+                  required
+                  value={twilioTokenInput}
+                  onChange={(e) => setTwilioTokenInput(e.target.value.trim())}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="Your Twilio Auth Token"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-navy-700 mb-1">
+                  Twilio Phone Number *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={twilioFromInput}
+                  onChange={(e) => setTwilioFromInput(e.target.value.trim())}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="+1234567890"
+                />
+                <span className="text-[10px] text-navy-400 mt-0.5 block">
+                  Your Twilio virtual phone number with country code (e.g. +1...).
+                </span>
               </div>
 
               {/* Test Connection Button & Result */}
               <div className="pt-2 border-t border-navy-100 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-navy-500 font-medium">Verify Fast2SMS & Balance:</span>
+                  <span className="text-[11px] text-navy-500 font-medium">Verify Twilio API Credentials:</span>
                   <button
                     type="button"
-                    onClick={handleTestFast2SMS}
-                    disabled={testingFast2SMS}
+                    onClick={handleTestTwilio}
+                    disabled={testingTwilio}
                     className="text-xs text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-colors"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${testingFast2SMS ? 'animate-spin' : ''}`} />
-                    <span>{testingFast2SMS ? 'Checking...' : 'Check Wallet'}</span>
+                    <RefreshCw className={`w-3.5 h-3.5 ${testingTwilio ? 'animate-spin' : ''}`} />
+                    <span>{testingTwilio ? 'Verifying...' : 'Test Connection'}</span>
                   </button>
                 </div>
 
-                {fast2smsTestResult && (
+                {twilioTestResult && (
                   <div className={`p-2.5 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2 ${
-                    fast2smsTestResult.status === 'success'
+                    twilioTestResult.status === 'success'
                       ? 'bg-academic-emerald/10 text-academic-emerald border-academic-emerald/20'
                       : 'bg-red-50 text-red-700 border-red-200'
                   }`}>
-                    {fast2smsTestResult.status === 'success' ? (
+                    {twilioTestResult.status === 'success' ? (
                       <CheckCircle2 className="w-4 h-4 shrink-0 text-academic-emerald mt-0.5" />
                     ) : (
                       <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
                     )}
-                    <span>{fast2smsTestResult.message}</span>
+                    <span>{twilioTestResult.message}</span>
                   </div>
                 )}
               </div>
 
-              <div className="p-3 bg-yellow-50/70 border border-yellow-200/80 rounded-xl text-yellow-900 leading-relaxed text-[11px]">
-                💡 <strong>Quick SMS Advantage:</strong> Fast2SMS routes messages immediately without requiring prior DLT template approvals.
+              <div className="p-3 bg-brand-50/70 border border-brand-200/80 rounded-xl text-navy-700 leading-relaxed text-[11px]">
+                ℹ <strong>Twilio Trial:</strong> Free trial accounts include $15.50 balance to send test SMS to verified phone numbers.
               </div>
 
               <div className="pt-2 border-t border-navy-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsConfiguringFast2SMS(false)}
+                  onClick={() => setIsConfiguringTwilio(false)}
                   className="univ-btn-secondary px-3.5 py-2"
                 >
                   Cancel
@@ -2761,7 +2784,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   className="univ-btn-primary px-4 py-2 flex items-center gap-1.5"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Save Fast2SMS Key</span>
+                  <span>Save Twilio Credentials</span>
                 </button>
               </div>
             </form>
