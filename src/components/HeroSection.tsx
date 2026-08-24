@@ -5,10 +5,9 @@ interface HeroSectionProps {
   onOpenDemo: () => void;
   onScrollTo: (id: string) => void;
   onOpenDataCollection?: () => void;
-  onOpenAdmin?: () => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection, onOpenAdmin }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection }) => {
   const trustedUniversities = [
     'National Institutes of Technology',
     'State Autonomous Universities',
@@ -85,17 +84,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo
                 className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-brand-50 text-brand-700 hover:bg-brand-100 font-semibold text-sm border border-brand-200/80 transition-all duration-150 flex items-center justify-center gap-2"
               >
                 <UserPlus className="w-4 h-4 text-brand-600" />
-                <span>Student Admission Form</span>
-              </button>
-            )}
-
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-navy-50 text-navy-800 hover:bg-navy-100 font-semibold text-sm border border-navy-200 transition-all duration-150 flex items-center justify-center gap-2 shadow-xs"
-              >
-                <Users className="w-4 h-4 text-brand-600" />
-                <span>View Student Records</span>
+                <span>Student Admission Portal</span>
               </button>
             )}
 

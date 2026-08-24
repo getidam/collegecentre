@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { TopStrip } from './components/TopStrip';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
@@ -111,7 +111,6 @@ export function App() {
     return (
       <StudentDataCollection 
         onBackToHome={backToLandingPage} 
-        onOpenAdmin={openAdminPage}
       />
     );
   }
@@ -126,7 +125,7 @@ export function App() {
     );
   }
 
-  // OTHERWISE: Render the Landing Page
+  // OTHERWISE: Render the Minimal, Serious University Landing Page
   return (
     <div className="min-h-screen bg-white text-navy-900 flex flex-col font-sans selection:bg-brand-600 selection:text-white">
       <TopStrip onOpenDemo={() => setDemoModalOpen(true)} />
@@ -135,7 +134,6 @@ export function App() {
         onOpenDemo={() => setDemoModalOpen(true)}
         onScrollTo={scrollToSection}
         onOpenDataCollection={openDataCollectionPage}
-        onOpenAdmin={openAdminPage}
       />
 
       <main className="flex-grow">
@@ -143,23 +141,16 @@ export function App() {
           onOpenDemo={() => setDemoModalOpen(true)}
           onScrollTo={scrollToSection}
           onOpenDataCollection={openDataCollectionPage}
-          onOpenAdmin={openAdminPage}
         />
-        <MarqueeTicker />
-        <StudentCardGenerator />
-        <VisionSection />
-        <ManifestoSection />
         <LiveMetricsSection />
+        <StudentCardGenerator />
         <ModulesSection />
-        <ChecklistSection onOpenDemo={() => setDemoModalOpen(true)} />
-        <TestimonialsSection />
-        <FAQSection />
+        <VisionSection />
       </main>
 
       <Footer
         onScrollTo={scrollToSection}
         onOpenDemo={() => setDemoModalOpen(true)}
-        onOpenAdmin={openAdminPage}
         onOpenDataCollection={openDataCollectionPage}
       />
 

@@ -4,11 +4,10 @@ import { ArrowUp, Code2, Shield, Users, UserCheck } from 'lucide-react';
 interface FooterProps {
   onScrollTo: (id: string) => void;
   onOpenDemo: () => void;
-  onOpenAdmin?: () => void;
   onOpenDataCollection?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo, onOpenAdmin, onOpenDataCollection }) => {
+export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo, onOpenDataCollection }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -28,13 +27,13 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo, onOpenAd
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            {onOpenAdmin && (
+            {onOpenDataCollection && (
               <button
-                onClick={onOpenAdmin}
+                onClick={onOpenDataCollection}
                 className="px-5 py-3.5 rounded-xl bg-navy-800/90 text-white hover:bg-navy-700 font-semibold text-sm border border-navy-700 transition-all shrink-0 flex items-center gap-2"
               >
-                <Users className="w-4 h-4 text-brand-300" />
-                <span>Registrar Data Directory</span>
+                <UserCheck className="w-4 h-4 text-brand-300" />
+                <span>Student Admission Portal</span>
               </button>
             )}
             <button
@@ -81,19 +80,11 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo, onOpenAd
               Core Portals
             </h4>
             <ul className="space-y-2 text-xs text-navy-300 font-normal">
-              {onOpenAdmin && (
-                <li>
-                  <button onClick={onOpenAdmin} className="hover:text-white text-brand-300 font-semibold flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>Registrar Student Directory</span>
-                  </button>
-                </li>
-              )}
               {onOpenDataCollection && (
                 <li>
                   <button onClick={onOpenDataCollection} className="hover:text-white flex items-center gap-1.5">
                     <UserCheck className="w-3.5 h-3.5" />
-                    <span>Student Admission Intake</span>
+                    <span>Student Admission Portal</span>
                   </button>
                 </li>
               )}

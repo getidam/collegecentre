@@ -1,24 +1,42 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
-  User, Phone, Upload, Users, ShieldCheck, 
+  User, Phone, Upload, ShieldCheck, 
   ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, 
-  Printer, RefreshCw, Mail, Lock, GraduationCap
+  Printer, RefreshCw, Mail, Lock, GraduationCap, MapPin
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { supabase } from '../lib/supabase';
+import type { FormFieldConfig } from './AdminPortal';
 
 interface StudentDataCollectionProps {
   onBackToHome?: () => void;
-  onOpenAdmin?: () => void;
 }
 
-export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ onBackToHome, onOpenAdmin }) => {
+const DEFAULT_FIELDS: FormFieldConfig[] = [
+  { id: 'f_name', label: 'Full Legal Name', name: 'fullName', type: 'text', placeholder: 'e.g. Rohan Vinod Kulkarni', required: true, section: 'personal', sort_order: 1, enabled: true },
+  { id: 'f_dob', label: 'Date of Birth', name: 'dob', type: 'date', placeholder: '', required: true, section: 'personal', sort_order: 2, enabled: true },
+  { id: 'f_gender', label: 'Gender', name: 'gender', type: 'select', options: ['Male', 'Female', 'Other'], required: true, section: 'personal', sort_order: 3, enabled: true },
+  { id: 'f_blood', label: 'Blood Group', name: 'bloodGroup', type: 'select', options: ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'], required: true, section: 'personal', sort_order: 4, enabled: true },
+  { id: 'f_program', label: 'Academic Discipline', name: 'degreeProgram', type: 'select', options: ['B.Tech - Computer Science & Engineering', 'B.Tech - Artificial Intelligence', 'B.Tech - Electronics & Comm', 'MBBS - Medicine & Surgery', 'B.A. LL.B (Honours)', 'MBA - Business Administration'], required: true, section: 'personal', sort_order: 5, enabled: true },
+  { id: 'f_phone', label: 'Student Phone Number', name: 'phone', type: 'tel', placeholder: 'e.g. 9876543210', required: true, section: 'contact', sort_order: 6, enabled: true },
+  { id: 'f_email', label: 'Student Email Address', name: 'email', type: 'email', placeholder: 'e.g. student@collegecentre.edu', required: true, section: 'contact', sort_order: 7, enabled: true },
+  { id: 'f_address', label: 'Permanent Address', name: 'address', type: 'textarea', placeholder: 'Flat No, Street, Locality', required: true, section: 'contact', sort_order: 8, enabled: true },
+  { id: 'f_city', label: 'City / District', name: 'city', type: 'text', placeholder: 'e.g. Bengaluru', required: true, section: 'contact', sort_order: 9, enabled: true },
+  { id: 'f_pincode', label: 'Postal PIN Code', name: 'pincode', type: 'text', placeholder: 'e.g. 560001', required: true, section: 'contact', sort_order: 10, enabled: true },
+  { id: 'f_gname', label: 'Guardian Full Name', name: 'guardianName', type: 'text', placeholder: 'e.g. Vinod S. Kulkarni', required: true, section: 'guardian', sort_order: 11, enabled: true },
+  { id: 'f_grel', label: 'Guardian Relationship', name: 'guardianRelation', type: 'select', options: ['Father', 'Mother', 'Legal Guardian'], required: true, section: 'guardian', sort_order: 12, enabled: true },
+  { id: 'f_gphone', label: 'Guardian Phone Number', name: 'guardianPhone', type: 'tel', placeholder: 'e.g. 9811122233', required: true, section: 'guardian', sort_order: 13, enabled: true },
+];
+
+export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ onBackToHome }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [applicationId, setApplicationId] = useState('');
+  const [fields, setFields] = useState<FormFieldConfig[]>(DEFAULT_FIELDS);
   const printRef = useRef<HTMLDivElement>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Record<string, any>>({
     fullName: '',
     dob: '',
     gender: 'Male',
@@ -37,6 +55,25 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchSchema = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('form_fields')
+          .select('*')
+          .eq('enabled', true)
+          .order('sort_order', { ascending: true });
+
+        if (!error && data && data.length > 0) {
+          setFields(data as FormFieldConfig[]);
+        }
+      } catch (err) {
+        console.error('Error loading dynamic fields:', err);
+      }
+    };
+    fetchSchema();
+  }, []);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -61,16 +98,16 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
   const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
     if (step === 1) {
-      if (!formData.fullName.trim()) newErrors.fullName = 'Full Legal Name is required';
+      if (!formData.fullName?.trim()) newErrors.fullName = 'Full Legal Name is required';
       if (!formData.dob) newErrors.dob = 'Date of birth is required';
       if (!formData.photoUrl) newErrors.photo = 'Student official photograph is required';
     } else if (step === 2) {
-      if (!formData.phone.trim() || formData.phone.length < 10) newErrors.phone = 'Valid 10-digit mobile number is required';
-      if (!formData.email.trim() || !formData.email.includes('@')) newErrors.email = 'Valid academic/personal email is required';
-      if (!formData.address.trim()) newErrors.address = 'Permanent residential address is required';
+      if (!formData.phone?.trim() || formData.phone.length < 10) newErrors.phone = 'Valid 10-digit mobile number is required';
+      if (!formData.email?.trim() || !formData.email.includes('@')) newErrors.email = 'Valid academic/personal email is required';
+      if (!formData.address?.trim()) newErrors.address = 'Permanent residential address is required';
     } else if (step === 3) {
-      if (!formData.guardianName.trim()) newErrors.guardianName = 'Guardian full name is required';
-      if (!formData.guardianPhone.trim() || formData.guardianPhone.length < 10) newErrors.guardianPhone = 'Valid 10-digit guardian mobile number is required';
+      if (!formData.guardianName?.trim()) newErrors.guardianName = 'Guardian full name is required';
+      if (!formData.guardianPhone?.trim() || formData.guardianPhone.length < 10) newErrors.guardianPhone = 'Valid 10-digit guardian mobile number is required';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -88,7 +125,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
       return;
@@ -97,40 +134,49 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
     const autoId = 'CC-ADM-' + Math.floor(100000 + Math.random() * 900000);
     setApplicationId(autoId);
 
-    // Save record to local registry database
-    try {
-      const now = new Date();
-      const formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      const newRecord = {
-        id: autoId,
-        fullName: formData.fullName,
-        dob: formData.dob,
-        gender: formData.gender,
-        bloodGroup: formData.bloodGroup,
-        photoUrl: formData.photoUrl,
-        phone: formData.phone,
-        email: formData.email,
-        address: formData.address,
-        city: formData.city || 'Campus Registered',
-        pincode: formData.pincode || '—',
-        guardianName: formData.guardianName,
-        guardianRelation: formData.guardianRelation,
-        guardianPhone: formData.guardianPhone,
-        degreeProgram: formData.degreeProgram,
-        admissionYear: formData.admissionYear,
-        submissionDate: formattedDate,
-        status: 'Verified',
-      };
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    const newRecord = {
+      id: autoId,
+      full_name: formData.fullName || '',
+      dob: formData.dob || '',
+      gender: formData.gender || 'Male',
+      blood_group: formData.bloodGroup || 'O+',
+      photo_url: formData.photoUrl || '',
+      phone: formData.phone || '',
+      email: formData.email || '',
+      address: formData.address || '',
+      city: formData.city || 'Campus Registered',
+      pincode: formData.pincode || '—',
+      guardian_name: formData.guardianName || '',
+      guardian_relation: formData.guardianRelation || 'Guardian',
+      guardian_phone: formData.guardianPhone || '',
+      degree_program: formData.degreeProgram || 'B.Tech - Computer Science & Engineering',
+      admission_year: formData.admissionYear || '2026',
+      submission_date: formattedDate,
+      status: 'Pending Review',
+    };
 
+    try {
+      // Save directly to Supabase database
+      const { error: dbError } = await supabase.from('students').insert(newRecord);
+      if (dbError) {
+        console.warn('Supabase DB fallback to local storage:', dbError);
+      }
+    } catch (err) {
+      console.error('Failed to save to Supabase:', err);
+    }
+
+    // Also mirror to localStorage
+    try {
       const existing = localStorage.getItem('cc_student_records');
       let recordsList = [];
-      if (existing) {
-        recordsList = JSON.parse(existing);
-      }
+      if (existing) recordsList = JSON.parse(existing);
       recordsList.unshift(newRecord);
       localStorage.setItem('cc_student_records', JSON.stringify(recordsList));
-    } catch (err) {
-      console.error('Failed to save to local storage', err);
+    } catch {
+      // ignore
     }
 
     setTimeout(() => {
@@ -170,15 +216,6 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-200/80 shadow-xs transition-colors"
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span>Registrar Directory</span>
-              </button>
-            )}
             <div className="hidden md:flex items-center gap-1.5 text-xs text-navy-600 font-medium bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200/60">
               <Lock className="w-3.5 h-3.5 text-academic-emerald" />
               <span>DPDPA 2023 Encrypted</span>

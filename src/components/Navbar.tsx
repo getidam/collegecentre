@@ -5,10 +5,9 @@ interface NavbarProps {
   onOpenDemo: () => void;
   onScrollTo: (id: string) => void;
   onOpenDataCollection: () => void;
-  onOpenAdmin?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection, onOpenAdmin }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modulesDropdownOpen, setModulesDropdownOpen] = useState(false);
 
@@ -137,29 +136,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenDa
           </nav>
 
           {/* Action CTAs */}
-          <div className="hidden sm:flex items-center gap-2">
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="univ-btn-secondary text-xs px-3 py-2 bg-navy-50/60 border-navy-200 text-navy-800 hover:bg-navy-100"
-                title="View student admission database & records"
-              >
-                <Users className="w-3.5 h-3.5 text-brand-600" />
-                <span>Student Records</span>
-              </button>
-            )}
-
+          <div className="hidden sm:flex items-center gap-2.5">
             <button
               onClick={onOpenDataCollection}
-              className="univ-btn-secondary text-xs px-3 py-2"
+              className="univ-btn-secondary text-xs px-3.5 py-2"
             >
               <UserCheck className="w-3.5 h-3.5 text-brand-600" />
-              <span>Admission Form</span>
+              <span>Student Admission Portal</span>
             </button>
 
             <button
               onClick={onOpenDemo}
-              className="univ-btn-primary text-xs px-3.5 py-2"
+              className="univ-btn-primary text-xs px-4 py-2"
             >
               <span>Deploy Campus</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -167,24 +155,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenDa
           </div>
 
           {/* Mobile buttons */}
-          <div className="flex items-center gap-1.5 lg:hidden">
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="text-xs font-semibold text-navy-700 bg-navy-100/80 px-2 py-1.5 rounded-lg flex items-center gap-1"
-                title="View Student Records"
-              >
-                <Users className="w-3.5 h-3.5 text-brand-600" />
-                <span>Data</span>
-              </button>
-            )}
-
+          <div className="flex items-center gap-2 lg:hidden">
             <button
               onClick={onOpenDataCollection}
-              className="text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-200 px-2 py-1.5 rounded-lg flex items-center gap-1"
+              className="text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
             >
               <UserCheck className="w-3.5 h-3.5" />
-              <span>Form</span>
+              <span>Admission</span>
             </button>
 
             <button
@@ -203,43 +180,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenDa
         <div className="fixed inset-x-0 top-16 bottom-0 z-50 bg-navy-950/40 backdrop-blur-sm lg:hidden animate-in fade-in duration-200">
           <div className="bg-white border-b border-navy-200 px-4 pt-4 pb-8 space-y-3.5 max-h-[calc(100vh-4rem)] overflow-y-auto shadow-modal">
             
-            {/* View Student Records Button in Mobile Drawer */}
-            {onOpenAdmin && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenAdmin();
-                }}
-                className="w-full text-left p-3 rounded-xl bg-navy-50 border border-navy-200 text-navy-900 flex items-center justify-between shadow-xs"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-navy-900 text-white flex items-center justify-center">
-                    <Users className="w-4 h-4 text-brand-300" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm text-navy-950">View Registered Student Data</div>
-                    <div className="text-[11px] text-navy-500">Live database directory & dossiers</div>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-brand-50 text-brand-700 border border-brand-200 px-2 py-0.5 rounded-full font-bold">Admin</span>
-              </button>
-            )}
-
             {/* Student Admission Form */}
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenDataCollection();
               }}
-              className="w-full text-left p-3 rounded-xl bg-brand-50 border border-brand-200/80 text-brand-800 flex items-center justify-between shadow-xs"
+              className="w-full text-left p-3.5 rounded-xl bg-brand-50 border border-brand-200/80 text-brand-800 flex items-center justify-between shadow-xs"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center">
+                <div className="w-9 h-9 rounded-lg bg-brand-600 text-white flex items-center justify-center">
                   <UserCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="font-semibold text-sm text-navy-950">Student Admission Form</div>
-                  <div className="text-[11px] text-brand-600">Submit student registration details</div>
+                  <div className="font-semibold text-sm text-navy-950">Student Admission Portal</div>
+                  <div className="text-[11px] text-brand-600">Central intake data submission</div>
                 </div>
               </div>
               <span className="text-[10px] bg-brand-200/70 text-brand-800 px-2 py-0.5 rounded-full font-bold">Portal</span>
