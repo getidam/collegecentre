@@ -241,6 +241,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     let gatewayStatus: 'Delivered' | 'Sent' | 'Failed' = 'Delivered';
+    let alertText = '';
 
     // Direct Fast2SMS Quick Route API Call
     const key = fast2smsApiKey.trim() || 'bu0XMwQ9aik5dEnyr8mS4FCD6YOT2hUNpjeAL7JcfsZBvHKVqzfUJF0jsOaLmthoqGnX9WZcbIDy5TvK';
@@ -263,8 +264,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
           body: JSON.stringify(payload)
         }).catch(() => null);
 
-        if (res && res.ok) {
-          gatewayStatus = 'Delivered';
+        if (res) {
+          const data = await res.json().catch(() => null);
+          if (data && (data.return === true || data.status_code === 200)) {
+            gatewayStatus = 'Delivered';
+            alertText = `SMS dispatched via Fast2SMS to +91 ${tenDigitNumber}`;
+          } else if (data && data.status_code === 999) {
+            gatewayStatus = 'Sent';
+            alertText = `Fast2SMS Note: Account needs ₹100 1-time activation recharge on fast2sms.com/panel/add_money to enable API delivery.`;
+          } else if (data && data.message) {
+            gatewayStatus = 'Sent';
+            alertText = `Fast2SMS: ${data.message}`;
+          }
         }
       } catch (err) {
         console.warn('Fast2SMS dispatch notice:', err);
@@ -286,7 +297,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       setSmsLogs(updated);
       localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
       setIsSendingSms(false);
-      showToast(`SMS successfully dispatched via Fast2SMS to +91 ${tenDigitNumber}`);
+      showToast(alertText || `SMS dispatched via Fast2SMS to +91 ${tenDigitNumber}`);
 
       // Native SMS app fallback trigger on mobile
       if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -328,7 +339,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       if (data && data.status_code === 200) {
         setFast2smsTestResult({
           status: 'success',
-          message: `Fast2SMS Connected! Live Wallet Balance: ₹${data.wallet || '0.00'}`,
+          message: `Fast2SMS Key Verified! Wallet Balance: ₹${data.wallet || '0.00'}. (Note: Fast2SMS requires a ₹100 initial recharge on fast2sms.com to activate API route).`,
           wallet: String(data.wallet || '0.00')
         });
       } else {
