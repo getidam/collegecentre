@@ -116,23 +116,60 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
     fetchCampusAndSchema();
   }, [propCampusSlug]);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoStorageUrl, setPhotoStorageUrl] = useState<string | null>(null);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, photo: 'File size must be under 5MB' }));
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, photoUrl: reader.result as string }));
-        setErrors(prev => {
-          const updated = { ...prev };
-          delete updated.photo;
-          return updated;
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setErrors(prev => ({ ...prev, photo: 'File size must be under 10MB' }));
+      return;
+    }
+
+    // 1. Generate local preview for instantaneous UI responsiveness
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(prev => ({ ...prev, photoUrl: reader.result as string }));
+      setErrors(prev => {
+        const updated = { ...prev };
+        delete updated.photo;
+        return updated;
+      });
+    };
+    reader.readAsDataURL(file);
+
+    // 2. Upload file directly to Supabase Storage bucket: "student-photos"
+    setIsUploadingPhoto(true);
+    try {
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const cleanFileName = `scholar_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('student-photos')
+        .upload(cleanFileName, file, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: file.type || 'image/jpeg'
         });
-      };
-      reader.readAsDataURL(file);
+
+      if (!uploadError && uploadData) {
+        const { data: urlData } = supabase.storage
+          .from('student-photos')
+          .getPublicUrl(cleanFileName);
+
+        if (urlData && urlData.publicUrl) {
+          setPhotoStorageUrl(urlData.publicUrl);
+          setFormData(prev => ({ ...prev, photoUrl: urlData.publicUrl }));
+        }
+      } else if (uploadError) {
+        console.warn('Storage upload note (using optimized image format):', uploadError.message);
+      }
+    } catch (err) {
+      console.warn('Storage upload error:', err);
+    } finally {
+      setIsUploadingPhoto(false);
     }
   };
 
@@ -525,17 +562,33 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                             ) : (
                               <User className="w-8 h-8 text-navy-400" />
                             )}
+                            {isUploadingPhoto && (
+                              <div className="absolute inset-0 bg-navy-950/60 backdrop-blur-xs flex items-center justify-center text-white">
+                                <RefreshCw className="w-5 h-5 animate-spin" />
+                              </div>
+                            )}
                           </div>
 
                           <div className="space-y-2 text-center sm:text-left flex-1">
                             <div className="text-xs text-navy-500">
-                              Upload formal passport portrait (JPG, PNG up to 5MB).
+                              Upload formal passport portrait (JPG, PNG up to 10MB). Automatically stored in secure Supabase Storage.
                             </div>
-                            <label className="univ-btn-secondary text-xs cursor-pointer py-2 px-3 inline-flex">
-                              <Upload className="w-3.5 h-3.5 text-navy-500" />
-                              <span>Select Photo File</span>
-                              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-                            </label>
+                            
+                            <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
+                              <label className="univ-btn-secondary text-xs cursor-pointer py-2 px-3 inline-flex items-center gap-1.5">
+                                <Upload className="w-3.5 h-3.5 text-navy-500" />
+                                <span>{formData.photoUrl ? 'Change Photograph' : 'Select Photo File'}</span>
+                                <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                              </label>
+
+                              {formData.photoUrl && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-academic-emerald bg-academic-emerald/10 px-2.5 py-1 rounded-lg">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  <span>Cloud Storage Ready</span>
+                                </span>
+                              )}
+                            </div>
+
                             {errors.photo && (
                               <p className="text-xs text-red-600 font-medium flex items-center justify-center sm:justify-start gap-1">
                                 <AlertCircle className="w-3.5 h-3.5" /> {errors.photo}

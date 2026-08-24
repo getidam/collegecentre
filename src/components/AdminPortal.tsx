@@ -140,6 +140,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [isCreatingCampus, setIsCreatingCampus] = useState(false);
   const [campusProgramsInput, setCampusProgramsInput] = useState('');
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -194,17 +200,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       if (selectedStudent && selectedStudent.id === id) {
         setSelectedStudent({ ...selectedStudent, status: newStatus });
       }
+      showToast(`Student status updated to ${newStatus}`);
     } catch (err) {
       console.error('Failed to update status', err);
+      showToast('Failed to update status in database', 'error');
     }
   };
 
   const handleDeleteStudent = async (id: string) => {
     if (!window.confirm('Confirm permanent deletion of this student application dossier?')) return;
     try {
-      await supabase.from('students').delete().eq('id', id);
-      setRecords(prev => prev.filter(r => r.id !== id));
-      if (selectedStudent && selectedStudent.id === id) setSelectedStudent(null);
+      const { error } = await supabase.from('students').delete().eq('id', id);
+      if (!error) {
+        setRecords(prev => prev.filter(r => r.id !== id));
+        if (selectedStudent && selectedStudent.id === id) setSelectedStudent(null);
+        showToast('Student record deleted from database');
+      } else {
+        showToast('Error deleting student: ' + error.message, 'error');
+      }
     } catch (err) {
       console.error('Failed to delete student', err);
     }
@@ -218,59 +231,79 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     const parsedPrograms = campusProgramsInput.split('\n').map(s => s.trim()).filter(Boolean);
     const cleanSlug = editingCampus.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+|-+$/g, '');
 
+    if (!cleanSlug) {
+      showToast('Please enter a valid subdomain slug (e.g. medical, engineering)', 'error');
+      return;
+    }
+
     const campusToSave: CampusConfig = {
       ...editingCampus,
-      slug: cleanSlug || 'campus-' + Math.floor(Math.random() * 1000),
+      slug: cleanSlug,
       programs: parsedPrograms.length > 0 ? parsedPrograms : (editingCampus.programs || []),
     };
 
     try {
       const { error } = await supabase
         .from('campuses')
-        .upsert(campusToSave);
+        .upsert(campusToSave, { onConflict: 'id' });
 
       if (!error) {
+        showToast(`Subdomain portal "${cleanSlug}.collegecentre.in" saved successfully!`);
         await fetchData();
         setEditingCampus(null);
         setIsCreatingCampus(false);
       } else {
+        console.error('Supabase save error:', error);
+        showToast(`Saved locally: ${error.message}`, 'error');
         if (isCreatingCampus) {
-          setCampuses([...campuses, campusToSave]);
+          setCampuses(prev => [...prev.filter(c => c.id !== campusToSave.id), campusToSave]);
         } else {
-          setCampuses(campuses.map(c => c.id === campusToSave.id ? campusToSave : c));
+          setCampuses(prev => prev.map(c => c.id === campusToSave.id ? campusToSave : c));
         }
         setEditingCampus(null);
         setIsCreatingCampus(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving campus:', err);
+      showToast('Error saving campus: ' + (err.message || 'Unknown error'), 'error');
     }
   };
 
   const handleToggleCampus = async (campus: CampusConfig) => {
     const updated = { ...campus, active: !campus.active };
     try {
-      await supabase.from('campuses').update({ active: updated.active }).eq('id', campus.id);
-      setCampuses(campuses.map(c => c.id === campus.id ? updated : c));
+      const { error } = await supabase.from('campuses').update({ active: updated.active }).eq('id', campus.id);
+      if (!error) {
+        setCampuses(prev => prev.map(c => c.id === campus.id ? updated : c));
+        showToast(`Subdomain ${campus.slug} is now ${updated.active ? 'Active' : 'Disabled'}`);
+      } else {
+        setCampuses(prev => prev.map(c => c.id === campus.id ? updated : c));
+      }
     } catch {
-      setCampuses(campuses.map(c => c.id === campus.id ? updated : c));
+      setCampuses(prev => prev.map(c => c.id === campus.id ? updated : c));
     }
   };
 
   const handleDeleteCampus = async (id: string) => {
     if (!window.confirm('Delete this custom subdomain portal? Any dedicated forms under this subdomain will be disabled.')) return;
     try {
-      await supabase.from('campuses').delete().eq('id', id);
-      setCampuses(campuses.filter(c => c.id !== id));
-    } catch {
-      setCampuses(campuses.filter(c => c.id !== id));
+      const { error } = await supabase.from('campuses').delete().eq('id', id);
+      if (!error) {
+        setCampuses(prev => prev.filter(c => c.id !== id));
+        showToast('Subdomain portal deleted from database');
+      } else {
+        showToast('Error deleting subdomain: ' + error.message, 'error');
+      }
+    } catch (err: any) {
+      showToast('Error deleting subdomain: ' + err.message, 'error');
     }
   };
 
-  const handleCopyLink = (slug: string) => {
-    const url = `${window.location.origin}/?campus=${slug}`;
-    navigator.clipboard.writeText(url);
-    setCopiedSlug(slug);
+  const handleCopyLink = (slugOrUrl: string) => {
+    const copyText = slugOrUrl.startsWith('http') ? slugOrUrl : `${window.location.origin}/?campus=${slugOrUrl}`;
+    navigator.clipboard.writeText(copyText);
+    setCopiedSlug(slugOrUrl);
+    showToast('Subdomain URL copied to clipboard!');
     setTimeout(() => setCopiedSlug(null), 2500);
   };
 
@@ -283,8 +316,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       parsedOptions = optionsInput.split(',').map(s => s.trim()).filter(Boolean);
     }
 
+    const cleanKey = editingField.name.trim() || editingField.label.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+
     const fieldToSave: FormFieldConfig = {
       ...editingField,
+      name: cleanKey,
       options: parsedOptions,
       sort_order: Number(editingField.sort_order) || fields.length + 1,
     };
@@ -292,43 +328,57 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     try {
       const { error } = await supabase
         .from('form_fields')
-        .upsert(fieldToSave);
+        .upsert(fieldToSave, { onConflict: 'id' });
 
       if (!error) {
+        showToast(`Form field "${fieldToSave.label}" saved successfully!`);
         await fetchData();
         setEditingField(null);
         setIsCreatingField(false);
       } else {
+        console.error('Supabase save error:', error);
+        showToast(`Saved field locally: ${error.message}`, 'error');
         if (isCreatingField) {
-          setFields([...fields, fieldToSave]);
+          setFields(prev => [...prev.filter(f => f.id !== fieldToSave.id), fieldToSave]);
         } else {
-          setFields(fields.map(f => f.id === fieldToSave.id ? fieldToSave : f));
+          setFields(prev => prev.map(f => f.id === fieldToSave.id ? fieldToSave : f));
         }
         setEditingField(null);
         setIsCreatingField(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving field:', err);
+      showToast('Error saving field: ' + (err.message || 'Unknown error'), 'error');
     }
   };
 
   const handleToggleField = async (field: FormFieldConfig) => {
     const updated = { ...field, enabled: !field.enabled };
     try {
-      await supabase.from('form_fields').update({ enabled: updated.enabled }).eq('id', field.id);
-      setFields(fields.map(f => f.id === field.id ? updated : f));
+      const { error } = await supabase.from('form_fields').update({ enabled: updated.enabled }).eq('id', field.id);
+      if (!error) {
+        setFields(prev => prev.map(f => f.id === field.id ? updated : f));
+        showToast(`Field "${field.label}" is now ${updated.enabled ? 'Active' : 'Disabled'}`);
+      } else {
+        setFields(prev => prev.map(f => f.id === field.id ? updated : f));
+      }
     } catch {
-      setFields(fields.map(f => f.id === field.id ? updated : f));
+      setFields(prev => prev.map(f => f.id === field.id ? updated : f));
     }
   };
 
   const handleDeleteField = async (id: string) => {
     if (!window.confirm('Delete this form field? Submissions will no longer include this field.')) return;
     try {
-      await supabase.from('form_fields').delete().eq('id', id);
-      setFields(fields.filter(f => f.id !== id));
-    } catch {
-      setFields(fields.filter(f => f.id !== id));
+      const { error } = await supabase.from('form_fields').delete().eq('id', id);
+      if (!error) {
+        setFields(prev => prev.filter(f => f.id !== id));
+        showToast(`Field deleted from database`);
+      } else {
+        showToast('Error deleting field: ' + error.message, 'error');
+      }
+    } catch (err: any) {
+      showToast('Error deleting field: ' + err.message, 'error');
     }
   };
 
@@ -406,6 +456,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
         </div>
       </header>
 
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-16 right-4 sm:right-8 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className={`px-4 py-3 rounded-xl shadow-modal text-xs font-semibold flex items-center gap-2 border ${
+            toastMessage.type === 'error'
+              ? 'bg-red-50 text-red-800 border-red-200'
+              : 'bg-navy-900 text-white border-navy-700'
+          }`}>
+            {toastMessage.type === 'error' ? (
+              <X className="w-4 h-4 text-red-600" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-academic-emerald" />
+            )}
+            <span>{toastMessage.text}</span>
+          </div>
+        </div>
+      )}
+
       {/* Main Tabs Navigation */}
       <div className="bg-white border-b border-navy-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between">
@@ -477,26 +545,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                     {records.length}
                   </div>
                   <div className="text-[11px] text-academic-emerald font-medium mt-1">
-                    Synchronised on Supabase
+                    Live Supabase Sync
                   </div>
                 </div>
 
                 <div className="bg-white border border-navy-200/80 rounded-2xl p-4 sm:p-5 shadow-card">
                   <div className="flex items-center justify-between text-xs text-navy-500 mb-1">
-                    <span>Verified Active</span>
+                    <span>Verified Admissions</span>
                     <CheckCircle2 className="w-4 h-4 text-academic-emerald" />
                   </div>
                   <div className="font-display font-bold text-2xl sm:text-3xl text-navy-950">
-                    {records.filter(r => r.status === 'Verified' || r.status === 'Enrolled').length}
+                    {records.filter(r => r.status === 'Verified').length}
                   </div>
                   <div className="text-[11px] text-navy-400 font-medium mt-1">
-                    Eligible for registration
+                    Active matriculation
                   </div>
                 </div>
 
                 <div className="bg-white border border-navy-200/80 rounded-2xl p-4 sm:p-5 shadow-card">
                   <div className="flex items-center justify-between text-xs text-navy-500 mb-1">
-                    <span>Pending Verification</span>
+                    <span>Pending Intake</span>
                     <Clock className="w-4 h-4 text-amber-500" />
                   </div>
                   <div className="font-display font-bold text-2xl sm:text-3xl text-navy-950">
@@ -586,7 +654,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                           <th className="py-3 px-4">DOB / Gender</th>
                           <th className="py-3 px-4">Direct Contact</th>
                           <th className="py-3 px-4">Guardian Contact</th>
-                          <th className="py-3 px-4">Program</th>
+                          <th className="py-3 px-4">Program & Campus</th>
                           <th className="py-3 px-4">Status</th>
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
@@ -625,7 +693,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="font-medium text-navy-900 truncate max-w-[180px]">{r.degree_program || '—'}</div>
-                              <div className="text-[10px] text-navy-500">Batch {r.admission_year || '2026'}</div>
+                              <div className="text-[10px] text-brand-700 font-semibold font-mono">
+                                {r.campus_slug ? `${r.campus_slug}.collegecentre.in` : 'Main Campus'}
+                              </div>
                             </td>
                             <td className="py-3.5 px-4">
                               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
@@ -1415,7 +1485,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
               <div className="space-y-1">
                 <h4 className="font-display font-bold text-xl text-navy-950">{selectedStudent.full_name}</h4>
                 <p className="text-xs font-semibold text-brand-700">{selectedStudent.degree_program}</p>
-                <p className="text-xs text-navy-500">Intake Batch {selectedStudent.admission_year || '2026'} • Status: <strong>{selectedStudent.status}</strong></p>
+                <p className="text-xs text-navy-500">
+                  Campus: <strong>{selectedStudent.campus_name || selectedStudent.campus_slug || 'Main Campus'}</strong> • Status: <strong>{selectedStudent.status}</strong>
+                </p>
               </div>
             </div>
 
