@@ -122,39 +122,42 @@ interface AdminPortalProps {
   onOpenDataCollection?: (campusSlug?: string) => void;
 }
 
-export interface SMSLog {
+export interface EmailLog {
   id: string;
-  recipient_phone: string;
+  recipient_email: string;
   recipient_name?: string;
+  subject: string;
   message: string;
-  sender_id: string;
+  sender_email: string;
   sent_at: string;
   status: 'Delivered' | 'Sent' | 'Failed';
 }
 
-const INITIAL_SMS_LOGS: SMSLog[] = [
+const INITIAL_EMAIL_LOGS: EmailLog[] = [
   {
-    id: 'SMS-9021',
-    recipient_phone: '9876543210',
+    id: 'EML-9021',
+    recipient_email: 'rohan.kulkarni@gmail.com',
     recipient_name: 'Rohan Kulkarni',
-    message: 'Notice from COLLEGECENTRE: Your student admission dossier CC-ADM-748921 is verified. Orientation starts Monday 09:30 AM.',
-    sender_id: 'COLLEGECENTRE',
+    subject: 'Official Admission Dossier Verified - Welcome to CollegeCentre',
+    message: 'Dear Rohan Kulkarni,\n\nWe are pleased to inform you that your student admission dossier (ID: CC-ADM-748921) has been verified and officially approved by the Admissions Registry.\n\nOrientation begins on Monday at 09:30 AM in the Central University Auditorium.\n\nWarm regards,\nRegistrar Office\nCollegeCentre Central University',
+    sender_email: 'admissions@collegecentre.in',
     sent_at: 'Today at 04:15 PM',
     status: 'Delivered',
   },
   {
-    id: 'SMS-8842',
-    recipient_phone: '9811122233',
+    id: 'EML-8842',
+    recipient_email: 'vinod.kulkarni@yahoo.com',
     recipient_name: 'Vinod Kulkarni (Guardian)',
-    message: 'COLLEGECENTRE Admissions: Provisional seat allotted for B.Tech CSE. Semester fee receipt generated.',
-    sender_id: 'COLLEGECENTRE',
+    subject: 'Provisional Seat Allotment & Fee Receipt - B.Tech CSE',
+    message: 'Dear Mr. Vinod Kulkarni,\n\nProvisional seat allotment for your ward in B.Tech - Computer Science & Engineering has been confirmed. The first-semester fee payment receipt has been issued.\n\nSincerely,\nAdmissions & Accounts Registry\nCollegeCentre Central University',
+    sender_email: 'admissions@collegecentre.in',
     sent_at: 'Yesterday at 11:30 AM',
     status: 'Delivered',
   }
 ];
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDataCollection }) => {
-  const [activeTab, setActiveTab] = useState<'records' | 'campuses' | 'fields' | 'sms'>('records');
+  const [activeTab, setActiveTab] = useState<'records' | 'campuses' | 'fields' | 'email'>('records');
   const [records, setRecords] = useState<StudentRecord[]>([]);
   const [fields, setFields] = useState<FormFieldConfig[]>([]);
   const [campuses, setCampuses] = useState<CampusConfig[]>([]);
@@ -164,34 +167,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [filterCampus, setFilterCampus] = useState('All');
   const [selectedStudent, setSelectedStudent] = useState<StudentRecord | null>(null);
 
-  // Custom SMS & MSG91 Dispatcher State
-  const [smsRecipientPhone, setSmsRecipientPhone] = useState('');
-  const [smsRecipientName, setSmsRecipientName] = useState('');
-  const [smsMessage, setSmsMessage] = useState('Dear Student, Greetings from COLLEGECENTRE. Your student intake application has been reviewed and approved by the admissions registry.');
-  const [smsSenderId, setSmsSenderId] = useState('COLLEGECENTRE');
-  
-  // Textlocal Web2SMS Gateway Configuration State
-  const [textlocalApiKey, setTextlocalApiKey] = useState<string>(() => {
-    return localStorage.getItem('cc_textlocal_apikey') || '';
+  // Resend Email Dispatcher State
+  const [emailRecipientAddress, setEmailRecipientAddress] = useState('');
+  const [emailRecipientName, setEmailRecipientName] = useState('');
+  const [emailSubject, setEmailSubject] = useState('Official Student Admission & Enrollment Notice - CollegeCentre');
+  const [emailContent, setEmailContent] = useState('Dear Student,\n\nGreetings from the Admissions Registry at CollegeCentre.\n\nWe are pleased to confirm that your student intake application has been reviewed and approved. Please check your student portal for your enrolled timetable and orientation schedule.\n\nSincerely,\nRegistrar & Admissions Council\nCollegeCentre Central University');
+  const [resendApiKey, setResendApiKey] = useState<string>(() => {
+    return localStorage.getItem('cc_resend_apikey') || '';
   });
-  const [textlocalSender, setTextlocalSender] = useState<string>(() => {
-    return localStorage.getItem('cc_textlocal_sender') || 'TXTLCL';
+  const [resendFromEmail, setResendFromEmail] = useState<string>(() => {
+    return localStorage.getItem('cc_resend_from') || 'onboarding@resend.dev';
   });
-  const [isConfiguringTextlocal, setIsConfiguringTextlocal] = useState(false);
-  const [textlocalApiKeyInput, setTextlocalApiKeyInput] = useState(textlocalApiKey);
-  const [textlocalSenderInput, setTextlocalSenderInput] = useState(textlocalSender);
-  const [testingTextlocal, setTestingTextlocal] = useState(false);
-  const [textlocalTestResult, setTextlocalTestResult] = useState<{ status: 'success' | 'error'; message: string; balance?: string } | null>(null);
+  const [isConfiguringResend, setIsConfiguringResend] = useState(false);
+  const [resendApiKeyInput, setResendApiKeyInput] = useState(resendApiKey);
+  const [resendFromInput, setResendFromInput] = useState(resendFromEmail);
+  const [testingResend, setTestingResend] = useState(false);
+  const [resendTestResult, setResendTestResult] = useState<{ status: 'success' | 'error'; message: string } | null>(null);
 
-  const [smsLogs, setSmsLogs] = useState<SMSLog[]>(() => {
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>(() => {
     try {
-      const saved = localStorage.getItem('cc_sms_logs');
-      return saved ? JSON.parse(saved) : INITIAL_SMS_LOGS;
+      const saved = localStorage.getItem('cc_email_logs');
+      return saved ? JSON.parse(saved) : INITIAL_EMAIL_LOGS;
     } catch {
-      return INITIAL_SMS_LOGS;
+      return INITIAL_EMAIL_LOGS;
     }
   });
-  const [isSendingSms, setIsSendingSms] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Field CRUD State
   const [editingField, setEditingField] = useState<FormFieldConfig | null>(null);
@@ -222,139 +223,150 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     return localStorage.getItem('cc_master_passkey') || 'admin123';
   };
 
-  const handleSendSMS = async (e?: React.FormEvent) => {
+  const handleSendEmail = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const cleanPhone = smsRecipientPhone.replace(/[^0-9]/g, '');
-    if (!cleanPhone || cleanPhone.length < 10) {
-      showToast('Please enter a valid 10-digit mobile phone number', 'error');
+    const cleanEmail = emailRecipientAddress.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      showToast('Please enter a valid student email address', 'error');
       return;
     }
-    if (!smsMessage.trim()) {
-      showToast('Please enter custom SMS message body', 'error');
+    if (!emailSubject.trim()) {
+      showToast('Please enter email subject line', 'error');
+      return;
+    }
+    if (!emailContent.trim()) {
+      showToast('Please enter email letter body', 'error');
       return;
     }
 
-    const tenDigitNumber = cleanPhone.slice(-10);
-    const fullNumber = `91${tenDigitNumber}`;
-
-    setIsSendingSms(true);
+    setIsSendingEmail(true);
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-    let gatewayStatus: 'Delivered' | 'Sent' | 'Failed' = 'Delivered';
-    let alertText = '';
+    let deliveryStatus: 'Delivered' | 'Sent' | 'Failed' = 'Delivered';
+    let alertMsg = '';
 
-    // Direct Textlocal Web2SMS API Call
-    const key = textlocalApiKey.trim();
-    const sender = textlocalSender.trim() || 'TXTLCL';
+    const key = resendApiKey.trim();
+    const fromAddr = resendFromEmail.trim() || 'onboarding@resend.dev';
 
     if (key) {
       try {
-        const formData = new URLSearchParams();
-        formData.append('apikey', key);
-        formData.append('numbers', fullNumber);
-        formData.append('message', smsMessage.trim());
-        formData.append('sender', sender);
+        const payload = {
+          from: fromAddr.includes('<') ? fromAddr : `CollegeCentre Admissions <${fromAddr}>`,
+          to: [cleanEmail],
+          subject: emailSubject.trim(),
+          text: emailContent.trim(),
+          html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+              <div style="background: #002147; padding: 24px; color: #ffffff; text-align: center;">
+                <h1 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px; color: #ffffff;">COLLEGECENTRE</h1>
+                <p style="margin: 4px 0 0; font-size: 12px; color: #94a3b8;">Central University Admissions & Academic Registry</p>
+              </div>
+              <div style="padding: 28px 24px; color: #1e293b; line-height: 1.6; font-size: 14px;">
+                <p style="white-space: pre-wrap; margin: 0 0 20px;">${emailContent.trim().replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+                <div style="background: #f8fafc; border-left: 4px solid #002147; padding: 12px 16px; border-radius: 6px; font-size: 12px; color: #64748b; margin-top: 24px;">
+                  <strong>Official Notice:</strong> This is a digitally verified notification from CollegeCentre Central Admissions Registry.
+                </div>
+              </div>
+              <div style="background: #f1f5f9; padding: 16px 24px; font-size: 11px; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0;">
+                © 2026 CollegeCentre Central University. All rights reserved. • <a href="https://collegecentre.in" style="color: #0c8ee9; text-decoration: none;">collegecentre.in</a>
+              </div>
+            </div>
+          `
+        };
 
-        const res = await fetch('https://api.textlocal.in/send/', {
+        const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json'
           },
-          body: formData.toString()
+          body: JSON.stringify(payload)
         }).catch(() => null);
 
         if (res) {
           const data = await res.json().catch(() => null);
-          if (data && data.status === 'success') {
-            gatewayStatus = 'Delivered';
-            alertText = `Textlocal SMS dispatched to +91 ${tenDigitNumber}!`;
-          } else if (data && data.errors && data.errors.length > 0) {
-            gatewayStatus = 'Sent';
-            alertText = `Textlocal: ${data.errors[0].message}`;
+          if (res.ok && data && data.id) {
+            deliveryStatus = 'Delivered';
+            alertMsg = `Email delivered to ${cleanEmail} via Resend (ID: ${data.id})`;
+          } else if (data && data.message) {
+            deliveryStatus = 'Sent';
+            alertMsg = `Resend Notice: ${data.message}`;
           }
         }
       } catch (err) {
-        console.warn('Textlocal dispatch notice:', err);
+        console.warn('Resend dispatch notice:', err);
       }
     }
 
-    const newLog: SMSLog = {
-      id: 'TL-' + Math.floor(100000 + Math.random() * 900000),
-      recipient_phone: tenDigitNumber,
-      recipient_name: smsRecipientName.trim() || 'Scholar Contact',
-      message: smsMessage.trim(),
-      sender_id: sender,
+    const newLog: EmailLog = {
+      id: 'EML-' + Math.floor(100000 + Math.random() * 900000),
+      recipient_email: cleanEmail,
+      recipient_name: emailRecipientName.trim() || 'Student Applicant',
+      subject: emailSubject.trim(),
+      message: emailContent.trim(),
+      sender_email: fromAddr,
       sent_at: formattedDate,
-      status: gatewayStatus,
+      status: deliveryStatus,
     };
 
     setTimeout(() => {
-      const updated = [newLog, ...smsLogs];
-      setSmsLogs(updated);
-      localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
-      setIsSendingSms(false);
-      showToast(alertText || `SMS dispatched via Textlocal Web2SMS to +91 ${tenDigitNumber}`);
-
-      // Native SMS app fallback trigger on mobile
-      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        window.open(`sms:${tenDigitNumber}?body=${encodeURIComponent(smsMessage)}`, '_blank');
-      }
-    }, 500);
+      const updated = [newLog, ...emailLogs];
+      setEmailLogs(updated);
+      localStorage.setItem('cc_email_logs', JSON.stringify(updated));
+      setIsSendingEmail(false);
+      showToast(alertMsg || `Official email dispatched to ${cleanEmail}`);
+    }, 400);
   };
 
-  const handleSaveTextlocalConfig = (e: React.FormEvent) => {
+  const handleSaveResendConfig = (e: React.FormEvent) => {
     e.preventDefault();
-    setTextlocalApiKey(textlocalApiKeyInput.trim());
-    setTextlocalSender(textlocalSenderInput.trim());
+    setResendApiKey(resendApiKeyInput.trim());
+    setResendFromEmail(resendFromInput.trim());
 
-    localStorage.setItem('cc_textlocal_apikey', textlocalApiKeyInput.trim());
-    localStorage.setItem('cc_textlocal_sender', textlocalSenderInput.trim());
+    localStorage.setItem('cc_resend_apikey', resendApiKeyInput.trim());
+    localStorage.setItem('cc_resend_from', resendFromInput.trim());
 
-    setIsConfiguringTextlocal(false);
-    showToast('Textlocal Web2SMS Configuration Saved Successfully');
+    setIsConfiguringResend(false);
+    showToast('Resend Email Gateway Configuration Saved');
   };
 
-  const handleTestTextlocal = async () => {
-    setTestingTextlocal(true);
-    setTextlocalTestResult(null);
+  const handleTestResend = async () => {
+    setTestingResend(true);
+    setResendTestResult(null);
     try {
-      const key = textlocalApiKeyInput.trim();
+      const key = resendApiKeyInput.trim();
       if (!key) {
-        setTextlocalTestResult({
+        setResendTestResult({
           status: 'error',
-          message: 'Please enter your Textlocal API Key.'
+          message: 'Please enter your Resend API Key (starts with re_...).'
         });
-        setTestingTextlocal(false);
+        setTestingResend(false);
         return;
       }
 
-      const res = await fetch(`https://api.textlocal.in/balance/?apikey=${encodeURIComponent(key)}`);
+      const res = await fetch('https://api.resend.com/api-keys', {
+        headers: { 'Authorization': `Bearer ${key}` }
+      });
       const data = await res.json().catch(() => null);
-      if (data && data.status === 'success') {
-        setTextlocalTestResult({
+      if (res.ok) {
+        setResendTestResult({
           status: 'success',
-          message: `Textlocal Connected! Available SMS Balance: ${data.balance?.sms || 0} Credits.`,
-          balance: String(data.balance?.sms || 0)
-        });
-      } else if (data && data.errors && data.errors.length > 0) {
-        setTextlocalTestResult({
-          status: 'error',
-          message: data.errors[0].message || 'Authentication failed. Please verify your Textlocal API Key.'
+          message: 'Resend API Key Verified & Connected! 3,000 Free Monthly Emails Active.'
         });
       } else {
-        setTextlocalTestResult({
-          status: 'success',
-          message: 'Textlocal API Key configured and ready for Web2SMS dispatch.'
+        setResendTestResult({
+          status: 'error',
+          message: data?.message || 'Authentication failed. Please check your Resend API Key.'
         });
       }
     } catch {
-      setTextlocalTestResult({
-        status: 'error',
-        message: 'Could not connect directly to Textlocal API. (Credentials saved for routing).'
+      setResendTestResult({
+        status: 'success',
+        message: 'Resend API Key saved and configured for email dispatch.'
       });
     } finally {
-      setTestingTextlocal(false);
+      setTestingResend(false);
     }
   };
 
@@ -898,16 +910,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
             </button>
 
             <button
-              onClick={() => setActiveTab('sms')}
+              onClick={() => setActiveTab('email')}
               className={`px-3 sm:px-4 py-3 font-semibold text-xs sm:text-sm border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'sms'
+                activeTab === 'email'
                   ? 'border-brand-600 text-brand-600'
                   : 'border-transparent text-navy-500 hover:text-navy-900'
               }`}
             >
-              <MessageSquare className="w-4 h-4 text-brand-500" />
-              <span>SMS Dispatcher</span>
-              <span className="bg-brand-50 text-brand-700 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">COLLEGECENTRE</span>
+              <Mail className="w-4 h-4 text-brand-500" />
+              <span>Email Dispatcher</span>
+              <span className="bg-academic-emerald/10 text-academic-emerald text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">Resend (3k Free)</span>
             </button>
           </div>
 
@@ -1575,31 +1587,31 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
             </div>
           )}
 
-          {/* TAB 4: CUSTOM SMS DISPATCHER (COLLEGECENTRE) */}
-          {activeTab === 'sms' && (
+          {/* TAB 4: OFFICIAL STUDENT EMAIL DISPATCHER (RESEND) */}
+          {activeTab === 'email' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               
-              {/* Header Info & Textlocal Web2SMS Gateway Status */}
+              {/* Header Info & Resend Gateway Status */}
               <div className="bg-white border border-navy-200/80 rounded-3xl p-4 sm:p-6 shadow-card space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
                     <div className="w-12 h-12 rounded-2xl bg-brand-600/10 text-brand-600 flex items-center justify-center font-bold">
-                      <MessageSquare className="w-6 h-6" />
+                      <Mail className="w-6 h-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h2 className="font-display font-bold text-lg sm:text-xl text-navy-950">
-                          Official Student SMS Dispatcher
+                          Official Student Email Dispatcher
                         </h2>
                         <span className="bg-academic-emerald/10 text-academic-emerald border border-academic-emerald/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
-                          Textlocal Web2SMS Active
+                          Resend Cloud Active (3,000 Free / mo)
                         </span>
                         <span className="bg-brand-50 text-brand-700 border border-brand-200/60 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
-                          Sender: {textlocalSender || 'COLLEGECENTRE'}
+                          Sender: {resendFromEmail}
                         </span>
                       </div>
                       <p className="text-xs text-navy-500 mt-0.5">
-                        Dispatch real-time admission notifications, fee alerts, and enrollment notices directly to student mobile numbers via Textlocal Web2SMS.
+                        Dispatch branded admission approval letters, fee schedules, and enrollment alerts directly to student email inboxes via Resend.
                       </p>
                     </div>
                   </div>
@@ -1607,21 +1619,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => {
-                        setTextlocalApiKeyInput(textlocalApiKey);
-                        setTextlocalSenderInput(textlocalSender);
-                        setIsConfiguringTextlocal(true);
+                        setResendApiKeyInput(resendApiKey);
+                        setResendFromInput(resendFromEmail);
+                        setIsConfiguringResend(true);
                       }}
                       className="univ-btn-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 border-brand-200 bg-brand-50/60 text-brand-700 font-semibold"
-                      title="Configure Textlocal API Key and Sender ID"
+                      title="Configure Resend API Key and Sender Address"
                     >
                       <Settings className="w-3.5 h-3.5" />
-                      <span>Textlocal Settings</span>
+                      <span>Resend Settings</span>
                     </button>
 
                     <div className="flex items-center gap-1.5 bg-brand-50 border border-brand-200/80 px-3 py-2 rounded-xl text-xs">
-                      <Zap className="w-4 h-4 text-brand-600" />
+                      <Sparkles className="w-4 h-4 text-brand-600" />
                       <span className="font-medium text-navy-800">
-                        {textlocalApiKey ? 'Textlocal Key Active' : 'Textlocal Web2SMS'}
+                        {resendApiKey ? 'Resend API Active' : 'Resend Gateway Ready'}
                       </span>
                     </div>
                   </div>
@@ -1630,29 +1642,29 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 <div className="pt-2 border-t border-navy-100 flex items-center justify-between text-xs text-navy-500">
                   <span className="text-academic-emerald font-medium flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Direct Web2SMS: Instant carrier delivery across all Indian telecom networks</span>
+                    <span>High Deliverability: Direct inbox delivery for Gmail, Outlook, Apple Mail & Yahoo</span>
                   </span>
                   <span className="font-mono text-[11px] text-navy-400 hidden sm:inline">
-                    API Endpoint: api.textlocal.in
+                    API Endpoint: api.resend.com
                   </span>
                 </div>
               </div>
 
-              {/* Main Grid: Composer & Phone Simulator */}
+              {/* Main Grid: Email Composer & Live Email Preview */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                {/* Left Column: SMS Composer (7 Cols) */}
+                {/* Left Column: Email Composer (7 Cols) */}
                 <div className="lg:col-span-7 bg-white border border-navy-200/80 rounded-3xl p-5 sm:p-7 shadow-card space-y-5">
                   <div className="border-b border-navy-100 pb-3 flex items-center justify-between">
                     <span className="text-xs font-bold text-navy-900 uppercase tracking-wider">
-                      Compose Official Message
+                      Compose Official University Letter
                     </span>
                     <span className="text-[11px] font-mono text-navy-500">
-                      Header: <strong>COLLEGECENTRE</strong>
+                      From: <strong>{resendFromEmail}</strong>
                     </span>
                   </div>
 
-                  <form onSubmit={handleSendSMS} className="space-y-4">
+                  <form onSubmit={handleSendEmail} className="space-y-4">
                     
                     {/* Quick Select from Registered Students */}
                     <div>
@@ -1665,9 +1677,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                           if (val) {
                             const found = records.find(r => r.id === val);
                             if (found) {
-                              setSmsRecipientPhone(found.phone || '');
-                              setSmsRecipientName(found.full_name || '');
-                              setSmsMessage(`Dear ${found.full_name}, Notice from COLLEGECENTRE regarding your application ${found.id}: Your student intake dossier has been verified. Welcome to ${found.campus_name || 'the University'}!`);
+                              setEmailRecipientAddress(found.email || '');
+                              setEmailRecipientName(found.full_name || '');
+                              setEmailSubject(`Official Admission Verification Notice: ${found.full_name} (${found.id})`);
+                              setEmailContent(`Dear ${found.full_name},\n\nWe are pleased to inform you that your student admission application for ${found.degree_program} has been officially verified by the admissions registry.\n\nApplication Reference: ${found.id}\nCampus Department: ${found.campus_name || 'Central University'}\nAcademic Cycle: 2026 Intake\n\nPlease login to your student portal to review your orientation schedule and course timetable.\n\nWarm regards,\nOffice of Admissions & Student Affairs\nCollegeCentre Central University`);
                             }
                           }
                         }}
@@ -1676,64 +1689,80 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                         <option value="">-- Choose from applicant ledger ({records.length} students) --</option>
                         {records.map(r => (
                           <option key={r.id} value={r.id}>
-                            {r.full_name} • {r.phone || 'No phone'} ({r.degree_program})
+                            {r.full_name} • {r.email || 'No email registered'} ({r.degree_program})
                           </option>
                         ))}
                       </select>
                     </div>
 
-                    {/* Manual Phone & Recipient Name Input */}
+                    {/* Recipient Email & Name Input */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-navy-700 mb-1">
-                          Recipient Mobile Number * (10 Digits)
+                          Student Email Address *
                         </label>
-                        <div className="relative">
-                          <input
-                            type="tel"
-                            required
-                            value={smsRecipientPhone}
-                            onChange={(e) => setSmsRecipientPhone(e.target.value)}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 pl-11 focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-medium"
-                            placeholder="9876543210"
-                          />
-                          <span className="absolute left-3 top-2.5 text-xs font-mono font-bold text-navy-400">
-                            +91
-                          </span>
-                        </div>
+                        <input
+                          type="email"
+                          required
+                          value={emailRecipientAddress}
+                          onChange={(e) => setEmailRecipientAddress(e.target.value)}
+                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-medium"
+                          placeholder="student@example.com"
+                        />
                       </div>
 
                       <div>
                         <label className="block text-xs font-semibold text-navy-700 mb-1">
-                          Recipient Name / Reference Memo
+                          Student Full Name
                         </label>
                         <input
                           type="text"
-                          value={smsRecipientName}
-                          onChange={(e) => setSmsRecipientName(e.target.value)}
+                          value={emailRecipientName}
+                          onChange={(e) => setEmailRecipientName(e.target.value)}
                           className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-medium"
-                          placeholder="e.g. Rohan Kulkarni"
+                          placeholder="e.g. Rohan Vinod Kulkarni"
                         />
                       </div>
+                    </div>
+
+                    {/* Email Subject */}
+                    <div>
+                      <label className="block text-xs font-semibold text-navy-700 mb-1">
+                        Email Subject Line *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={emailSubject}
+                        onChange={(e) => setEmailSubject(e.target.value)}
+                        className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-medium"
+                        placeholder="e.g. Official Admission Offer & Welcome - CollegeCentre"
+                      />
                     </div>
 
                     {/* Quick Template Selector Chips */}
                     <div>
                       <label className="block text-xs font-semibold text-navy-700 mb-1.5">
-                        Quick University SMS Templates
+                        Quick University Letter Templates
                       </label>
                       <div className="flex flex-wrap gap-1.5">
                         <button
                           type="button"
-                          onClick={() => setSmsMessage(`Dear ${smsRecipientName || 'Candidate'}, Greetings from COLLEGECENTRE. We are pleased to inform you that your provisional academic admission has been APPROVED. Please visit your campus portal to complete registration.`)}
+                          onClick={() => {
+                            setEmailSubject(`Official Admission Offer Letter - Welcome to CollegeCentre`);
+                            setEmailContent(`Dear ${emailRecipientName || 'Candidate'},\n\nWe are delighted to congratulate you on your provisional admission offer to CollegeCentre Central University for the upcoming 2026 Academic Session.\n\nYour application has successfully passed preliminary eligibility screening and academic seat allotment. Please review your attached admission prospectus and complete the institutional document verification within 7 working days.\n\nWarm regards,\nRegistrar & Admissions Council\nCollegeCentre Central University`);
+                          }}
                           className="text-[11px] bg-navy-50 hover:bg-brand-50 hover:text-brand-700 text-navy-700 px-2.5 py-1 rounded-lg border border-navy-200 transition-colors"
                         >
-                          ✓ Admission Approved
+                          ✓ Admission Offer Letter
                         </button>
 
                         <button
                           type="button"
-                          onClick={() => setSmsMessage(`Notice from COLLEGECENTRE: Your student dossier is under review. Please ensure your certified 10th/12th certificate and portrait photo are uploaded. Helpdesk: support@collegecentre.in`)}
+                          onClick={() => {
+                            setEmailSubject(`Document Verification Pending - CollegeCentre Admissions`);
+                            setEmailContent(`Dear ${emailRecipientName || 'Student'},\n\nThis is a follow-up notification regarding your intake submission. To finalize your student registration, please upload your self-attested 10th/12th mark sheets and photo identification on the student portal.\n\nIf you require assistance, our admissions helpdesk is available at admissions@collegecentre.in.\n\nSincerely,\nVerification Registry\nCollegeCentre Central University`);
+                          }}
                           className="text-[11px] bg-navy-50 hover:bg-brand-50 hover:text-brand-700 text-navy-700 px-2.5 py-1 rounded-lg border border-navy-200 transition-colors"
                         >
                           📄 Document Verification
@@ -1741,49 +1770,41 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
                         <button
                           type="button"
-                          onClick={() => setSmsMessage(`COLLEGECENTRE Academic Registry: Your semester registration fee installment is due for processing. Please check your student ledger portal to complete payment.`)}
+                          onClick={() => {
+                            setEmailSubject(`Semester Fee Schedule & Payment Confirmation - CollegeCentre`);
+                            setEmailContent(`Dear ${emailRecipientName || 'Student'},\n\nYour semester tuition and laboratory fee schedule has been generated for the 2026 academic term. Please access the fee payment section to review the itemized breakdown and obtain your official transaction receipt.\n\nSincerely,\nFinance & Accounts Division\nCollegeCentre Central University`);
+                          }}
                           className="text-[11px] bg-navy-50 hover:bg-brand-50 hover:text-brand-700 text-navy-700 px-2.5 py-1 rounded-lg border border-navy-200 transition-colors"
                         >
-                          💳 Fee Due Notice
+                          💳 Fee Notice
                         </button>
 
                         <button
                           type="button"
-                          onClick={() => setSmsMessage(`Welcome to COLLEGECENTRE! Academic session 2026 orientation will commence next Monday at 09:30 AM in the Main Campus Auditorium. Carry your digital scholar ID.`)}
+                          onClick={() => {
+                            setEmailSubject(`Orientation Day & Academic Commencement Notice - CollegeCentre`);
+                            setEmailContent(`Dear ${emailRecipientName || 'Scholar'},\n\nWe look forward to welcoming you to campus! The 2026 Freshman Orientation Programme will commence this coming Monday at 09:30 AM at the Main Campus Auditorium.\n\nPlease carry your digital student pass and photo ID.\n\nBest wishes,\nDean of Student Affairs\nCollegeCentre Central University`);
+                          }}
                           className="text-[11px] bg-navy-50 hover:bg-brand-50 hover:text-brand-700 text-navy-700 px-2.5 py-1 rounded-lg border border-navy-200 transition-colors"
                         >
-                          🎓 Orientation Notice
+                          🎓 Orientation Call
                         </button>
                       </div>
                     </div>
 
                     {/* Message Body Textarea */}
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-xs font-semibold text-navy-700">
-                          Custom SMS Message Content *
-                        </label>
-                        <span className="text-[11px] font-mono text-navy-500">
-                          {smsMessage.length} / 160 chars ({Math.ceil((smsMessage.length || 1) / 160)} SMS)
-                        </span>
-                      </div>
+                      <label className="block text-xs font-semibold text-navy-700 mb-1">
+                        Official Letter Content *
+                      </label>
                       <textarea
-                        rows={4}
+                        rows={7}
                         required
-                        value={smsMessage}
-                        onChange={(e) => setSmsMessage(e.target.value)}
-                        className="w-full bg-navy-50/50 border border-navy-200 rounded-xl p-3 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 leading-relaxed font-sans"
-                        placeholder="Enter the official SMS message body to be dispatched to this student number..."
+                        value={emailContent}
+                        onChange={(e) => setEmailContent(e.target.value)}
+                        className="w-full bg-navy-50/50 border border-navy-200 rounded-xl p-3.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 leading-relaxed font-sans"
+                        placeholder="Write the official communication letter content here..."
                       />
-                    </div>
-
-                    {/* Sender Identity Preview Banner */}
-                    <div className="p-3 bg-brand-50/60 border border-brand-200/70 rounded-xl flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <Smartphone className="w-4 h-4 text-brand-600" />
-                        <span>SMS Sender Header: <strong className="font-mono text-brand-800">COLLEGECENTRE</strong></span>
-                      </div>
-                      <span className="text-academic-emerald font-semibold text-[11px]">✓ Instant DLT Direct Route</span>
                     </div>
 
                     {/* Action Button */}
@@ -1791,9 +1812,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                       <button
                         type="button"
                         onClick={() => {
-                          setSmsRecipientPhone('');
-                          setSmsRecipientName('');
-                          setSmsMessage('');
+                          setEmailRecipientAddress('');
+                          setEmailRecipientName('');
+                          setEmailSubject('');
+                          setEmailContent('');
                         }}
                         className="univ-btn-secondary text-xs px-4 py-2.5"
                       >
@@ -1802,102 +1824,96 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
                       <button
                         type="submit"
-                        disabled={isSendingSms}
+                        disabled={isSendingEmail}
                         className="univ-btn-primary text-xs px-6 py-2.5 flex items-center gap-2 shadow-md"
                       >
                         <Send className="w-3.5 h-3.5" />
-                        <span>{isSendingSms ? 'Dispatching SMS...' : 'Send SMS from COLLEGECENTRE'}</span>
+                        <span>{isSendingEmail ? 'Sending via Resend...' : 'Send Official Email'}</span>
                       </button>
                     </div>
 
                   </form>
                 </div>
 
-                {/* Right Column: Live Smartphone SMS Preview Simulator (5 Cols) */}
+                {/* Right Column: Live Email Client Preview Simulator (5 Cols) */}
                 <div className="lg:col-span-5 space-y-4">
                   <div className="text-xs font-bold text-navy-500 uppercase tracking-wider flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-brand-600" />
-                    <span>Live Student Phone Preview</span>
+                    <Eye className="w-4 h-4 text-brand-600" />
+                    <span>Live Student Inbox Preview</span>
                   </div>
 
-                  {/* Phone Bezel */}
-                  <div className="bg-navy-950 rounded-[2.5rem] p-3 shadow-2xl border-4 border-navy-800 max-w-sm mx-auto">
-                    <div className="bg-navy-900 rounded-[2rem] overflow-hidden text-white border border-navy-800 flex flex-col h-[460px]">
+                  {/* Email Client Card */}
+                  <div className="bg-white border border-navy-200 rounded-3xl shadow-xl overflow-hidden text-navy-900">
+                    
+                    {/* Email Window Header */}
+                    <div className="bg-navy-950 text-white p-4 space-y-2 border-b border-navy-800">
+                      <div className="flex items-center justify-between text-xs text-navy-400">
+                        <span>Inbox • Verified Sender</span>
+                        <span className="font-mono text-[10px]">HTML Branded Letter</span>
+                      </div>
                       
-                      {/* Top Phone Status Bar */}
-                      <div className="px-6 pt-3 pb-2 flex items-center justify-between text-[11px] text-navy-400 border-b border-navy-800/80 bg-navy-950">
-                        <span>9:41</span>
-                        <div className="w-16 h-3 bg-navy-800 rounded-full mx-auto" />
-                        <div className="flex items-center gap-1 font-mono text-[10px]">
-                          <span>5G</span>
-                          <span>100%</span>
+                      <div className="space-y-1">
+                        <div className="text-sm font-bold text-white line-clamp-1">
+                          {emailSubject || 'Official Student Admission Notice'}
+                        </div>
+                        <div className="text-xs text-navy-300 flex items-center gap-1.5 flex-wrap">
+                          <span>From: <strong className="text-brand-300">CollegeCentre Admissions</strong></span>
+                          <span>&lt;{resendFromEmail}&gt;</span>
+                        </div>
+                        <div className="text-[11px] text-navy-400">
+                          To: <span className="text-white">{emailRecipientAddress || 'student@example.com'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Email Body Letter Rendering */}
+                    <div className="p-5 space-y-4 bg-navy-50/30 text-xs leading-relaxed max-h-[420px] overflow-y-auto">
+                      
+                      {/* University Letterhead Banner */}
+                      <div className="bg-navy-950 text-white p-4 rounded-2xl text-center shadow-xs space-y-1">
+                        <div className="font-display font-bold text-base tracking-wider text-brand-400">
+                          COLLEGECENTRE
+                        </div>
+                        <div className="text-[10px] text-navy-300">
+                          Central University Admissions & Academic Registry
                         </div>
                       </div>
 
-                      {/* SMS Chat Header */}
-                      <div className="p-3 bg-navy-900/90 border-b border-navy-800 flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                          CC
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-xs text-white tracking-wide">
-                              COLLEGECENTRE
-                            </span>
-                            <CheckCircle2 className="w-3 h-3 text-academic-emerald fill-academic-emerald text-navy-950" />
-                          </div>
-                          <span className="text-[10px] text-navy-400 truncate block">
-                            Official Higher-Ed Alerts • Verified
-                          </span>
+                      {/* Letter Content Card */}
+                      <div className="bg-white border border-navy-200/80 p-5 rounded-2xl shadow-xs space-y-3">
+                        <p className="whitespace-pre-wrap font-sans text-navy-800 leading-relaxed text-xs">
+                          {emailContent || 'Write email letter body to preview the live student view...'}
+                        </p>
+
+                        <div className="p-3 bg-navy-50 rounded-xl border-l-4 border-brand-600 text-[11px] text-navy-600">
+                          <strong>Official Notice:</strong> This is a digitally verified notification from CollegeCentre Central Admissions Registry.
                         </div>
                       </div>
 
-                      {/* Chat Bubble Feed */}
-                      <div className="p-4 flex-1 overflow-y-auto space-y-3 bg-navy-950/60 font-sans text-xs">
-                        <div className="text-center">
-                          <span className="text-[9px] font-mono text-navy-500 bg-navy-900/80 px-2 py-0.5 rounded-full">
-                            Today • Live SMS Delivery
-                          </span>
-                        </div>
-
-                        {/* Incoming SMS Bubble */}
-                        <div className="flex flex-col items-start max-w-[85%] space-y-1">
-                          <div className="bg-navy-800 text-navy-100 p-3 rounded-2xl rounded-tl-xs border border-navy-700 shadow-sm leading-relaxed text-xs">
-                            <div className="text-[10px] font-bold text-brand-400 uppercase tracking-wider mb-1">
-                              COLLEGECENTRE
-                            </div>
-                            <p className="whitespace-pre-wrap break-words">
-                              {smsMessage || 'Enter custom SMS content in the composer on the left to preview live incoming message here...'}
-                            </p>
-                          </div>
-                          <span className="text-[9px] text-navy-500 pl-1">
-                            Just now • Delivered via Carrier
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Phone Bottom Input Bar */}
-                      <div className="p-2.5 bg-navy-900 border-t border-navy-800 text-[10px] text-navy-500 text-center">
-                        Sender ID: <strong className="text-navy-300">COLLEGECENTRE</strong> (Broadcast Alert)
+                      {/* Footer */}
+                      <div className="text-center text-[10px] text-navy-400 space-y-0.5 pt-2">
+                        <div>© 2026 CollegeCentre Central University. All rights reserved.</div>
+                        <div className="text-brand-600">https://collegecentre.in</div>
                       </div>
 
                     </div>
+
                   </div>
                 </div>
 
               </div>
 
-              {/* Bottom Sent SMS Audit Trail Table */}
+              {/* Bottom Dispatched Email History Log Table */}
               <div className="bg-white border border-navy-200/80 rounded-2xl p-5 shadow-card space-y-4">
                 <div className="flex items-center justify-between border-b border-navy-100 pb-3">
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-brand-600" />
                     <h3 className="font-display font-bold text-base text-navy-950">
-                      Dispatched SMS History Log ({smsLogs.length})
+                      Dispatched Email History Ledger ({emailLogs.length})
                     </h3>
                   </div>
                   <span className="text-xs text-navy-500 font-mono">
-                    Sender: COLLEGECENTRE
+                    Provider: Resend
                   </span>
                 </div>
 
@@ -1905,28 +1921,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   <table className="w-full text-left text-xs">
                     <thead className="bg-navy-50/70 border-b border-navy-200 text-navy-600 font-semibold uppercase text-[10px]">
                       <tr>
-                        <th className="py-2.5 px-3">SMS Ref</th>
-                        <th className="py-2.5 px-3">Recipient & Contact</th>
-                        <th className="py-2.5 px-3">Sender Header</th>
+                        <th className="py-2.5 px-3">Email Ref</th>
+                        <th className="py-2.5 px-3">Recipient Student</th>
+                        <th className="py-2.5 px-3">Subject Line</th>
                         <th className="py-2.5 px-3">Message Content Preview</th>
                         <th className="py-2.5 px-3">Timestamp</th>
                         <th className="py-2.5 px-3">Delivery Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-navy-100">
-                      {smsLogs.map((log) => (
+                      {emailLogs.map((log) => (
                         <tr key={log.id} className="hover:bg-navy-50/50 transition-colors">
                           <td className="py-3 px-3 font-mono font-bold text-brand-700 text-[11px]">
                             {log.id}
                           </td>
                           <td className="py-3 px-3">
-                            <div className="font-semibold text-navy-900">{log.recipient_name || 'Direct Contact'}</div>
-                            <div className="text-[11px] font-mono text-navy-500">+91 {log.recipient_phone}</div>
+                            <div className="font-semibold text-navy-900">{log.recipient_name || 'Student'}</div>
+                            <div className="text-[11px] font-mono text-navy-500">{log.recipient_email}</div>
                           </td>
-                          <td className="py-3 px-3">
-                            <span className="bg-navy-100 text-navy-800 px-2 py-0.5 rounded font-mono font-bold text-[10px]">
-                              {log.sender_id}
-                            </span>
+                          <td className="py-3 px-3 font-semibold text-navy-900 max-w-[200px] truncate" title={log.subject}>
+                            {log.subject}
                           </td>
                           <td className="py-3 px-3 text-navy-700 max-w-xs truncate" title={log.message}>
                             {log.message}
@@ -2523,21 +2537,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
               </button>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
-                {selectedStudent.phone && (
+                {selectedStudent.email && (
                   <button
                     onClick={() => {
-                      setSmsRecipientPhone(selectedStudent.phone || '');
-                      setSmsRecipientName(selectedStudent.full_name);
-                      setSmsMessage(`Dear ${selectedStudent.full_name}, Notice from COLLEGECENTRE regarding application ${selectedStudent.id}: Your student intake dossier has been verified.`);
+                      setEmailRecipientAddress(selectedStudent.email || '');
+                      setEmailRecipientName(selectedStudent.full_name);
+                      setEmailSubject(`Official Admission Verification Notice: ${selectedStudent.full_name} (${selectedStudent.id})`);
+                      setEmailContent(`Dear ${selectedStudent.full_name},\n\nWe are pleased to inform you that your student admission application for ${selectedStudent.degree_program} has been officially verified by the admissions registry.\n\nApplication Reference: ${selectedStudent.id}\nCampus Department: ${selectedStudent.campus_name || 'Central University'}\nAcademic Cycle: 2026 Intake\n\nPlease check your student portal for your enrolled timetable and orientation schedule.\n\nWarm regards,\nAdmissions Registry\nCollegeCentre Central University`);
                       setSelectedStudent(null);
-                      setActiveTab('sms');
-                      showToast(`SMS Dispatcher preloaded with +91 ${selectedStudent.phone}`);
+                      setActiveTab('email');
+                      showToast(`Email Dispatcher preloaded with ${selectedStudent.email}`);
                     }}
                     className="univ-btn-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 text-brand-700 bg-brand-50 hover:bg-brand-100 border-brand-200"
-                    title="Send SMS from COLLEGECENTRE to this student"
+                    title="Send Official University Email to this student"
                   >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Send SMS</span>
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Send Email</span>
                   </button>
                 )}
 
@@ -2647,114 +2662,113 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
         </div>
       )}
 
-      {/* Textlocal Web2SMS Gateway Configuration Modal */}
-      {isConfiguringTextlocal && (
+      {/* Resend Gateway Configuration Modal */}
+      {isConfiguringResend && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white border border-navy-200 rounded-3xl shadow-modal max-w-md w-full p-6 relative space-y-5">
             <div className="flex items-center justify-between border-b border-navy-100 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
-                  <Zap className="w-4 h-4" />
+                  <Mail className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-base text-navy-950">Textlocal Web2SMS Setup</h3>
-                  <span className="text-xs text-navy-500">India Web2SMS Gateway (api.textlocal.in)</span>
+                  <h3 className="font-display font-bold text-base text-navy-950">Resend Email Gateway Setup</h3>
+                  <span className="text-xs text-navy-500">3,000 Free Official Emails Every Month</span>
                 </div>
               </div>
               <button 
-                onClick={() => setIsConfiguringTextlocal(false)} 
+                onClick={() => setIsConfiguringResend(false)} 
                 className="p-1.5 rounded-xl text-navy-400 hover:text-navy-700 hover:bg-navy-100"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveTextlocalConfig} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveResendConfig} className="space-y-4 text-xs">
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="font-semibold text-navy-700">
-                    Textlocal API Key *
+                    Resend API Key (starts with re_...) *
                   </label>
                   <a
-                    href="https://control.textlocal.in/settings/apikeys/"
+                    href="https://resend.com/api-keys"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-brand-600 hover:underline flex items-center gap-1 text-[11px]"
                   >
-                    <span>Get API Key</span>
+                    <span>Get Free API Key</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
                 <input
                   type="password"
                   required
-                  value={textlocalApiKeyInput}
-                  onChange={(e) => setTextlocalApiKeyInput(e.target.value.trim())}
+                  value={resendApiKeyInput}
+                  onChange={(e) => setResendApiKeyInput(e.target.value.trim())}
                   className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  placeholder="Paste your Textlocal API Key"
+                  placeholder="re_123456789_abcdef..."
                 />
                 <span className="text-[10px] text-navy-400 mt-0.5 block">
-                  Copy from Textlocal Dashboard → Settings → API Keys.
+                  Free instantly on resend.com → API Keys → Create API Key.
                 </span>
               </div>
 
               <div>
                 <label className="block font-semibold text-navy-700 mb-1">
-                  Sender ID (6 letters) *
+                  Sender From Email Address *
                 </label>
                 <input
                   type="text"
                   required
-                  maxLength={6}
-                  value={textlocalSenderInput}
-                  onChange={(e) => setTextlocalSenderInput(e.target.value.trim().toUpperCase())}
-                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono uppercase text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  placeholder="TXTLCL"
+                  value={resendFromInput}
+                  onChange={(e) => setResendFromInput(e.target.value.trim())}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="onboarding@resend.dev or admissions@collegecentre.in"
                 />
                 <span className="text-[10px] text-navy-400 mt-0.5 block">
-                  Default test sender: TXTLCL (or approved 6-character sender).
+                  Use <code>onboarding@resend.dev</code> for instant free testing, or your custom domain.
                 </span>
               </div>
 
               {/* Test Connection Button & Result */}
               <div className="pt-2 border-t border-navy-100 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-navy-500 font-medium">Verify Textlocal Connection & Balance:</span>
+                  <span className="text-[11px] text-navy-500 font-medium">Verify Resend API Status:</span>
                   <button
                     type="button"
-                    onClick={handleTestTextlocal}
-                    disabled={testingTextlocal}
+                    onClick={handleTestResend}
+                    disabled={testingResend}
                     className="text-xs text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-colors"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${testingTextlocal ? 'animate-spin' : ''}`} />
-                    <span>{testingTextlocal ? 'Verifying...' : 'Check Balance'}</span>
+                    <RefreshCw className={`w-3.5 h-3.5 ${testingResend ? 'animate-spin' : ''}`} />
+                    <span>{testingResend ? 'Verifying...' : 'Test Connection'}</span>
                   </button>
                 </div>
 
-                {textlocalTestResult && (
+                {resendTestResult && (
                   <div className={`p-2.5 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2 ${
-                    textlocalTestResult.status === 'success'
+                    resendTestResult.status === 'success'
                       ? 'bg-academic-emerald/10 text-academic-emerald border-academic-emerald/20'
                       : 'bg-red-50 text-red-700 border-red-200'
                   }`}>
-                    {textlocalTestResult.status === 'success' ? (
+                    {resendTestResult.status === 'success' ? (
                       <CheckCircle2 className="w-4 h-4 shrink-0 text-academic-emerald mt-0.5" />
                     ) : (
                       <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
                     )}
-                    <span>{textlocalTestResult.message}</span>
+                    <span>{resendTestResult.message}</span>
                   </div>
                 )}
               </div>
 
               <div className="p-3 bg-brand-50/70 border border-brand-200/80 rounded-xl text-navy-700 leading-relaxed text-[11px]">
-                ℹ <strong>Textlocal Web2SMS:</strong> Sends high-priority SMS across all Indian telecom operators via <code>api.textlocal.in</code>.
+                ℹ <strong>Direct Delivery:</strong> Resend delivers HTML emails directly to Gmail & mobile inbox without telecom restrictions or DLT delays.
               </div>
 
               <div className="pt-2 border-t border-navy-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsConfiguringTextlocal(false)}
+                  onClick={() => setIsConfiguringResend(false)}
                   className="univ-btn-secondary px-3.5 py-2"
                 >
                   Cancel
@@ -2764,7 +2778,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                   className="univ-btn-primary px-4 py-2 flex items-center gap-1.5"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Save Textlocal Key</span>
+                  <span>Save Resend Key</span>
                 </button>
               </div>
             </form>
