@@ -228,6 +228,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
       status: 'Pending Review',
       campus_slug: campus?.slug || 'main',
       campus_name: campus?.name || 'CollegeCentre Central University',
+      custom_fields: formData,
     };
 
     try {
