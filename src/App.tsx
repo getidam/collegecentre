@@ -19,17 +19,36 @@ import { AdminPortal } from './components/AdminPortal';
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'landing' | 'data_collection' | 'admin'>('landing');
+  const [activeCampusSlug, setActiveCampusSlug] = useState<string | undefined>(undefined);
 
   // Detect URL path or parameter on initial load
   useEffect(() => {
     const path = window.location.pathname.toLowerCase();
     const search = window.location.search.toLowerCase();
     const hash = window.location.hash.toLowerCase();
+    const hostname = window.location.hostname.toLowerCase();
+
+    // Check for custom subdomain in host (e.g. medical.collegecentre.in)
+    let hostSubdomain = '';
+    if (hostname.includes('.') && !hostname.startsWith('www') && !hostname.startsWith('localhost')) {
+      const parts = hostname.split('.');
+      if (parts.length >= 2 && parts[0] !== 'collegecentre') {
+        hostSubdomain = parts[0];
+      }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryCampus = urlParams.get('campus') || urlParams.get('subdomain');
+    const detectedCampus = queryCampus || hostSubdomain;
+
+    if (detectedCampus) {
+      setActiveCampusSlug(detectedCampus);
+    }
 
     if (
       path.includes('admin') ||
       path.includes('record') ||
-      path.includes('portal') ||
+      path.includes('portal-admin') ||
       search.includes('admin') ||
       search.includes('record') ||
       hash.includes('admin') ||
@@ -37,9 +56,11 @@ export function App() {
     ) {
       setCurrentView('admin');
     } else if (
+      detectedCampus ||
       path.includes('form') ||
       path.includes('register') ||
       path.includes('student') ||
+      path.includes('portal') ||
       search.includes('form') ||
       search.includes('register') ||
       hash.includes('form') ||
@@ -50,7 +71,7 @@ export function App() {
 
     const handlePopState = () => {
       const p = window.location.pathname.toLowerCase();
-      if (p.includes('admin') || p.includes('record') || p.includes('portal')) {
+      if (p.includes('admin') || p.includes('record')) {
         setCurrentView('admin');
       } else if (p.includes('form') || p.includes('register') || p.includes('student')) {
         setCurrentView('data_collection');
@@ -74,10 +95,17 @@ export function App() {
     };
   }, []);
 
-  const openDataCollectionPage = () => {
+  const openDataCollectionPage = (campusSlug?: string) => {
+    if (campusSlug) {
+      setActiveCampusSlug(campusSlug);
+    }
     setCurrentView('data_collection');
     try {
-      window.history.pushState({}, '', '/form');
+      if (campusSlug && campusSlug !== 'main') {
+        window.history.pushState({}, '', `/?campus=${campusSlug}`);
+      } else {
+        window.history.pushState({}, '', '/form');
+      }
     } catch {
       // ignore
     }
@@ -95,6 +123,7 @@ export function App() {
   };
 
   const backToLandingPage = () => {
+    setActiveCampusSlug(undefined);
     setCurrentView('landing');
     try {
       window.history.pushState({}, '', '/');
@@ -122,6 +151,7 @@ export function App() {
     return (
       <StudentDataCollection 
         onBackToHome={backToLandingPage} 
+        campusSlug={activeCampusSlug}
       />
     );
   }

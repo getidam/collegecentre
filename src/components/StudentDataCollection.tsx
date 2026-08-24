@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   User, Phone, Upload, ShieldCheck, 
   ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, 
-  Printer, RefreshCw, Mail, Lock, GraduationCap, MapPin
+  Printer, RefreshCw, Mail, Lock, GraduationCap, MapPin,
+  Globe, Building2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '../lib/supabase';
@@ -10,6 +11,7 @@ import type { FormFieldConfig } from './AdminPortal';
 
 interface StudentDataCollectionProps {
   onBackToHome?: () => void;
+  campusSlug?: string;
 }
 
 const DEFAULT_FIELDS: FormFieldConfig[] = [
@@ -28,12 +30,22 @@ const DEFAULT_FIELDS: FormFieldConfig[] = [
   { id: 'f_gphone', label: 'Guardian Phone Number', name: 'guardianPhone', type: 'tel', placeholder: 'e.g. 9811122233', required: true, section: 'guardian', sort_order: 13, enabled: true },
 ];
 
-export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ onBackToHome }) => {
+export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ onBackToHome, campusSlug: propCampusSlug }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [applicationId, setApplicationId] = useState('');
   const [fields, setFields] = useState<FormFieldConfig[]>(DEFAULT_FIELDS);
+  const [campus, setCampus] = useState<{
+    id: string;
+    slug: string;
+    name: string;
+    code?: string;
+    description?: string;
+    badge_text?: string;
+    banner_color?: string;
+    programs?: string[];
+  } | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState<Record<string, any>>({
@@ -57,23 +69,64 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const fetchSchema = async () => {
+    // Detect campus from prop, query parameter, or hostname subdomain
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryCampus = urlParams.get('campus') || urlParams.get('subdomain');
+    
+    // Subdomain host detection (e.g. engineering.collegecentre.in)
+    const hostname = window.location.hostname.toLowerCase();
+    let hostSubdomain = '';
+    if (hostname.includes('.') && !hostname.startsWith('www') && !hostname.startsWith('localhost')) {
+      const parts = hostname.split('.');
+      if (parts.length >= 2 && parts[0] !== 'collegecentre') {
+        hostSubdomain = parts[0];
+      }
+    }
+
+    const targetSlug = propCampusSlug || queryCampus || hostSubdomain || 'main';
+
+    const fetchCampusAndSchema = async () => {
       try {
-        const { data, error } = await supabase
+        // Fetch Campus Profile
+        const { data: campusData } = await supabase
+          .from('campuses')
+          .select('*')
+          .eq('slug', targetSlug)
+          .single();
+
+        if (campusData) {
+          setCampus(campusData);
+          if (campusData.programs && campusData.programs.length > 0) {
+            setFormData(prev => ({ ...prev, degreeProgram: campusData.programs[0] }));
+          }
+        }
+
+        // Fetch Dynamic Form Fields
+        const { data: fieldData, error } = await supabase
           .from('form_fields')
           .select('*')
           .eq('enabled', true)
           .order('sort_order', { ascending: true });
 
-        if (!error && data && data.length > 0) {
-          setFields(data as FormFieldConfig[]);
+        if (!error && fieldData && fieldData.length > 0) {
+          let loadedFields = fieldData as FormFieldConfig[];
+          // If campus has custom programs, inject them into the program field options
+          if (campusData && campusData.programs && campusData.programs.length > 0) {
+            loadedFields = loadedFields.map(f => {
+              if (f.name === 'degreeProgram' || f.id === 'f_program') {
+                return { ...f, options: campusData.programs };
+              }
+              return f;
+            });
+          }
+          setFields(loadedFields);
         }
       } catch (err) {
-        console.error('Error loading dynamic fields:', err);
+        console.error('Error loading dynamic campus schema:', err);
       }
     };
-    fetchSchema();
-  }, []);
+    fetchCampusAndSchema();
+  }, [propCampusSlug]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -156,6 +209,8 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
       admission_year: formData.admissionYear || '2026',
       submission_date: formattedDate,
       status: 'Pending Review',
+      campus_slug: campus?.slug || 'main',
+      campus_name: campus?.name || 'CollegeCentre Central University',
     };
 
     try {
@@ -198,20 +253,28 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
   return (
     <div className="min-h-screen bg-navy-50/40 text-navy-900 flex flex-col font-sans selection:bg-brand-600 selection:text-white">
       
-      {/* Minimal Standalone University Header */}
+      {/* Dynamic Subdomain Institutional Header */}
       <header className="bg-white border-b border-navy-200/80 py-3.5 px-3 sm:px-8 sticky top-0 z-40 shadow-xs">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-navy-900 to-brand-700 text-white font-display font-bold flex items-center justify-center shadow-xs shrink-0">
-              <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-brand-300" />
+            <div 
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl text-white font-display font-bold flex items-center justify-center shadow-xs shrink-0"
+              style={{ backgroundColor: campus?.banner_color || '#0c8ee9' }}
+            >
+              <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <span className="font-display font-bold text-base sm:text-xl text-navy-950 block leading-tight truncate">
-                College<span className="text-brand-600">Centre</span>
+              <span className="font-display font-bold text-base sm:text-lg text-navy-950 block leading-tight truncate">
+                {campus ? campus.name : 'CollegeCentre University'}
               </span>
-              <span className="text-[10px] sm:text-[11px] text-navy-500 font-medium truncate block">
-                Central Admissions & Intake
-              </span>
+              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-navy-500 font-medium truncate">
+                <span>{campus?.badge_text || 'Central Admissions & Intake'}</span>
+                {campus?.code && (
+                  <span className="font-mono bg-navy-100 text-navy-700 px-1.5 py-0.2 rounded uppercase">
+                    {campus.code}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -240,15 +303,31 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
           
           <div className="mb-6 sm:mb-8 pb-3 sm:pb-4 border-b border-navy-200/80 flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/80 mb-2">
-                Official Institutional Enrollment
+              <span 
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold mb-2"
+                style={{ 
+                  backgroundColor: `${campus?.banner_color || '#0c8ee9'}15`,
+                  color: campus?.banner_color || '#0c8ee9',
+                  borderColor: `${campus?.banner_color || '#0c8ee9'}40`
+                }}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>{campus?.slug ? `${campus.slug}.collegecentre.in` : 'Official Enrollment'}</span>
               </span>
               <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-navy-950 tracking-tight leading-tight">
-                Student Admission & Data Intake Form
+                {campus ? `${campus.name}` : 'Student Admission & Data Intake Form'}
               </h1>
+              <p className="text-xs sm:text-sm text-navy-600 mt-1">
+                {campus?.description || 'Submit your verified academic information directly to the central university registry.'}
+              </p>
             </div>
-            <div className="text-[11px] sm:text-xs text-navy-500 font-mono">
-              Academic Intake 2026-27 • Section A
+            <div className="text-left sm:text-right shrink-0">
+              <span className="text-[11px] font-bold text-academic-emerald uppercase tracking-wider block">
+                ● Live Intake Active
+              </span>
+              <span className="text-xs text-navy-500 font-mono">
+                Academic Year 2026-2027
+              </span>
             </div>
           </div>
 
