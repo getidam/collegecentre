@@ -252,7 +252,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     if (key) {
       try {
         const payload = {
-          from: fromAddr.includes('<') ? fromAddr : `CollegeCentre Admissions <${fromAddr}>`,
+          from: fromAddr.includes('<') ? fromAddr : `CollegeCentre <${fromAddr}>`,
           to: [cleanEmail],
           subject: emailSubject.trim(),
           text: emailContent.trim(),
@@ -1863,7 +1863,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                           {emailSubject || 'Official Student Admission Notice'}
                         </div>
                         <div className="text-xs text-navy-300 flex items-center gap-1.5 flex-wrap">
-                          <span>From: <strong className="text-brand-300">CollegeCentre Admissions</strong></span>
+                          <span>From: <strong className="text-brand-300">CollegeCentre</strong></span>
                           <span>&lt;{resendFromEmail}&gt;</span>
                         </div>
                         <div className="text-[11px] text-navy-400">
