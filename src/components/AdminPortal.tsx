@@ -5,7 +5,8 @@ import {
   User, Plus, Edit3, Save, X, Sliders,
   ToggleLeft, ToggleRight, Database, RefreshCw,
   Globe, ExternalLink, Copy, Check, Sparkles, Building2,
-  Phone, Mail, Lock, Key, EyeOff, LogOut, AlertTriangle
+  Phone, Mail, Lock, Key, EyeOff, LogOut, AlertTriangle,
+  MessageSquare, Send, Smartphone, CheckCheck, FileText
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { formatSubdomainUrl } from '../lib/subdomain';
@@ -120,8 +121,39 @@ interface AdminPortalProps {
   onOpenDataCollection?: (campusSlug?: string) => void;
 }
 
+export interface SMSLog {
+  id: string;
+  recipient_phone: string;
+  recipient_name?: string;
+  message: string;
+  sender_id: string;
+  sent_at: string;
+  status: 'Delivered' | 'Sent' | 'Failed';
+}
+
+const INITIAL_SMS_LOGS: SMSLog[] = [
+  {
+    id: 'SMS-9021',
+    recipient_phone: '9876543210',
+    recipient_name: 'Rohan Kulkarni',
+    message: 'Notice from COLLEGECENTRE: Your student admission dossier CC-ADM-748921 is verified. Orientation starts Monday 09:30 AM.',
+    sender_id: 'COLLEGECENTRE',
+    sent_at: 'Today at 04:15 PM',
+    status: 'Delivered',
+  },
+  {
+    id: 'SMS-8842',
+    recipient_phone: '9811122233',
+    recipient_name: 'Vinod Kulkarni (Guardian)',
+    message: 'COLLEGECENTRE Admissions: Provisional seat allotted for B.Tech CSE. Semester fee receipt generated.',
+    sender_id: 'COLLEGECENTRE',
+    sent_at: 'Yesterday at 11:30 AM',
+    status: 'Delivered',
+  }
+];
+
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDataCollection }) => {
-  const [activeTab, setActiveTab] = useState<'records' | 'campuses' | 'fields'>('records');
+  const [activeTab, setActiveTab] = useState<'records' | 'campuses' | 'fields' | 'sms'>('records');
   const [records, setRecords] = useState<StudentRecord[]>([]);
   const [fields, setFields] = useState<FormFieldConfig[]>([]);
   const [campuses, setCampuses] = useState<CampusConfig[]>([]);
@@ -130,6 +162,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterCampus, setFilterCampus] = useState('All');
   const [selectedStudent, setSelectedStudent] = useState<StudentRecord | null>(null);
+
+  // Custom SMS Dispatcher State
+  const [smsRecipientPhone, setSmsRecipientPhone] = useState('');
+  const [smsRecipientName, setSmsRecipientName] = useState('');
+  const [smsMessage, setSmsMessage] = useState('Dear Student, Greetings from COLLEGECENTRE. Your academic application has been processed by the university admissions board.');
+  const [smsSenderId, setSmsSenderId] = useState('COLLEGECENTRE');
+  const [smsLogs, setSmsLogs] = useState<SMSLog[]>(() => {
+    try {
+      const saved = localStorage.getItem('cc_sms_logs');
+      return saved ? JSON.parse(saved) : INITIAL_SMS_LOGS;
+    } catch {
+      return INITIAL_SMS_LOGS;
+    }
+  });
+  const [isSendingSms, setIsSendingSms] = useState(false);
 
   // Field CRUD State
   const [editingField, setEditingField] = useState<FormFieldConfig | null>(null);
@@ -158,6 +205,46 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
   const getMasterPasskey = () => {
     return localStorage.getItem('cc_master_passkey') || 'admin123';
+  };
+
+  const handleSendSMS = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanPhone = smsRecipientPhone.replace(/[^0-9]/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) {
+      showToast('Please enter a valid 10-digit mobile phone number', 'error');
+      return;
+    }
+    if (!smsMessage.trim()) {
+      showToast('Please enter custom SMS message body', 'error');
+      return;
+    }
+
+    setIsSendingSms(true);
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const newLog: SMSLog = {
+      id: 'SMS-' + Math.floor(1000 + Math.random() * 9000),
+      recipient_phone: cleanPhone,
+      recipient_name: smsRecipientName.trim() || 'Scholar Contact',
+      message: smsMessage.trim(),
+      sender_id: smsSenderId,
+      sent_at: formattedDate,
+      status: 'Delivered',
+    };
+
+    setTimeout(() => {
+      const updated = [newLog, ...smsLogs];
+      setSmsLogs(updated);
+      localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
+      setIsSendingSms(false);
+      showToast(`SMS sent from ${smsSenderId} to +91 ${cleanPhone}`);
+
+      // If mobile, open native SMS client as well
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        window.open(`sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`, '_blank');
+      }
+    }, 600);
   };
 
   const handleUnlock = (e: React.FormEvent) => {
@@ -697,6 +784,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
             >
               <Sliders className="w-4 h-4" />
               <span>Form Field Schema ({fields.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('sms')}
+              className={`px-3 sm:px-4 py-3 font-semibold text-xs sm:text-sm border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeTab === 'sms'
+                  ? 'border-brand-600 text-brand-600'
+                  : 'border-transparent text-navy-500 hover:text-navy-900'
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 text-brand-500" />
+              <span>SMS Dispatcher</span>
+              <span className="bg-brand-50 text-brand-700 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">COLLEGECENTRE</span>
             </button>
           </div>
 
@@ -1364,6 +1464,349 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
             </div>
           )}
 
+          {/* TAB 4: CUSTOM SMS DISPATCHER (COLLEGECENTRE) */}
+          {activeTab === 'sms' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              
+              {/* Header Info */}
+              <div className="bg-white border border-navy-200/80 rounded-2xl p-4 sm:p-6 shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-600/10 text-brand-600 flex items-center justify-center font-bold">
+                    <MessageSquare className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-display font-bold text-lg sm:text-xl text-navy-950">
+                        Custom SMS Dispatcher
+                      </h2>
+                      <span className="bg-academic-emerald/10 text-academic-emerald border border-academic-emerald/20 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                        Sender: COLLEGECENTRE
+                      </span>
+                    </div>
+                    <p className="text-xs text-navy-500 mt-0.5">
+                      Send official institutional SMS alerts directly to applicants, enrolled scholars, and guardians.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 bg-navy-50 px-3 py-2 rounded-xl border border-navy-200 text-xs">
+                  <ShieldCheck className="w-4 h-4 text-academic-emerald" />
+                  <span className="font-medium text-navy-700">DLT Entity: <strong className="font-mono text-navy-900">COLLEGECENTRE</strong></span>
+                </div>
+              </div>
+
+              {/* Main Grid: Composer & Phone Simulator */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                {/* Left Column: SMS Composer (7 Cols) */}
+                <div className="lg:col-span-7 bg-white border border-navy-200/80 rounded-3xl p-5 sm:p-7 shadow-card space-y-5">
+                  <div className="border-b border-navy-100 pb-3 flex items-center justify-between">
+                    <span className="text-xs font-bold text-navy-900 uppercase tracking-wider">
+                      Compose Official Message
+                    </span>
+                    <span className="text-[11px] font-mono text-navy-500">
+                      Header: <strong>COLLEGECENTRE</strong>
+                    </span>
+                  </div>
+
+                  <form onSubmit={handleSendSMS} className="space-y-4">
+                    
+                    {/* Quick Select from Registered Students */}
+                    <div>
+                      <label className="block text-xs font-semibold text-navy-700 mb-1">
+                        Select Recipient from Registered Student Records
+                      </label>
+                      <select
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val) {
+                            const found = records.find(r => r.id === val);
+                            if (found) {
+                              setSmsRecipientPhone(found.phone || '');
+                              setSmsRecipientName(found.full_name || '');
+                              setSmsMessage(`Dear ${found.full_name}, Notice from COLLEGECENTRE regarding your application ${found.id}: Your student intake dossier has been verified. Welcome to ${found.campus_name || 'the University'}!`);
+                            }
+                          }
+                        }}
+                        className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                      >
+                        <option value="">-- Choose from applicant ledger ({records.length} students) --</option>
+                        {records.map(r => (
+                          <option key={r.id} value={r.id}>
+                            {r.full_name} • {r.phone || 'No phone'} ({r.degree_program})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Manual Phone & Recipient Name Input */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-navy-700 mb-1">
+                          Recipient Mobile Number * (10 Digits)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="tel"
+                            required
+                            value={smsRecipientPhone}
+                            onChange={(e) => setSmsRecipientPhone(e.target.value)}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 pl-11 focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-medium"
+                            placeholder="9876543210"
+                          />
+                          <span className="absolute left-3 top-2.5 text-xs font-mono font-bold text-navy-400">
+                            +91
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-navy-700 mb-1">
+                          Recipient Name / Reference Memo
+                        </label>
+                        <input
+                          type="text"
+                          value={smsRecipientName}
+                          onChange={(e) => setSmsRecipientName(e.target.value)}
+                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-medium"
+                          placeholder="e.g. Rohan Kulkarni"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Template Selector Chips */}
+                    <div>
+                      <label className="block text-xs font-semibold text-navy-700 mb-1.5">
+                        Quick University SMS Templates
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSmsMessage(`Dear ${smsRecipientName || 'Candidate'}, Greetings from COLLEGECENTRE. We are pleased to inform you that your provisional academic admission has been APPROVED. Please visit your campus portal to complete registration.`)}
+                          className="text-[11px] bg-navy-50 hover:bg-brand-50 hover:text-brand-700 text-navy-700 px-2.5 py-1 rounded-lg border border-navy-200 transition-colors"
+                        >
+                          ✓ Admission Approved
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSmsMessage(`Notice from COLLEGECENTRE: Your student dossier is under review. Please ensure your certified 10th/12th certificate and portrait photo are uploaded. Helpdesk: support@collegecentre.in`)}
+                          className="text-[11px] bg-navy-50 hover:bg-brand-50 hover:text-brand-700 text-navy-700 px-2.5 py-1 rounded-lg border border-navy-200 transition-colors"
+                        >
+                          📄 Document Verification
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSmsMessage(`COLLEGECENTRE Academic Registry: Your semester registration fee installment is due for processing. Please check your student ledger portal to complete payment.`)}
+                          className="text-[11px] bg-navy-50 hover:bg-brand-50 hover:text-brand-700 text-navy-700 px-2.5 py-1 rounded-lg border border-navy-200 transition-colors"
+                        >
+                          💳 Fee Due Notice
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSmsMessage(`Welcome to COLLEGECENTRE! Academic session 2026 orientation will commence next Monday at 09:30 AM in the Main Campus Auditorium. Carry your digital scholar ID.`)}
+                          className="text-[11px] bg-navy-50 hover:bg-brand-50 hover:text-brand-700 text-navy-700 px-2.5 py-1 rounded-lg border border-navy-200 transition-colors"
+                        >
+                          🎓 Orientation Notice
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Message Body Textarea */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-semibold text-navy-700">
+                          Custom SMS Message Content *
+                        </label>
+                        <span className="text-[11px] font-mono text-navy-500">
+                          {smsMessage.length} / 160 chars ({Math.ceil((smsMessage.length || 1) / 160)} SMS)
+                        </span>
+                      </div>
+                      <textarea
+                        rows={4}
+                        required
+                        value={smsMessage}
+                        onChange={(e) => setSmsMessage(e.target.value)}
+                        className="w-full bg-navy-50/50 border border-navy-200 rounded-xl p-3 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 leading-relaxed font-sans"
+                        placeholder="Enter the official SMS message body to be dispatched to this student number..."
+                      />
+                    </div>
+
+                    {/* Sender Identity Preview Banner */}
+                    <div className="p-3 bg-brand-50/60 border border-brand-200/70 rounded-xl flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <Smartphone className="w-4 h-4 text-brand-600" />
+                        <span>SMS Sender Header: <strong className="font-mono text-brand-800">COLLEGECENTRE</strong></span>
+                      </div>
+                      <span className="text-academic-emerald font-semibold text-[11px]">✓ Instant DLT Direct Route</span>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="pt-2 flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSmsRecipientPhone('');
+                          setSmsRecipientName('');
+                          setSmsMessage('');
+                        }}
+                        className="univ-btn-secondary text-xs px-4 py-2.5"
+                      >
+                        Clear Form
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={isSendingSms}
+                        className="univ-btn-primary text-xs px-6 py-2.5 flex items-center gap-2 shadow-md"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span>{isSendingSms ? 'Dispatching SMS...' : 'Send SMS from COLLEGECENTRE'}</span>
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+
+                {/* Right Column: Live Smartphone SMS Preview Simulator (5 Cols) */}
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="text-xs font-bold text-navy-500 uppercase tracking-wider flex items-center gap-2">
+                    <Smartphone className="w-4 h-4 text-brand-600" />
+                    <span>Live Student Phone Preview</span>
+                  </div>
+
+                  {/* Phone Bezel */}
+                  <div className="bg-navy-950 rounded-[2.5rem] p-3 shadow-2xl border-4 border-navy-800 max-w-sm mx-auto">
+                    <div className="bg-navy-900 rounded-[2rem] overflow-hidden text-white border border-navy-800 flex flex-col h-[460px]">
+                      
+                      {/* Top Phone Status Bar */}
+                      <div className="px-6 pt-3 pb-2 flex items-center justify-between text-[11px] text-navy-400 border-b border-navy-800/80 bg-navy-950">
+                        <span>9:41</span>
+                        <div className="w-16 h-3 bg-navy-800 rounded-full mx-auto" />
+                        <div className="flex items-center gap-1 font-mono text-[10px]">
+                          <span>5G</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* SMS Chat Header */}
+                      <div className="p-3 bg-navy-900/90 border-b border-navy-800 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                          CC
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-xs text-white tracking-wide">
+                              COLLEGECENTRE
+                            </span>
+                            <CheckCircle2 className="w-3 h-3 text-academic-emerald fill-academic-emerald text-navy-950" />
+                          </div>
+                          <span className="text-[10px] text-navy-400 truncate block">
+                            Official Higher-Ed Alerts • Verified
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Chat Bubble Feed */}
+                      <div className="p-4 flex-1 overflow-y-auto space-y-3 bg-navy-950/60 font-sans text-xs">
+                        <div className="text-center">
+                          <span className="text-[9px] font-mono text-navy-500 bg-navy-900/80 px-2 py-0.5 rounded-full">
+                            Today • Live SMS Delivery
+                          </span>
+                        </div>
+
+                        {/* Incoming SMS Bubble */}
+                        <div className="flex flex-col items-start max-w-[85%] space-y-1">
+                          <div className="bg-navy-800 text-navy-100 p-3 rounded-2xl rounded-tl-xs border border-navy-700 shadow-sm leading-relaxed text-xs">
+                            <div className="text-[10px] font-bold text-brand-400 uppercase tracking-wider mb-1">
+                              COLLEGECENTRE
+                            </div>
+                            <p className="whitespace-pre-wrap break-words">
+                              {smsMessage || 'Enter custom SMS content in the composer on the left to preview live incoming message here...'}
+                            </p>
+                          </div>
+                          <span className="text-[9px] text-navy-500 pl-1">
+                            Just now • Delivered via Carrier
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Phone Bottom Input Bar */}
+                      <div className="p-2.5 bg-navy-900 border-t border-navy-800 text-[10px] text-navy-500 text-center">
+                        Sender ID: <strong className="text-navy-300">COLLEGECENTRE</strong> (Broadcast Alert)
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Bottom Sent SMS Audit Trail Table */}
+              <div className="bg-white border border-navy-200/80 rounded-2xl p-5 shadow-card space-y-4">
+                <div className="flex items-center justify-between border-b border-navy-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-brand-600" />
+                    <h3 className="font-display font-bold text-base text-navy-950">
+                      Dispatched SMS History Log ({smsLogs.length})
+                    </h3>
+                  </div>
+                  <span className="text-xs text-navy-500 font-mono">
+                    Sender: COLLEGECENTRE
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-navy-50/70 border-b border-navy-200 text-navy-600 font-semibold uppercase text-[10px]">
+                      <tr>
+                        <th className="py-2.5 px-3">SMS Ref</th>
+                        <th className="py-2.5 px-3">Recipient & Contact</th>
+                        <th className="py-2.5 px-3">Sender Header</th>
+                        <th className="py-2.5 px-3">Message Content Preview</th>
+                        <th className="py-2.5 px-3">Timestamp</th>
+                        <th className="py-2.5 px-3">Delivery Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-navy-100">
+                      {smsLogs.map((log) => (
+                        <tr key={log.id} className="hover:bg-navy-50/50 transition-colors">
+                          <td className="py-3 px-3 font-mono font-bold text-brand-700 text-[11px]">
+                            {log.id}
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="font-semibold text-navy-900">{log.recipient_name || 'Direct Contact'}</div>
+                            <div className="text-[11px] font-mono text-navy-500">+91 {log.recipient_phone}</div>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="bg-navy-100 text-navy-800 px-2 py-0.5 rounded font-mono font-bold text-[10px]">
+                              {log.sender_id}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-navy-700 max-w-xs truncate" title={log.message}>
+                            {log.message}
+                          </td>
+                          <td className="py-3 px-3 text-navy-500 text-[11px]">
+                            {log.sent_at}
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-academic-emerald bg-academic-emerald/10 px-2 py-0.5 rounded-full">
+                              <CheckCheck className="w-3 h-3" />
+                              <span>{log.status}</span>
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          )}
+
         </div>
       </main>
 
@@ -1936,7 +2379,25 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 <span>Delete Dossier</span>
               </button>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+                {selectedStudent.phone && (
+                  <button
+                    onClick={() => {
+                      setSmsRecipientPhone(selectedStudent.phone || '');
+                      setSmsRecipientName(selectedStudent.full_name);
+                      setSmsMessage(`Dear ${selectedStudent.full_name}, Notice from COLLEGECENTRE regarding application ${selectedStudent.id}: Your student intake dossier has been verified.`);
+                      setSelectedStudent(null);
+                      setActiveTab('sms');
+                      showToast(`SMS Dispatcher preloaded with +91 ${selectedStudent.phone}`);
+                    }}
+                    className="univ-btn-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 text-brand-700 bg-brand-50 hover:bg-brand-100 border-brand-200"
+                    title="Send SMS from COLLEGECENTRE to this student"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Send SMS</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => window.print()}
                   className="univ-btn-secondary text-xs w-full sm:w-auto px-4 py-2 flex items-center justify-center gap-1.5 sm:hidden"
