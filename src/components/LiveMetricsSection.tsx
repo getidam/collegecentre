@@ -1,97 +1,98 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, ShieldCheck, Users, Building, Server, CheckCircle2, Zap, ArrowUpRight } from 'lucide-react';
+import React from 'react';
+import { ShieldCheck, Users, Building, Server, Zap, CheckCircle2 } from 'lucide-react';
 
 export const LiveMetricsSection: React.FC = () => {
-  const [liveActivities, setLiveActivities] = useState([
-    { campus: 'National Institute of Technology', action: 'Published 3,450 Verified Semester Gradecards', time: '12s ago', tag: 'EXAM ENGINE' },
-    { campus: 'Delhi Metropolitan University', action: 'Completed 1-Click Fall Semester Course Enrollment', time: '45s ago', tag: 'SIS CORE' },
-    { campus: 'Apex Global Engineering Campus', action: 'Exported NAAC SSR Criterion 2.6 Data Tables', time: '2m ago', tag: 'ACCREDITATION' },
-    { campus: 'State University of Law & Governance', action: 'Issued 890 Cryptographically Sealed Degrees', time: '4m ago', tag: 'CREDENTIALS' },
-  ]);
+  const liveActivities = [
+    { campus: 'National Institute of Technology', action: 'Issued 3,450 Verifiable Grade Cards', time: '14s ago', tag: 'Examination' },
+    { campus: 'Metropolitan Autonomous University', action: 'Completed Fall Course Registration (9,820 Students)', time: '48s ago', tag: 'SIS Core' },
+    { campus: 'State University of Law & Governance', action: 'Exported NAAC SSR Criterion 2.6 Metrics', time: '2m ago', tag: 'Accreditation' },
+    { campus: 'Apex Institute of Medical Sciences', action: 'Reconciled ₹2.4 Cr Tuition & Scholarship Escrow', time: '4m ago', tag: 'Accounts' },
+  ];
 
   const metrics = [
-    { label: 'Verified Student Profiles', value: '654,290+', icon: Users, change: '+12.4% MoM' },
-    { label: 'Partner Campuses', value: '184', icon: Building, change: '14 States' },
-    { label: 'Grades Computed', value: '4.89M+', icon: ShieldCheck, change: '100% Cryptographic' },
-    { label: 'System Gateway Uptime', value: '99.99%', icon: Server, change: '12ms Response' },
+    { label: 'Active Enrolled Students', value: '650,000+', icon: Users, change: '+14% YoY', highlight: true },
+    { label: 'Accredited Partner Campuses', value: '184', icon: Building, change: '14 States' },
+    { label: 'Cryptographic Transcripts', value: '4.8M+', icon: ShieldCheck, change: '100% Tamper-Proof' },
+    { label: 'System Gateway Uptime', value: '99.99%', icon: Server, change: '12ms Latency' },
   ];
 
   return (
-    <section id="metrics" className="py-16 md:py-24 bg-paper-200 border-b-2 border-ink">
+    <section id="metrics" className="py-16 md:py-24 bg-white border-b border-navy-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b-2 border-ink gap-4">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-navy-100 gap-4">
           <div>
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-cjpOrange flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-cjpGreen animate-ping"></span>
-              REAL-TIME CAMPUS TELEMETRY
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/80 mb-3">
+              <span className="w-2 h-2 rounded-full bg-academic-emerald animate-pulse" />
+              Live Institutional Telemetry
             </span>
-            <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink uppercase tracking-tight">
-              CAMPUS SYSTEM MOMENTUM. <br />
-              <span className="text-cjpOrange">LIVE DATA METRICS.</span>
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-navy-950 tracking-tight">
+              Higher-Education System Momentum.
             </h2>
           </div>
-          <div className="font-mono text-xs text-ink-light uppercase">
+          <div className="text-xs text-navy-500 font-medium">
             AUDITED BY NATIONAL UNIVERSITY REGISTRY NETWORK
           </div>
         </div>
 
-        {/* 4 Brutalist Metric Counters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {/* 4 Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {metrics.map((m, idx) => (
             <div
               key={idx}
-              className="brutal-card p-6 bg-paper-50 border-2 border-ink relative"
+              className="bg-navy-50/40 border border-navy-200/80 rounded-2xl p-6 shadow-card transition-all hover:shadow-card-hover hover:border-navy-300"
             >
-              <div className="flex items-center justify-between mb-3">
-                <m.icon className="w-6 h-6 text-cjpOrange" />
-                <span className="font-mono text-[10px] font-bold text-cjpGreen bg-cjpGreen-tint px-2 py-0.5 border border-cjpGreen/20 uppercase">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-xl bg-white border border-navy-200 flex items-center justify-center text-brand-600 shadow-xs">
+                  <m.icon className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-semibold text-academic-emerald bg-academic-emerald/10 px-2.5 py-0.5 rounded-full">
                   {m.change}
                 </span>
               </div>
-              <div className="font-display font-black text-4xl sm:text-5xl text-ink leading-none mb-1">
+              <div className="font-display font-bold text-3xl sm:text-4xl text-navy-950 tracking-tight mb-1">
                 {m.value}
               </div>
-              <div className="font-mono text-xs font-bold uppercase text-ink-muted">
+              <div className="text-xs font-medium text-navy-500 uppercase tracking-wider">
                 {m.label}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Live Terminal Activity Feed */}
-        <div className="brutal-card bg-ink text-paper-100 p-6 border-2 border-ink shadow-brutal-lg">
-          <div className="flex items-center justify-between border-b border-paper-400/20 pb-4 mb-4">
+        {/* Live Activity Stream Terminal */}
+        <div className="bg-navy-950 rounded-2xl p-6 border border-navy-800 text-white shadow-subtle">
+          <div className="flex items-center justify-between border-b border-navy-800 pb-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500 border border-black"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500 border border-black"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500 border border-black"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-navy-700" />
+                <div className="w-2.5 h-2.5 rounded-full bg-navy-700" />
+                <div className="w-2.5 h-2.5 rounded-full bg-navy-700" />
               </div>
-              <span className="font-mono text-xs font-bold uppercase text-paper-300">
-                COLLEGECENTRE ENGINE // LIVE ACTIVITY FEED
+              <span className="text-xs font-semibold text-navy-300">
+                Central Registry Activity Stream
               </span>
             </div>
-            <div className="font-mono text-[10px] text-cjpGreen flex items-center gap-1 font-bold">
-              <Zap className="w-3 h-3" /> STREAM ACTIVE
+            <div className="text-xs text-academic-emerald flex items-center gap-1 font-semibold">
+              <Zap className="w-3.5 h-3.5" /> Synchronised
             </div>
           </div>
 
-          <div className="space-y-3 font-mono text-xs">
+          <div className="space-y-2.5 font-sans text-xs">
             {liveActivities.map((act, i) => (
               <div
                 key={i}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 bg-paper-100/5 hover:bg-paper-100/10 border border-paper-100/10 transition-colors gap-2"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-navy-900/60 hover:bg-navy-900 border border-navy-800/80 transition-colors gap-2"
               >
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="bg-cjpOrange text-white text-[9px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                  <span className="bg-brand-500/20 text-brand-300 text-[10px] font-semibold px-2.5 py-0.5 rounded">
                     {act.tag}
                   </span>
-                  <span className="text-paper-100 font-bold">{act.campus}</span>
-                  <span className="text-paper-400">? {act.action}</span>
+                  <span className="text-white font-medium">{act.campus}</span>
+                  <span className="text-navy-400">→ {act.action}</span>
                 </div>
-                <span className="text-paper-400 text-[10px] sm:text-right shrink-0">
+                <span className="text-navy-500 text-[11px] font-mono shrink-0">
                   {act.time}
                 </span>
               </div>

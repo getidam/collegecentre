@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { ArrowUp, Code2 } from 'lucide-react';
+import React from 'react';
+import { ArrowUp, Code2, Shield } from 'lucide-react';
 
 interface FooterProps {
   onScrollTo: (id: string) => void;
@@ -12,96 +12,98 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo }) => {
   };
 
   return (
-    <footer className="bg-ink text-paper-100 border-t-4 border-ink relative overflow-hidden font-mono text-xs">
+    <footer className="bg-navy-950 text-white border-t border-navy-800 relative overflow-hidden font-sans">
       
-      <div className="bg-cjpOrange text-white p-6 border-b-2 border-ink">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Top Action Banner */}
+      <div className="bg-gradient-to-r from-brand-700 via-navy-900 to-navy-950 border-b border-navy-800 py-10 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <h3 className="font-display font-bold text-2xl sm:text-3xl uppercase tracking-tight text-white">
-              READY TO UPGRADE YOUR CAMPUS OPERATING SYSTEM?
+            <h3 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight">
+              Ready to modernise your campus operating infrastructure?
             </h3>
-            <p className="font-sans text-sm text-white/90">
+            <p className="text-sm text-navy-300 mt-1">
               Join 180+ leading universities ending student paperwork and data silos today.
             </p>
           </div>
           <button
             onClick={onOpenDemo}
-            className="brutal-btn bg-paper-100 text-ink hover:bg-ink hover:text-white px-6 py-3 text-sm shrink-0 border-2 border-ink shadow-brutal"
+            className="px-6 py-3.5 rounded-xl bg-white text-navy-950 hover:bg-navy-100 font-semibold text-sm transition-all shrink-0 shadow-md"
           >
-            REQUEST UNIVERSITY SANDBOX →
+            Request Institutional Sandbox →
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      {/* Footer Navigation Columns */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-cjpOrange border-2 border-paper-100 flex items-center justify-center text-white font-display text-xl font-bold">
-                CC
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                <Shield className="w-5 h-5 text-brand-200" />
               </div>
               <div>
-                <span className="font-display font-bold text-2xl uppercase tracking-tight text-white block leading-none">
-                  COLLEGE<span className="text-cjpOrange">CENTRE</span>
+                <span className="font-display font-bold text-xl text-white tracking-tight block leading-none">
+                  College<span className="text-brand-400">Centre</span>
                 </span>
-                <span className="text-[10px] text-paper-400 tracking-wider">
-                  STUDENT DATA OPERATING SYSTEM • EST. 2026
+                <span className="text-xs text-navy-400">
+                  Higher-Ed Operating System • Est. 2026
                 </span>
               </div>
             </div>
 
-            <p className="font-sans text-xs text-paper-300 max-w-sm leading-relaxed">
+            <p className="text-xs text-navy-400 max-w-sm leading-relaxed font-normal">
               The high-integrity, decentralized student data management and campus operating system for universities, colleges, and autonomous institutes.
             </p>
 
-            <div className="flex items-center gap-2 text-paper-300">
-              <span className="w-2 h-2 rounded-full bg-cjpGreen animate-ping"></span>
-              <span className="text-[11px] font-bold text-cjpGreen">SYSTEM ENGINE: OPERATIONAL (99.99% SLA)</span>
+            <div className="flex items-center gap-2 text-xs text-academic-emerald font-semibold">
+              <span className="w-2 h-2 rounded-full bg-academic-emerald animate-pulse" />
+              <span>Core Gateway Status: Operational (99.99% SLA)</span>
             </div>
           </div>
 
           <div>
-            <h4 className="font-display font-bold text-sm uppercase text-cjpOrange mb-3 tracking-wider">
-              CORE SYSTEM
+            <h4 className="font-display font-semibold text-xs text-brand-400 mb-3.5 uppercase tracking-wider">
+              Core Architecture
             </h4>
-            <ul className="space-y-2 text-paper-300">
+            <ul className="space-y-2 text-xs text-navy-300 font-normal">
               <li>
                 <button onClick={() => onScrollTo('vision')} className="hover:text-white transition-colors">
-                  Chapter One: The Vision
+                  System Architecture
                 </button>
               </li>
               <li>
                 <button onClick={() => onScrollTo('manifesto')} className="hover:text-white transition-colors">
-                  The 5 Directives
+                  5 Core Standards
                 </button>
               </li>
               <li>
                 <button onClick={() => onScrollTo('modules')} className="hover:text-white transition-colors">
-                  Modular Architecture
+                  Modular System
                 </button>
               </li>
               <li>
                 <button onClick={() => onScrollTo('metrics')} className="hover:text-white transition-colors">
-                  Live Campus Telemetry
+                  Live Network Telemetry
                 </button>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-display font-bold text-sm uppercase text-cjpOrange mb-3 tracking-wider">
-              CAMPUS MODULES
+            <h4 className="font-display font-semibold text-xs text-brand-400 mb-3.5 uppercase tracking-wider">
+              Campus Modules
             </h4>
-            <ul className="space-y-2 text-paper-300">
+            <ul className="space-y-2 text-xs text-navy-300 font-normal">
               <li>
                 <button onClick={() => onScrollTo('modules')} className="hover:text-white transition-colors">
-                  Student Information (SIS)
+                  Student Info System (SIS)
                 </button>
               </li>
               <li>
                 <button onClick={() => onScrollTo('modules')} className="hover:text-white transition-colors">
-                  Exam & CGPA Engine
+                  Examination & Grades
                 </button>
               </li>
               <li>
@@ -111,36 +113,36 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo }) => {
               </li>
               <li>
                 <button onClick={() => onScrollTo('modules')} className="hover:text-white transition-colors">
-                  Fee Escrow & Accounts
+                  Fee Escrow & Invoicing
                 </button>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-display font-bold text-sm uppercase text-cjpOrange mb-3 tracking-wider">
-              INTERACTIVE & CODE
+            <h4 className="font-display font-semibold text-xs text-brand-400 mb-3.5 uppercase tracking-wider">
+              Resources & Code
             </h4>
-            <ul className="space-y-2 text-paper-300">
+            <ul className="space-y-2 text-xs text-navy-300 font-normal">
               <li>
-                <button onClick={() => onScrollTo('id-generator')} className="hover:text-cjpGold text-cjpGold-light font-bold transition-colors">
-                  ★ Student Pass Generator
+                <button onClick={() => onScrollTo('id-generator')} className="hover:text-white text-brand-300 font-medium transition-colors">
+                  ★ Digital Student Pass
                 </button>
               </li>
               <li>
-                <a href="https://github.com/getidam/collegecentre.in.git" target="_blank" rel="noopener noreferrer" className="hover:text-white flex items-center gap-1">
+                <a href="https://github.com/getidam/collegecentre.git" target="_blank" rel="noopener noreferrer" className="hover:text-white flex items-center gap-1">
                   <Code2 className="w-3.5 h-3.5" />
                   <span>GitHub Repository</span>
                 </a>
               </li>
               <li>
                 <button onClick={() => onScrollTo('checklist')} className="hover:text-white transition-colors">
-                  Accreditation Checklist
+                  Compliance Matrix
                 </button>
               </li>
               <li>
                 <button onClick={() => onScrollTo('faq')} className="hover:text-white transition-colors">
-                  Frequently Asked Questions
+                  Leadership FAQ
                 </button>
               </li>
             </ul>
@@ -148,29 +150,23 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo }) => {
 
         </div>
 
-        <div className="border-t border-paper-100/20 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-paper-400 text-[11px]">
+        <div className="border-t border-navy-800/80 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-navy-400">
           <div>
-            © 2026 COLLEGECENTRE (getidam/collegecentre.in). ALL RIGHTS RESERVED.
+            © 2026 CollegeCentre (getidam/collegecentre). All rights reserved.
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-paper-300">DPDPA 2023 & FERPA COMPLIANT</span>
+            <span>DPDPA 2023 & FERPA Compliant</span>
             <button
               onClick={scrollToTop}
-              className="p-2 border border-paper-100/30 hover:bg-paper-100 hover:text-ink transition-colors flex items-center gap-1 font-bold"
+              className="p-2 rounded-lg border border-navy-800 hover:bg-navy-900 hover:text-white transition-colors flex items-center gap-1 font-medium"
             >
-              <span>TOP</span>
+              <span>Back to Top</span>
               <ArrowUp className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-      </div>
-
-      <div className="grid grid-cols-3 h-2.5 w-full">
-        <div className="bg-[#c9561e]" />
-        <div className="bg-[#f4ebd7]" />
-        <div className="bg-[#166534]" />
       </div>
 
     </footer>

@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { ArrowRight, IdCard, ShieldCheck, Terminal, BookOpen, Globe, Code2, Users, CheckCircle2, UserPlus } from 'lucide-react';
+import React from 'react';
+import { ArrowRight, ShieldCheck, CheckCircle2, UserPlus, IdCard, Building2, Award, ArrowUpRight } from 'lucide-react';
 
 interface HeroSectionProps {
   onOpenDemo: () => void;
@@ -8,125 +8,116 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection }) => {
-  const socialPills = [
-    { label: 'Registrar Network', icon: Users, href: '#', isHighlight: true },
-    { label: 'Campus Registry', icon: Globe, href: '#' },
-    { label: 'GitHub Core', icon: Code2, href: 'https://github.com/getidam/collegecentre.git' },
-    { label: 'API v3 Docs', icon: Terminal, href: '#' },
-    { label: 'Accreditation Shield', icon: ShieldCheck, href: '#' },
+  const trustedUniversities = [
+    'National Institutes of Technology',
+    'State Autonomous Universities',
+    'Autonomous Medical Colleges',
+    'Indian Institute of Information Technology',
+    'Deemed Research Campuses',
   ];
 
   return (
-    <section id="hero" className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden border-b-2 border-ink">
-      <div className="absolute inset-0 pointer-events-none opacity-30" style={{
-        backgroundImage: 'linear-gradient(#d7c59f 1px, transparent 1px), linear-gradient(90deg, #d7c59f 1px, transparent 1px)',
-        backgroundSize: '48px 48px'
-      }} />
+    <section id="hero" className="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden bg-gradient-to-b from-navy-50/50 via-white to-white border-b border-navy-100">
+      
+      {/* Subtle grid pattern background */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.4]" 
+        style={{
+          backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+          backgroundSize: '32px 32px'
+        }} 
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        <div className="flex items-center justify-center mb-6">
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 bg-paper-100 border-2 border-ink rounded-full shadow-brutal-sm font-mono text-xs font-bold text-ink">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cjpGreen-light opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-cjpGreen"></span>
+        {/* Status pill badge */}
+        <div className="flex items-center justify-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-navy-100/80 border border-navy-200/80 text-navy-800 text-xs font-semibold shadow-sm backdrop-blur-sm">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-academic-emerald opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-academic-emerald"></span>
             </span>
-            <span>CAMPUS OS 3.2 — LIVE & POWERING 180+ UNIVERSITIES</span>
+            <span>Accredited Academic OS 3.2 • Unified Student Lifecycle</span>
           </div>
         </div>
 
-        <div className="text-center max-w-5xl mx-auto">
-          <h1 className="font-display font-extrabold text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.92] text-ink uppercase mb-6">
-            THE OPERATING SYSTEM <br />
-            <span className="text-cjpOrange inline-block transform -skew-x-2">FOR MODERN</span> <br />
-            <span className="relative inline-block">
-              UNIVERSITIES.
-              <svg className="absolute -bottom-2 left-0 w-full h-3 text-cjpOrange" viewBox="0 0 100 12" preserveAspectRatio="none">
-                <path d="M0,5 Q50,12 100,5" stroke="currentColor" strokeWidth="4" fill="none" />
-              </svg>
+        {/* Hero Typography */}
+        <div className="text-center max-w-4xl mx-auto">
+          <h1 className="font-display font-bold text-4xl sm:text-6xl md:text-7xl tracking-tight leading-[1.08] text-navy-950">
+            The Modern Operating System for <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-navy-800">
+              Higher Education.
             </span>
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl md:text-2xl text-ink-muted max-w-3xl mx-auto font-sans leading-relaxed font-medium">
-            CollegeCentre dismantles obsolete campus ERPs and bureaucratic paper chaos with a unified, 
-            immutable <strong className="text-ink font-bold">Student Lifecycle & Data Engine</strong>. 
-            From admission to degree convocation in real-time.
+          <p className="mt-6 text-lg sm:text-xl text-navy-600 max-w-2xl mx-auto font-normal leading-relaxed">
+            CollegeCentre replaces obsolete legacy ERPs with a unified, tamper-proof academic infrastructure. 
+            From student admission to degree convocation in real-time.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm font-mono font-bold text-ink">
-            <span className="flex items-center gap-1.5 bg-paper-100 px-3 py-1 border border-ink shadow-brutal-sm">
-              <CheckCircle2 className="w-4 h-4 text-cjpGreen" /> 100% Tamper-Proof Transcripts
+          {/* Value props badges */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs font-medium text-navy-700">
+            <span className="inline-flex items-center gap-1.5 bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200/60">
+              <CheckCircle2 className="w-4 h-4 text-academic-emerald" /> Cryptographic Grade Cards
             </span>
-            <span className="flex items-center gap-1.5 bg-paper-100 px-3 py-1 border border-ink shadow-brutal-sm">
-              <CheckCircle2 className="w-4 h-4 text-cjpGreen" /> Zero ERP Licensing Extortion
+            <span className="inline-flex items-center gap-1.5 bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200/60">
+              <CheckCircle2 className="w-4 h-4 text-academic-emerald" /> 1-Click NAAC & NIRF SSR
             </span>
-            <span className="flex items-center gap-1.5 bg-paper-100 px-3 py-1 border border-ink shadow-brutal-sm">
-              <CheckCircle2 className="w-4 h-4 text-cjpGreen" /> NAAC / NIRF 1-Click Reports
+            <span className="inline-flex items-center gap-1.5 bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200/60">
+              <CheckCircle2 className="w-4 h-4 text-academic-emerald" /> DPDPA & FERPA Compliance
             </span>
           </div>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* Action CTAs */}
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <button
               onClick={onOpenDemo}
-              className="w-full sm:w-auto brutal-btn bg-cjpOrange text-white hover:bg-ink px-8 py-4 text-lg font-display tracking-wider flex items-center justify-center gap-3 shadow-brutal"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-navy-950 text-white hover:bg-navy-800 font-semibold text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm"
             >
-              <span>DEPLOY UNIVERSITY OS</span>
-              <ArrowRight className="w-5 h-5" />
+              <span>Schedule Institutional Walkthrough</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
 
             {onOpenDataCollection && (
               <button
                 onClick={onOpenDataCollection}
-                className="w-full sm:w-auto brutal-btn bg-ink text-paper-100 hover:bg-cjpOrange px-7 py-4 text-lg font-display tracking-wider flex items-center justify-center gap-2.5 shadow-brutal border-2 border-ink"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-brand-50 text-brand-700 hover:bg-brand-100 font-semibold text-sm border border-brand-200/80 transition-all duration-150 flex items-center justify-center gap-2"
               >
-                <UserPlus className="w-5 h-5 text-cjpOrange" />
-                <span>STUDENT DATA PORTAL ★</span>
+                <UserPlus className="w-4 h-4 text-brand-600" />
+                <span>Student Admission Form</span>
               </button>
             )}
 
             <button
               onClick={() => onScrollTo('id-generator')}
-              className="w-full sm:w-auto brutal-btn bg-paper-100 text-ink hover:bg-paper-50 px-7 py-4 text-lg font-display tracking-wider flex items-center justify-center gap-2.5 shadow-brutal border-2 border-ink"
+              className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-white text-navy-700 hover:bg-navy-50 font-semibold text-sm border border-navy-200 transition-all duration-150 flex items-center justify-center gap-2 shadow-sm"
             >
-              <IdCard className="w-5 h-5 text-cjpOrange" />
-              <span>GENERATE ID CARD</span>
+              <IdCard className="w-4 h-4 text-navy-500" />
+              <span>Digital ID Pass</span>
             </button>
           </div>
 
-          <div className="mt-6">
-            <button
-              onClick={() => onScrollTo('manifesto')}
-              className="font-mono text-xs uppercase font-bold text-ink hover:text-cjpOrange underline underline-offset-4 tracking-wider inline-flex items-center gap-1"
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>READ THE 5 DIRECTIVES & CHARTER</span>
-            </button>
-          </div>
-
-          <div className="mt-12 pt-8 border-t-2 border-ink/20">
-            <div className="text-[11px] font-mono uppercase text-ink-light tracking-widest mb-3 font-bold">
-              OFFICIAL SYSTEM CHANNELS & AUDIT REGISTRY
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-2.5">
-              {socialPills.map((pill) => (
-                <a
-                  key={pill.label}
-                  href={pill.href}
-                  target={pill.href.startsWith('http') ? '_blank' : '_self'}
-                  rel="noopener noreferrer"
-                  className={
-                    'brutal-pill px-3.5 py-1.5 text-xs font-mono font-bold flex items-center gap-1.5 ' +
-                    (pill.isHighlight ? 'bg-ink text-paper-100 hover:bg-cjpOrange' : 'text-ink')
-                  }
+          {/* Institutional Trust Indicators */}
+          <div className="mt-14 pt-10 border-t border-navy-100">
+            <p className="text-xs font-semibold uppercase tracking-wider text-navy-400 mb-5">
+              TRUSTED & ADOPTED BY LEADING AUTONOMOUS UNIVERSITIES & INSTITUTES
+            </p>
+            
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
+              {trustedUniversities.map((univ) => (
+                <div 
+                  key={univ} 
+                  className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-navy-200/70 rounded-lg text-xs font-medium text-navy-600 shadow-sm"
                 >
-                  <pill.icon className="w-3.5 h-3.5 text-cjpOrange" />
-                  <span>{pill.label}</span>
-                </a>
+                  <Building2 className="w-3.5 h-3.5 text-navy-400" />
+                  <span>{univ}</span>
+                </div>
               ))}
             </div>
           </div>
 
         </div>
+
       </div>
     </section>
   );

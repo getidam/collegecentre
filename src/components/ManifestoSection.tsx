@@ -1,92 +1,93 @@
-﻿import React from 'react';
+import React from 'react';
 import { ShieldCheck, Clock, Lock, Sparkles, Award } from 'lucide-react';
 
 export const ManifestoSection: React.FC = () => {
   const directives = [
     {
       num: '01',
-      tagline: 'END TRANSCRIPT FORGERY & DEGREE TAMPERING',
+      tagline: 'TRANSCRIPT INTEGRITY',
       title: 'Cryptographically Verifiable Academic Transcripts',
-      desc: 'Every grade sheet, provisional certificate, and degree scroll is minted with a verifiable cryptographic hash. Global employers, embassies, and verification agencies authenticate student credentials in under 2 seconds without manual registrar mail queries.',
+      desc: 'Every grade card and degree scroll is signed with an immutable cryptographic hash. Global employers, embassies, and verification agencies authenticate student credentials in under 2 seconds.',
       icon: ShieldCheck,
-      pill: 'ZERO FRAUD DIRECTIVE',
+      pill: 'Zero Forgery',
     },
     {
       num: '02',
-      tagline: 'KILL THE PHYSICAL QUEUES & PAPER FORMS',
-      title: '1-Click Universal Semester Enrollment',
-      desc: 'Students select core electives, review automated prerequisite checks, clear lab fees, and receive their digital semester course schedule instantaneously. Section limits and quota rules are enforced algorithmically with zero paperwork.',
+      tagline: 'SEMESTER EFFICIENCY',
+      title: '1-Click Course Registration & Auto-Timetable',
+      desc: 'Students choose core electives, review automated prerequisite checks, clear lab fees, and receive their digital semester schedule instantaneously without paper forms or physical queues.',
       icon: Clock,
-      pill: 'ZERO PAPER DIRECTIVE',
+      pill: 'Frictionless',
     },
     {
       num: '03',
-      tagline: '100% RECONCILED TUITION & SCHOLARSHIP LEDGER',
-      title: 'Automated Real-Time Fee Settlement & Escrow',
-      desc: 'Direct payment gateway integration with instant receipt generation, installment tracking, government scholarship deduction, and automated fine waivers. The finance dean gets daily automated bank reconciliation reports.',
+      tagline: 'FINANCIAL ACCURACY',
+      title: 'Automated Fee Settlement & Scholarship Escrow',
+      desc: 'Direct payment gateway integration with instant receipt generation, installment tracking, government scholarship deductions, and daily reconciled ledger reports for the finance dean.',
       icon: Award,
-      pill: 'FINANCIAL INTEGRITY DIRECTIVE',
+      pill: 'Zero Leakage',
     },
     {
       num: '04',
-      tagline: 'STRICT ROLE-BASED DATA ACCESS & STUDENT PRIVACY',
-      title: 'Zero-Leak Identity & DPDPA/FERPA Compliance',
-      desc: 'Granular permissions ensure professors only access their assigned classroom marks, registrars control policy changes, and students own their personal data. Multi-factor authentication and tamper-evident audit logs protect all actions.',
+      tagline: 'DATA GOVERNANCE',
+      title: 'Granular Role-Based Access (DPDPA 2023 & FERPA)',
+      desc: 'Granular permissions ensure professors only access their assigned classroom marks, registrars control policy changes, and students own their personal data with audit logging.',
       icon: Lock,
-      pill: 'PRIVACY & SECURITY DIRECTIVE',
+      pill: 'Privacy by Design',
     },
     {
       num: '05',
-      tagline: 'AUTOMATE ACCREDITATION PANIC',
-      title: '1-Click Institutional Audit Reports (NAAC, NIRF & NBA)',
-      desc: 'Convert continuous student data, attendance rates, faculty ratios, exam pass percentages, and placement metrics into exportable NAAC Self-Study Reports (SSR) and NIRF data tables in seconds instead of months of manual panic.',
+      tagline: 'ACCREDITATION READINESS',
+      title: '1-Click Institutional Audit Reports (NAAC, NIRF, NBA)',
+      desc: 'Convert continuous student data, attendance rates, faculty-student ratios, and placement records into exportable NAAC Self-Study Reports (SSR) in minutes instead of months.',
       icon: Sparkles,
-      pill: 'ACCREDITATION DIRECTIVE',
+      pill: 'Automated SSR',
     },
   ];
 
   return (
-    <section id="manifesto" className="py-16 md:py-24 bg-paper-100 border-b-2 border-ink">
+    <section id="manifesto" className="py-16 md:py-24 bg-navy-50/50 border-b border-navy-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="max-w-3xl mb-12">
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-cjpOrange bg-cjpOrange/10 px-3 py-1 border border-cjpOrange/30 inline-block mb-3">
-            ★ THE CAMPUS CHARTER ★
+        {/* Section Header */}
+        <div className="max-w-3xl mb-14">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/80 mb-3">
+            Institutional Directives
           </span>
-          <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink uppercase tracking-tight">
-            THE FIVE CORE DIRECTIVES. <br />
-            <span className="text-cjpOrange">OUR SYSTEM MANIFESTO.</span>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl text-navy-950 tracking-tight">
+            The Five Core Standards of Modern Higher Education.
           </h2>
-          <p className="mt-4 text-ink-muted text-base sm:text-lg font-medium">
-            Read it once. Read it twice. Then implement it on your campus to end student data chaos forever.
+          <p className="mt-3 text-navy-600 text-sm sm:text-base font-normal">
+            Engineered to establish transparency, institutional efficiency, and student data integrity across accredited universities.
           </p>
         </div>
 
-        <div className="space-y-6">
+        {/* 5 Cards List */}
+        <div className="space-y-4">
           {directives.map((dir) => (
             <div
               key={dir.num}
-              className="brutal-card p-6 sm:p-8 bg-paper-50 border-2 border-ink hover:border-cjpOrange transition-all"
+              className="bg-white border border-navy-200/80 rounded-2xl p-6 sm:p-7 shadow-card transition-all hover:shadow-card-hover hover:border-navy-300"
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                <div className="lg:col-span-2 flex items-center lg:flex-col lg:items-start justify-between border-b lg:border-b-0 lg:border-r border-ink/20 pb-4 lg:pb-0 lg:pr-6">
-                  <span className="font-display font-black text-5xl sm:text-6xl text-cjpOrange leading-none">
+                <div className="lg:col-span-2 flex items-center lg:flex-col lg:items-start justify-between border-b lg:border-b-0 lg:border-r border-navy-100 pb-3 lg:pb-0 lg:pr-6">
+                  <span className="font-display font-black text-3xl sm:text-4xl text-brand-600 leading-none">
                     {dir.num}
                   </span>
-                  <span className="bg-ink text-paper-100 font-mono text-[9px] font-bold px-2 py-1 uppercase tracking-wider mt-2">
+                  <span className="text-[11px] font-semibold text-navy-500 bg-navy-50 px-2.5 py-1 rounded-full mt-2">
                     {dir.pill}
                   </span>
                 </div>
 
-                <div className="lg:col-span-10 space-y-2">
-                  <div className="font-mono text-xs font-bold uppercase tracking-wider text-cjpOrange">
+                <div className="lg:col-span-10 space-y-1.5">
+                  <div className="text-xs font-bold uppercase tracking-wider text-brand-600">
                     {dir.tagline}
                   </div>
-                  <h3 className="font-display font-bold text-2xl sm:text-3xl text-ink uppercase tracking-tight">
+                  <h3 className="font-display font-bold text-xl text-navy-950 tracking-tight">
                     {dir.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-ink-muted font-sans font-normal leading-relaxed pt-1">
+                  <p className="text-sm text-navy-600 font-normal leading-relaxed pt-1">
                     {dir.desc}
                   </p>
                 </div>
@@ -94,20 +95,6 @@ export const ManifestoSection: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="mt-12 p-6 bg-ink text-paper-100 border-2 border-ink shadow-brutal flex flex-col sm:flex-row items-center justify-between gap-4 font-mono">
-          <div className="text-center sm:text-left">
-            <div className="font-display text-2xl font-bold uppercase text-cjpOrange">
-              ACCESSIBLE • ACCREDITED • TAMPER-PROOF
-            </div>
-            <div className="text-xs text-paper-300">
-              The standardized student operating architecture designed for 21st-century higher education.
-            </div>
-          </div>
-          <span className="bg-cjpOrange text-white text-xs font-bold px-4 py-2 uppercase tracking-widest shrink-0">
-            ARTICLE 2026.UGC
-          </span>
         </div>
 
       </div>

@@ -1,129 +1,66 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --paper: #f4ebd7;
-    --paper-light: #fbf8f2;
-    --ink: #17191c;
-    --cjp-orange: #c9561e;
-    --cjp-green: #166534;
-  }
-
   body {
-    background-color: var(--paper);
-    color: var(--ink);
-    font-family: 'Plus Jakarta Sans', Inter, sans-serif;
-  }
-
-  h1, h2, h3, h4, .font-display {
-    font-family: 'Oswald', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: -0.02em;
+    @apply bg-white text-navy-900 font-sans;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
+/* Smooth continuous marquee */
 @keyframes marquee {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
 }
 
-@keyframes marquee-reverse {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0%); }
-}
-
 .animate-marquee {
   display: flex;
-  width: max-content;
-  animation: marquee 28s linear infinite;
+  width: 200%;
+  animation: marquee 35s linear infinite;
 }
 
 .animate-marquee:hover {
   animation-play-state: paused;
 }
 
-.animate-marquee-reverse {
-  display: flex;
-  width: max-content;
-  animation: marquee-reverse 32s linear infinite;
+/* Clean higher-ed UI utility classes */
+.univ-card {
+  @apply bg-white border border-navy-200/80 rounded-2xl shadow-card transition-all duration-200 hover:shadow-card-hover hover:border-navy-300;
 }
 
-.animate-marquee-reverse:hover {
-  animation-play-state: paused;
+.univ-btn-primary {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-navy-900 text-white font-medium text-sm transition-all duration-150 hover:bg-navy-800 active:scale-[0.99] shadow-sm;
 }
 
-/* Brutalist / CJP style UI elements */
-.brutal-border {
-  border: 2px solid #17191c;
+.univ-btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white text-navy-800 font-medium text-sm border border-navy-200 transition-all duration-150 hover:bg-navy-50 hover:border-navy-300 active:scale-[0.99] shadow-sm;
 }
 
-.brutal-card {
-  border: 2px solid #17191c;
-  background-color: #fbf8f2;
-  box-shadow: 4px 4px 0px #17191c;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+.univ-btn-accent {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white font-medium text-sm transition-all duration-150 hover:bg-brand-700 active:scale-[0.99] shadow-sm shadow-brand-500/20;
 }
 
-.brutal-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px #17191c;
+.univ-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide;
 }
 
-.brutal-btn {
-  border: 2px solid #17191c;
-  font-family: 'Oswald', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 3px 3px 0px #17191c;
-  transition: all 0.12s ease;
-}
-
-.brutal-btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0px #17191c;
-}
-
-.brutal-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px #17191c;
-}
-
-.brutal-pill {
-  border: 1.5px solid #17191c;
-  border-radius: 9999px;
-  background-color: #fbf8f2;
-  box-shadow: 2px 2px 0px #17191c;
-  transition: all 0.15s ease;
-}
-
-.brutal-pill:hover {
-  background-color: #17191c;
-  color: #f4ebd7;
-}
-
-/* Tricolor Banner Accent */
-.tricolor-border {
-  border-top: 4px solid #c9561e;
-  border-bottom: 4px solid #166534;
-}
-
-/* Custom Scrollbar */
+/* Clean custom scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #e8dcbe;
+  background: #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #17191c;
-  border: 2px solid #e8dcbe;
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #c9561e;
+  background: #94a3b8;
 }
-

@@ -1,124 +1,125 @@
-﻿import React from 'react';
-import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import React from 'react';
+import { XCircle, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 export const VisionSection: React.FC = () => {
   return (
-    <section id="vision" className="py-16 md:py-24 bg-paper-200 border-b-2 border-ink">
+    <section id="vision" className="py-16 md:py-24 bg-white border-b border-navy-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b-2 border-ink gap-4">
-          <div>
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-cjpOrange block mb-1">
-              CHAPTER ONE • THE ARCHITECTURAL RESET
-            </span>
-            <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink uppercase tracking-tight">
-              WHY LEGACY UNIVERSITY ERPS <br />
-              <span className="text-cjpOrange">FAIL MODERN CAMPUSES.</span>
-            </h2>
-          </div>
-          <div className="max-w-md font-sans text-sm text-ink-muted">
-            For three decades, universities have tolerated sluggish 1990s monolithic software, disconnected spreadsheets, and paper stamped queues. CollegeCentre is the clean break.
-          </div>
+        {/* Section Header */}
+        <div className="max-w-3xl mb-14">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/80 mb-3">
+            Architectural Transformation
+          </span>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl text-navy-950 tracking-tight">
+            Why Legacy University ERPs Fail Modern Campuses.
+          </h2>
+          <p className="mt-3 text-navy-600 text-sm sm:text-base font-normal">
+            For three decades, institutions have struggled with sluggish 1990s monolithic software, disconnected departmental spreadsheets, and paper queues. CollegeCentre is the clean architectural reset.
+          </p>
         </div>
 
+        {/* Side-by-side comparison cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          <div className="brutal-card bg-paper-100 p-6 sm:p-8 border-2 border-ink relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-red-600 text-white font-mono text-[10px] font-bold px-3 py-1 uppercase tracking-wider">
-              THE OBSOLETE STATUS QUO
-            </div>
-            
-            <div className="flex items-center gap-3 mb-6 pt-2">
-              <div className="w-10 h-10 bg-red-100 border-2 border-ink flex items-center justify-center text-red-600">
-                <AlertTriangle className="w-5 h-5" />
+          {/* Legacy System Card */}
+          <div className="bg-navy-50/50 border border-navy-200/80 rounded-2xl p-6 sm:p-8 shadow-card relative overflow-hidden">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-navy-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center font-bold">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-display font-semibold text-lg text-navy-900">
+                    Legacy Campus ERPs & Excel
+                  </h3>
+                  <span className="text-xs text-navy-500 font-medium">
+                    Fragmented, vulnerable & slow
+                  </span>
+                </div>
               </div>
-              <div>
-                <h3 className="font-display font-bold text-2xl uppercase text-ink">
-                  Legacy ERPs & Fragmented Excel
-                </h3>
-                <span className="text-xs font-mono text-ink-light">Fragile, slow & opaque</span>
-              </div>
+
+              <span className="text-xs font-semibold text-red-700 bg-red-100/70 px-2.5 py-1 rounded-full">
+                Obsolete
+              </span>
             </div>
 
-            <ul className="space-y-4 font-sans text-sm text-ink-muted">
+            <ul className="space-y-4 text-sm text-navy-600">
               <li className="flex items-start gap-3">
-                <span className="text-red-500 font-bold font-mono">✕</span>
+                <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink font-semibold">Disconnected Data Silos:</strong> Admissions, exam cell, library, and accounts use 4 different isolated databases that don't sync.
+                  <strong className="text-navy-900 font-semibold">Disconnected Department Silos:</strong> Admissions, exam cell, library, and accounts use 4 different databases that do not sync.
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-500 font-bold font-mono">✕</span>
+                <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink font-semibold">Transcript Forgery Vulnerability:</strong> Paper marksheets without cryptographic verification invite fraudulent certificates.
+                  <strong className="text-navy-900 font-semibold">Transcript Forgery Vulnerabilities:</strong> Paper marksheets lack cryptographic signatures, making verification slow and manual.
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-500 font-bold font-mono">✕</span>
+                <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink font-semibold">Exhausting NAAC / NIRF Audits:</strong> Staff spend 3 to 6 months manually collating records for accreditation committees.
+                  <strong className="text-navy-900 font-semibold">Manual Accreditation Stress:</strong> Staff spend months assembling documentation for NAAC, NIRF, and NBA inspections.
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-500 font-bold font-mono">✕</span>
+                <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink font-semibold">Hostage Annual Maintenance Contracts:</strong> Vendor lock-ins demanding massive yearly fees for minor schema tweaks.
+                  <strong className="text-navy-900 font-semibold">Costly Vendor Lock-ins:</strong> Massive annual maintenance contracts (AMC) required for even simple curriculum changes.
                 </div>
               </li>
             </ul>
-
-            <div className="mt-6 pt-4 border-t border-ink/20 font-mono text-xs text-red-700 bg-red-50 p-3 border border-red-200">
-              ⚠ Result: Frustrated students waiting in lines, delayed degrees, and registrar administrative burnout.
-            </div>
           </div>
 
-          <div className="brutal-card bg-paper-50 p-6 sm:p-8 border-2 border-ink relative overflow-hidden shadow-brutal-lg">
-            <div className="absolute top-0 right-0 bg-cjpGreen text-white font-mono text-[10px] font-bold px-3 py-1 uppercase tracking-wider">
-              COLLEGECENTRE ENGINE
-            </div>
-            
-            <div className="flex items-center gap-3 mb-6 pt-2">
-              <div className="w-10 h-10 bg-cjpGreen-tint border-2 border-ink flex items-center justify-center text-cjpGreen">
-                <CheckCircle2 className="w-5 h-5" />
+          {/* CollegeCentre Modern Card */}
+          <div className="bg-gradient-to-br from-white to-brand-50/30 border border-brand-200/80 rounded-2xl p-6 sm:p-8 shadow-card-hover relative overflow-hidden">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-brand-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-academic-emerald/10 text-academic-emerald flex items-center justify-center font-bold">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-display font-semibold text-lg text-navy-900">
+                    CollegeCentre Academic OS
+                  </h3>
+                  <span className="text-xs text-brand-700 font-medium">
+                    Unified, cryptographic & auditable
+                  </span>
+                </div>
               </div>
-              <div>
-                <h3 className="font-display font-bold text-2xl uppercase text-ink">
-                  Universal Campus OS
-                </h3>
-                <span className="text-xs font-mono text-cjpGreen font-bold">Fast, immutable & auditable</span>
-              </div>
+
+              <span className="text-xs font-semibold text-academic-emerald bg-academic-emerald/10 px-2.5 py-1 rounded-full">
+                Next-Gen
+              </span>
             </div>
 
-            <ul className="space-y-4 font-sans text-sm text-ink-muted">
+            <ul className="space-y-4 text-sm text-navy-600">
               <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 text-cjpGreen shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-academic-emerald shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink font-semibold">Single Source of Truth:</strong> One unified record follows the student from registration through convocation and alumni engagement.
+                  <strong className="text-navy-900 font-semibold">Single Unified Student Registry:</strong> One tamper-evident master record follows the student from enrollment to alumni network.
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 text-cjpGreen shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-academic-emerald shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink font-semibold">Cryptographically Sealed Degrees:</strong> Instant SHA-256 verifiable transcripts accessible by global employers with a QR scan.
+                  <strong className="text-navy-900 font-semibold">Cryptographically Sealed Transcripts:</strong> SHA-256 digital degree certificates verifiable by employers in under 2 seconds.
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 text-cjpGreen shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-academic-emerald shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink font-semibold">1-Click Accreditation Compliance:</strong> Real-time automated data pipelines mapped directly to NAAC, NBA, and NIRF criteria.
+                  <strong className="text-navy-900 font-semibold">Automated Accreditation SSR:</strong> Instant export of quantitative data points for NAAC, NIRF, and NBA compliance.
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 text-cjpGreen shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-academic-emerald shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink font-semibold">Open Extensibility & High Availability:</strong> Modular API architecture with 99.99% uptime and zero vendor lock-in traps.
+                  <strong className="text-navy-900 font-semibold">Modular Open Architecture:</strong> 99.99% high-availability cloud infrastructure with REST & GraphQL data connectors.
                 </div>
               </li>
             </ul>
-
-            <div className="mt-6 pt-4 border-t border-ink/20 font-mono text-xs text-cjpGreen bg-cjpGreen-tint p-3 border border-cjpGreen/30 font-bold">
-              ★ Result: Sub-second student verification, automated grade calculation, and delighted academic faculty.
-            </div>
           </div>
 
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, ArrowRight } from 'lucide-react';
+import { ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 interface ChecklistSectionProps {
   onOpenDemo: () => void;
@@ -16,24 +16,24 @@ export const ChecklistSection: React.FC<ChecklistSectionProps> = ({ onOpenDemo }
 
   const checklist = [
     {
-      title: 'UGC & AICTE Digital Guidelines Compliance',
-      desc: 'Native alignment with National Academic Depository (NAD), Digilocker integration, and Academic Bank of Credits (ABC) regulations.',
+      title: 'UGC & AICTE Digital Regulatory Alignment',
+      desc: 'Native integration with National Academic Depository (NAD), Digilocker certification, and Academic Bank of Credits (ABC) regulations.',
     },
     {
       title: 'DPDPA 2023 & FERPA Student Data Protection',
-      desc: 'Encrypted at rest with AES-256 and in transit with TLS 1.3. Role-based access logs with strict zero data-harvesting pledge.',
+      desc: 'Encrypted at rest with AES-256 and in transit with TLS 1.3. Role-based access logs with a strict zero data-harvesting pledge.',
     },
     {
       title: 'Automated NAAC Self-Study Report (SSR) Extraction',
       desc: 'Direct auto-generation of quantitative metrics for Criteria 2 (Teaching-Learning), Criteria 5 (Student Support), and Criteria 6 (Governance).',
     },
     {
-      title: 'Legacy Database Zero-Loss Migration Tooling',
-      desc: 'Automated ETL connectors for Oracle, SQL Server, Excel spreadsheets, and legacy campus software within 72 hours.',
+      title: 'Zero-Loss Legacy Database Migration Tooling',
+      desc: 'Automated ETL connectors for Oracle, Microsoft SQL Server, PostgreSQL, and legacy campus software within 72 hours.',
     },
     {
-      title: '99.99% High-Availability Multi-Region Cloud',
-      desc: 'Engineered for peak traffic during semester result declarations and entrance examination admissions with auto-scaling gateways.',
+      title: '99.99% High-Availability Sovereign Cloud Infrastructure',
+      desc: 'Engineered for peak traffic during semester examination result declarations and admissions with auto-scaling compute gateways.',
     },
   ];
 
@@ -42,53 +42,55 @@ export const ChecklistSection: React.FC<ChecklistSectionProps> = ({ onOpenDemo }
   };
 
   return (
-    <section id="checklist" className="py-16 md:py-24 bg-paper-200 border-b-2 border-ink">
+    <section id="checklist" className="py-16 md:py-24 bg-white border-b border-navy-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        {/* Header */}
         <div className="max-w-3xl mb-12">
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-cjpOrange bg-cjpOrange/10 px-3 py-1 border border-cjpOrange/30 inline-block mb-3">
-            ★ INSTITUTIONAL READINESS ★
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/80 mb-3">
+            Accreditation & Compliance
           </span>
-          <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink uppercase tracking-tight">
-            ACCREDITATION & SECURITY <br />
-            <span className="text-cjpOrange">COMPLIANCE CHECKLIST</span>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl text-navy-950 tracking-tight">
+            Institutional Governance & Compliance Checklist.
           </h2>
-          <p className="mt-3 text-ink-muted text-base sm:text-lg font-medium">
-            Verify your university’s technical readiness to upgrade to the CollegeCentre Operating System.
+          <p className="mt-3 text-navy-600 text-sm sm:text-base font-normal">
+            Verify your university’s technical readiness to transition to the CollegeCentre Academic Operating System.
           </p>
         </div>
 
-        <div className="space-y-4">
+        {/* Checkable List */}
+        <div className="space-y-3">
           {checklist.map((item, idx) => (
             <div
               key={idx}
               onClick={() => toggleCheck(idx)}
-              className={
-                'p-5 sm:p-6 border-2 border-ink cursor-pointer transition-all ' +
-                (checkedItems[idx] ? 'bg-paper-50 shadow-brutal-sm border-ink' : 'bg-paper-100 opacity-80')
-              }
+              className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+                checkedItems[idx]
+                  ? 'bg-navy-50/40 border-navy-200/80 shadow-xs hover:border-navy-300'
+                  : 'bg-white border-navy-200 opacity-60'
+              }`}
             >
               <div className="flex items-start gap-4">
-                <div className="mt-1 text-cjpGreen">
+                <div className="mt-0.5 shrink-0">
                   {checkedItems[idx] ? (
-                    <div className="w-6 h-6 bg-cjpGreen text-white flex items-center justify-center border-2 border-ink font-bold text-xs">
+                    <div className="w-5 h-5 rounded-md bg-academic-emerald text-white flex items-center justify-center text-xs shadow-xs">
                       ✓
                     </div>
                   ) : (
-                    <div className="w-6 h-6 bg-paper-200 border-2 border-ink"></div>
+                    <div className="w-5 h-5 rounded-md bg-white border border-navy-300" />
                   )}
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs font-bold text-cjpOrange uppercase">
-                      CRITERION 0{idx + 1}
+                    <span className="text-xs font-bold text-brand-600 uppercase tracking-wide">
+                      Standard 0{idx + 1}
                     </span>
-                    <h3 className="font-display font-bold text-lg sm:text-xl text-ink uppercase">
+                    <h3 className="font-display font-semibold text-base text-navy-950">
                       {item.title}
                     </h3>
                   </div>
-                  <p className="font-sans text-sm text-ink-muted leading-relaxed">
+                  <p className="text-xs sm:text-sm text-navy-600 leading-relaxed font-normal">
                     {item.desc}
                   </p>
                 </div>
@@ -97,26 +99,27 @@ export const ChecklistSection: React.FC<ChecklistSectionProps> = ({ onOpenDemo }
           ))}
         </div>
 
-        <div className="mt-10 p-6 bg-paper-100 border-2 border-ink shadow-brutal flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Bottom Score Banner */}
+        <div className="mt-10 p-6 bg-gradient-to-r from-navy-950 to-navy-900 text-white rounded-2xl shadow-subtle flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-cjpGreen-tint border-2 border-ink flex items-center justify-center text-cjpGreen font-bold shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-academic-emerald/20 border border-academic-emerald/30 flex items-center justify-center text-academic-emerald font-bold shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <div className="font-display text-xl font-bold uppercase text-ink">
+              <div className="font-display text-lg font-bold text-white">
                 100% University Readiness Score
               </div>
-              <div className="text-xs font-mono text-ink-muted">
-                Meets all National Higher Education Data Governance specifications.
+              <div className="text-xs text-navy-300">
+                Meets all National Higher Education Data Governance and NAAC specifications.
               </div>
             </div>
           </div>
 
           <button
             onClick={onOpenDemo}
-            className="brutal-btn bg-ink text-paper-100 hover:bg-cjpOrange px-6 py-3 text-sm shrink-0 flex items-center gap-2"
+            className="px-6 py-3 rounded-xl bg-white text-navy-900 hover:bg-navy-100 font-semibold text-xs transition-colors shrink-0 flex items-center gap-2"
           >
-            <span>Request Onboarding Call</span>
+            <span>Request Institutional Briefing</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { 
-  User, Calendar, Phone, Upload, Users, ShieldCheck, 
+  User, Phone, Upload, Users, ShieldCheck, 
   ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, 
-  Printer, RefreshCw, Mail
+  Printer, RefreshCw, Mail, Lock, GraduationCap
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -60,16 +60,16 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
   const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
     if (step === 1) {
-      if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required';
+      if (!formData.fullName.trim()) newErrors.fullName = 'Full Legal Name is required';
       if (!formData.dob) newErrors.dob = 'Date of birth is required';
-      if (!formData.photoUrl) newErrors.photo = 'Student photograph is required';
+      if (!formData.photoUrl) newErrors.photo = 'Student official photograph is required';
     } else if (step === 2) {
-      if (!formData.phone.trim() || formData.phone.length < 10) newErrors.phone = 'Valid 10-digit phone number is required';
-      if (!formData.email.trim() || !formData.email.includes('@')) newErrors.email = 'Valid email is required';
-      if (!formData.address.trim()) newErrors.address = 'Residential address is required';
+      if (!formData.phone.trim() || formData.phone.length < 10) newErrors.phone = 'Valid 10-digit mobile number is required';
+      if (!formData.email.trim() || !formData.email.includes('@')) newErrors.email = 'Valid academic/personal email is required';
+      if (!formData.address.trim()) newErrors.address = 'Permanent residential address is required';
     } else if (step === 3) {
-      if (!formData.guardianName.trim()) newErrors.guardianName = 'Guardian name is required';
-      if (!formData.guardianPhone.trim() || formData.guardianPhone.length < 10) newErrors.guardianPhone = 'Valid 10-digit guardian phone number is required';
+      if (!formData.guardianName.trim()) newErrors.guardianName = 'Guardian full name is required';
+      if (!formData.guardianPhone.trim() || formData.guardianPhone.length < 10) newErrors.guardianPhone = 'Valid 10-digit guardian mobile number is required';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -78,13 +78,13 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
   const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, 4));
-      window.scrollTo({ top: 100, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handlePrev = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
-    window.scrollTo({ top: 100, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -93,19 +93,19 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
       return;
     }
     setIsSubmitting(true);
-    const autoId = 'CC-REG-' + Math.floor(100000 + Math.random() * 900000);
+    const autoId = 'CC-ADM-' + Math.floor(100000 + Math.random() * 900000);
     setApplicationId(autoId);
 
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
       confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.5 },
-        colors: ['#c9561e', '#17191c', '#166534', '#d97706'],
+        particleCount: 110,
+        spread: 75,
+        origin: { y: 0.55 },
+        colors: ['#0c8ee9', '#0f172a', '#047857', '#b45309'],
       });
-    }, 1000);
+    }, 800);
   };
 
   const handlePrint = () => {
@@ -113,700 +113,742 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
   };
 
   return (
-    <div className="py-10 md:py-16 bg-paper-200 min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Back navigation & Page header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b-2 border-ink">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              {onBackToHome && (
-                <button
-                  onClick={onBackToHome}
-                  className="font-mono text-xs font-bold uppercase text-ink hover:text-cjpOrange flex items-center gap-1 bg-paper-100 px-2 py-1 border border-ink shadow-brutal-sm mr-2"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" /> Back to Overview
-                </button>
-              )}
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-cjpOrange bg-cjpOrange/10 px-2.5 py-0.5 border border-cjpOrange/30">
-                OFFICIAL UNIVERSITY DATA ADMISSION DISPATCH
+    <div className="min-h-screen bg-navy-50/40 text-navy-900 flex flex-col font-sans selection:bg-brand-600 selection:text-white">
+      
+      {/* Minimal Standalone University Header */}
+      <header className="bg-white border-b border-navy-200/80 py-4 px-4 sm:px-8 sticky top-0 z-40 shadow-xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-navy-900 to-brand-700 text-white font-display font-bold flex items-center justify-center shadow-xs">
+              <GraduationCap className="w-5 h-5 text-brand-300" />
+            </div>
+            <div>
+              <span className="font-display font-bold text-lg sm:text-xl text-navy-950 block leading-tight">
+                College<span className="text-brand-600">Centre</span>
+              </span>
+              <span className="text-[11px] text-navy-500 font-medium">
+                University Central Admissions & Student Data Intake
               </span>
             </div>
-            <h1 className="font-display font-black text-3xl sm:text-5xl text-ink uppercase tracking-tight">
-              STUDENT REGISTRATION & <br />
-              <span className="text-cjpOrange">DATA COLLECTION PORTAL</span>
-            </h1>
           </div>
 
-          <div className="font-mono text-xs text-ink-muted text-left sm:text-right">
-            <span className="inline-block bg-ink text-paper-100 font-bold px-2.5 py-1 uppercase text-[10px] mb-1">
-              SECURE DPDPA FORM 2026
-            </span>
-            <div>MANDATORY ENROLLMENT RECORD</div>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-navy-600 font-medium bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200/60">
+              <Lock className="w-3.5 h-3.5 text-academic-emerald" />
+              <span>DPDPA 2023 Encrypted</span>
+            </div>
+            {onBackToHome && (
+              <button
+                onClick={onBackToHome}
+                className="text-xs font-semibold text-navy-700 hover:text-navy-950 flex items-center gap-1 bg-white hover:bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200 shadow-xs transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to Overview</span>
+              </button>
+            )}
           </div>
         </div>
+      </header>
 
-        {submitted ? (
-          <div className="space-y-6">
-            <div className="brutal-card bg-paper-50 p-6 sm:p-10 border-4 border-ink shadow-brutal-xl">
-              <div className="text-center max-w-xl mx-auto space-y-4 mb-8">
-                <div className="w-16 h-16 bg-cjpGreen text-white border-2 border-ink mx-auto flex items-center justify-center shadow-brutal">
-                  <CheckCircle2 className="w-10 h-10" />
-                </div>
-                
-                <h2 className="font-display font-bold text-3xl sm:text-4xl uppercase text-ink">
-                  REGISTRATION RECORD VERIFIED!
-                </h2>
-
-                <p className="font-sans text-sm sm:text-base text-ink-muted">
-                  Student record for <strong className="text-ink">{formData.fullName}</strong> has been encrypted and indexed in the university database ledger.
-                </p>
-
-                <div className="inline-block bg-cjpOrange text-white font-mono text-sm font-bold px-4 py-1.5 border border-ink uppercase">
-                  ACKNOWLEDGMENT REF: {applicationId}
-                </div>
-              </div>
-
-              <div ref={printRef} className="bg-paper-100 border-2 border-ink p-6 shadow-brutal-sm font-sans space-y-6">
-                <div className="flex items-center justify-between border-b-2 border-ink pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-cjpOrange text-white font-display text-xl font-bold flex items-center justify-center border-2 border-ink">
-                      CC
-                    </div>
-                    <div>
-                      <h3 className="font-display font-bold text-xl uppercase tracking-tight text-ink leading-none">
-                        COLLEGE<span className="text-cjpOrange">CENTRE</span> UNIVERSITY REGISTRY
-                      </h3>
-                      <span className="font-mono text-[10px] text-ink-light">
-                        OFFICIAL STUDENT ONBOARDING RECORD • ACADEMIC YEAR 2026
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right font-mono text-xs">
-                    <span className="bg-cjpGreen text-white font-bold px-2 py-0.5 uppercase text-[10px]">
-                      STATUS: ACTIVE
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                  <div className="md:col-span-3 flex flex-col items-center">
-                    <div className="w-32 h-36 border-2 border-ink bg-paper-50 shadow-brutal-sm overflow-hidden relative">
-                      {formData.photoUrl ? (
-                        <img src={formData.photoUrl} alt={formData.fullName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-ink-light font-mono text-xs">
-                          NO PHOTO
-                        </div>
-                      )}
-                    </div>
-                    <span className="font-mono text-[9px] text-ink-light uppercase mt-1">BIOMETRIC SEAL</span>
-                  </div>
-
-                  <div className="md:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
-                    <div className="bg-paper-50 p-2.5 border border-ink/20">
-                      <span className="text-[10px] text-ink-light uppercase font-bold block">STUDENT FULL NAME</span>
-                      <span className="text-sm font-display font-bold text-ink uppercase">{formData.fullName}</span>
-                    </div>
-
-                    <div className="bg-paper-50 p-2.5 border border-ink/20">
-                      <span className="text-[10px] text-ink-light uppercase font-bold block">DATE OF BIRTH / GENDER</span>
-                      <span className="text-xs font-bold text-ink">{formData.dob} ({formData.gender}, {formData.bloodGroup})</span>
-                    </div>
-
-                    <div className="bg-paper-50 p-2.5 border border-ink/20">
-                      <span className="text-[10px] text-ink-light uppercase font-bold block">STUDENT CONTACT PHONE</span>
-                      <span className="text-xs font-bold text-ink">{formData.phone}</span>
-                    </div>
-
-                    <div className="bg-paper-50 p-2.5 border border-ink/20">
-                      <span className="text-[10px] text-ink-light uppercase font-bold block">STUDENT EMAIL</span>
-                      <span className="text-xs font-bold text-ink">{formData.email}</span>
-                    </div>
-
-                    <div className="bg-paper-50 p-2.5 border border-ink/20">
-                      <span className="text-[10px] text-ink-light uppercase font-bold block">GUARDIAN NAME & RELATION</span>
-                      <span className="text-sm font-display font-bold text-ink uppercase">{formData.guardianName} ({formData.guardianRelation})</span>
-                    </div>
-
-                    <div className="bg-paper-50 p-2.5 border border-ink/20">
-                      <span className="text-[10px] text-ink-light uppercase font-bold block">GUARDIAN CONTACT PHONE</span>
-                      <span className="text-xs font-bold text-ink">{formData.guardianPhone}</span>
-                    </div>
-
-                    <div className="sm:col-span-2 bg-paper-50 p-2.5 border border-ink/20">
-                      <span className="text-[10px] text-ink-light uppercase font-bold block">ADMITTED PROGRAM & DISCIPLINE</span>
-                      <span className="text-xs font-bold text-cjpOrange">{formData.degreeProgram} (Batch {formData.admissionYear})</span>
-                    </div>
-
-                    <div className="sm:col-span-2 bg-paper-50 p-2.5 border border-ink/20">
-                      <span className="text-[10px] text-ink-light uppercase font-bold block">PERMANENT RESIDENTIAL ADDRESS</span>
-                      <span className="text-xs text-ink">{formData.address}, {formData.city} - {formData.pincode}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t-2 border-dashed border-ink/40 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-ink-light">
-                  <div>DIGITALLY TIMESTAMPED & ATTESTED // VERIFIED RECONCILIATION</div>
-                  <div className="text-cjpGreen font-bold uppercase">SHA-256 DIGITAL ATTESTATION SIGNED ✓</div>
-                </div>
-              </div>
-
-              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button
-                  onClick={handlePrint}
-                  className="w-full sm:w-auto brutal-btn bg-ink text-paper-100 hover:bg-cjpOrange px-6 py-3 text-sm flex items-center justify-center gap-2"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>PRINT OFFICIAL RECEIPT</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setSubmitted(false);
-                    setCurrentStep(1);
-                    setFormData({
-                      fullName: '',
-                      dob: '',
-                      gender: 'Male',
-                      bloodGroup: 'O+',
-                      photoUrl: '',
-                      phone: '',
-                      email: '',
-                      address: '',
-                      city: '',
-                      pincode: '',
-                      guardianName: '',
-                      guardianRelation: 'Father',
-                      guardianPhone: '',
-                      degreeProgram: 'B.Tech - Computer Science & Engineering',
-                      admissionYear: '2026',
-                    });
-                  }}
-                  className="w-full sm:w-auto brutal-btn bg-paper-100 text-ink hover:bg-paper-200 px-6 py-3 text-sm flex items-center justify-center gap-2 border-2 border-ink"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>SUBMIT ANOTHER RECORD</span>
-                </button>
-              </div>
+      {/* Main Container */}
+      <main className="flex-grow py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="mb-8 pb-4 border-b border-navy-200/80 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/80 mb-2">
+                Official Institutional Enrollment
+              </span>
+              <h1 className="font-display font-bold text-3xl sm:text-4xl text-navy-950 tracking-tight">
+                Student Admission & Data Intake Form
+              </h1>
+            </div>
+            <div className="text-xs text-navy-500 font-mono">
+              Academic Intake 2026-27 • Section A
             </div>
           </div>
-        ) : (
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            <div className="lg:col-span-8 space-y-6">
-              
-              <div className="grid grid-cols-4 gap-2 font-mono text-xs font-bold">
-                {[
-                  { step: 1, label: '01. Personal' },
-                  { step: 2, label: '02. Contact' },
-                  { step: 3, label: '03. Guardian' },
-                  { step: 4, label: '04. Review' },
-                ].map((s) => (
-                  <div
-                    key={s.step}
-                    onClick={() => {
-                      if (s.step < currentStep) setCurrentStep(s.step);
-                    }}
-                    className={
-                      'p-2.5 border-2 border-ink text-center uppercase cursor-pointer transition-all ' +
-                      (currentStep === s.step
-                        ? 'bg-cjpOrange text-white shadow-brutal-sm font-bold'
-                        : currentStep > s.step
-                        ? 'bg-cjpGreen-tint text-cjpGreen border-cjpGreen/60'
-                        : 'bg-paper-100 text-ink-light')
-                    }
-                  >
-                    {s.label}
+          {submitted ? (
+            /* Success & Printable Slip */
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="bg-white border border-navy-200/80 rounded-2xl p-6 sm:p-10 shadow-card">
+                <div className="text-center max-w-xl mx-auto space-y-4 mb-8">
+                  <div className="w-14 h-14 rounded-2xl bg-academic-emerald/10 text-academic-emerald mx-auto flex items-center justify-center">
+                    <CheckCircle2 className="w-8 h-8" />
                   </div>
-                ))}
-              </div>
+                  
+                  <h2 className="font-display font-bold text-2xl sm:text-3xl text-navy-950">
+                    Student Record Submitted & Indexed
+                  </h2>
 
-              <div className="brutal-card bg-paper-50 p-6 sm:p-8 border-2 border-ink shadow-brutal-lg">
-                
-                {currentStep === 1 && (
-                  <div className="space-y-5">
-                    <div className="border-b-2 border-ink pb-3">
-                      <span className="font-mono text-xs font-bold uppercase text-cjpOrange">SECTION 01 OF 04</span>
-                      <h2 className="font-display font-bold text-2xl uppercase text-ink flex items-center gap-2">
-                        <User className="w-5 h-5 text-cjpOrange" />
-                        <span>Student Personal Identification</span>
-                      </h2>
-                    </div>
+                  <p className="text-sm text-navy-600">
+                    Admission dossier for <strong className="text-navy-900">{formData.fullName}</strong> has been encrypted and assigned to the central university ledger.
+                  </p>
 
-                    <div>
-                      <label className="block text-xs font-mono font-bold uppercase text-ink mb-1.5">
-                        Student Official Photograph * (Passport Size)
-                      </label>
-                      <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-paper-100 border-2 border-dashed border-ink">
-                        <div className="w-24 h-28 border-2 border-ink bg-paper-50 flex items-center justify-center overflow-hidden shadow-brutal-sm relative shrink-0">
-                          {formData.photoUrl ? (
-                            <img src={formData.photoUrl} alt="Preview" className="w-full h-full object-cover" />
-                          ) : (
-                            <User className="w-10 h-10 text-ink-light" />
-                          )}
-                        </div>
+                  <div className="inline-block bg-navy-900 text-white text-xs font-mono font-bold px-4 py-1.5 rounded-lg">
+                    APPLICATION REFERENCE: {applicationId}
+                  </div>
+                </div>
 
-                        <div className="space-y-2 text-center sm:text-left flex-1">
-                          <div className="text-xs font-sans text-ink-muted">
-                            Upload a clear passport-style portrait (JPG, PNG up to 5MB).
-                          </div>
-                          <label className="inline-block brutal-btn bg-ink text-paper-100 hover:bg-cjpOrange px-4 py-2 text-xs cursor-pointer">
-                            <Upload className="w-3.5 h-3.5 inline mr-1.5" />
-                            <span>SELECT PHOTO FROM DEVICE</span>
-                            <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-                          </label>
-                          {errors.photo && (
-                            <p className="text-xs font-mono text-red-600 font-bold flex items-center gap-1">
-                              <AlertCircle className="w-3.5 h-3.5" /> {errors.photo}
-                            </p>
-                          )}
-                        </div>
+                {/* Dossier Card */}
+                <div ref={printRef} className="bg-navy-50/40 border border-navy-200 rounded-2xl p-6 shadow-xs font-sans space-y-6">
+                  <div className="flex items-center justify-between border-b border-navy-200 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-navy-900 text-white font-bold flex items-center justify-center">
+                        CC
+                      </div>
+                      <div>
+                        <h3 className="font-display font-bold text-base text-navy-950 leading-tight">
+                          CollegeCentre University Admissions Ledger
+                        </h3>
+                        <span className="text-xs text-navy-500 font-medium">
+                          Official Student Registration Dossier • Academic Year 2026
+                        </span>
                       </div>
                     </div>
+                    <span className="text-xs font-semibold text-academic-emerald bg-academic-emerald/10 px-2.5 py-1 rounded-full">
+                      Verified Active
+                    </span>
+                  </div>
 
-                    <div>
-                      <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                        Student Full Legal Name * (As per Secondary Certificate)
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.fullName}
-                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        className="w-full bg-paper-100 border-2 border-ink px-3 py-2.5 text-sm font-sans font-semibold focus:outline-none focus:bg-white"
-                        placeholder="e.g. Rohan Vinod Kulkarni"
-                      />
-                      {errors.fullName && (
-                        <p className="text-xs font-mono text-red-600 font-bold mt-1">{errors.fullName}</p>
-                      )}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                    <div className="md:col-span-3 flex flex-col items-center">
+                      <div className="w-28 h-32 rounded-xl border border-navy-200 bg-white overflow-hidden shadow-xs relative">
+                        {formData.photoUrl ? (
+                          <img src={formData.photoUrl} alt={formData.fullName} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-navy-400">
+                            <User className="w-8 h-8" />
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-semibold text-navy-400 uppercase tracking-wider mt-1.5">
+                        Biometric Passport Seal
+                      </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="md:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Full Student Name</span>
+                        <span className="text-sm font-semibold text-navy-900">{formData.fullName}</span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Date of Birth & Gender</span>
+                        <span className="text-xs font-semibold text-navy-900">{formData.dob} ({formData.gender}, {formData.bloodGroup})</span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Student Mobile Phone</span>
+                        <span className="text-xs font-semibold text-navy-900">{formData.phone}</span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Official Student Email</span>
+                        <span className="text-xs font-semibold text-navy-900">{formData.email}</span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Full Name</span>
+                        <span className="text-sm font-semibold text-navy-900">{formData.guardianName} ({formData.guardianRelation})</span>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Mobile Phone</span>
+                        <span className="text-xs font-semibold text-navy-900">{formData.guardianPhone}</span>
+                      </div>
+
+                      <div className="sm:col-span-2 bg-white p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Enrolled Program & Discipline</span>
+                        <span className="text-xs font-semibold text-brand-700">{formData.degreeProgram} (Batch {formData.admissionYear})</span>
+                      </div>
+
+                      <div className="sm:col-span-2 bg-white p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Permanent Residential Address</span>
+                        <span className="text-xs text-navy-800">{formData.address}, {formData.city} - {formData.pincode}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-navy-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-navy-500">
+                    <div>Digitally timestamped & encrypted with SHA-256 integrity signature.</div>
+                    <div className="text-academic-emerald font-semibold">Attestation Verified ✓</div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <button
+                    onClick={handlePrint}
+                    className="univ-btn-primary px-6 py-3 text-xs"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Print Official Admission Slip</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSubmitted(false);
+                      setCurrentStep(1);
+                      setFormData({
+                        fullName: '',
+                        dob: '',
+                        gender: 'Male',
+                        bloodGroup: 'O+',
+                        photoUrl: '',
+                        phone: '',
+                        email: '',
+                        address: '',
+                        city: '',
+                        pincode: '',
+                        guardianName: '',
+                        guardianRelation: 'Father',
+                        guardianPhone: '',
+                        degreeProgram: 'B.Tech - Computer Science & Engineering',
+                        admissionYear: '2026',
+                      });
+                    }}
+                    className="univ-btn-secondary px-6 py-3 text-xs"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    <span>Submit Another Application</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+
+            /* Multi-step Form */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <div className="lg:col-span-8 space-y-6">
+                
+                {/* Step indicator */}
+                <div className="grid grid-cols-4 gap-2 text-xs font-semibold">
+                  {[
+                    { step: 1, label: '01. Personal' },
+                    { step: 2, label: '02. Contact' },
+                    { step: 3, label: '03. Guardian' },
+                    { step: 4, label: '04. Review' },
+                  ].map((s) => (
+                    <div
+                      key={s.step}
+                      onClick={() => {
+                        if (s.step < currentStep) setCurrentStep(s.step);
+                      }}
+                      className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
+                        currentStep === s.step
+                          ? 'bg-navy-950 text-white border-navy-950 shadow-xs'
+                          : currentStep > s.step
+                          ? 'bg-academic-emerald/10 text-academic-emerald border-academic-emerald/30'
+                          : 'bg-white text-navy-500 border-navy-200/80 hover:bg-navy-50'
+                      }`}
+                    >
+                      {s.label}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-white border border-navy-200/80 rounded-2xl p-6 sm:p-8 shadow-card">
+                  
+                  {/* STEP 1: Personal */}
+                  {currentStep === 1 && (
+                    <div className="space-y-5">
+                      <div className="border-b border-navy-100 pb-3">
+                        <span className="text-xs font-semibold text-brand-600 uppercase">Section 01 of 04</span>
+                        <h2 className="font-display font-bold text-xl sm:text-2xl text-navy-950">
+                          Student Personal Identity & Biometrics
+                        </h2>
+                      </div>
+
+                      {/* Photo Upload */}
                       <div>
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          Date of Birth *
+                        <label className="block text-xs font-semibold text-navy-700 mb-1.5">
+                          Official Student Portrait * (Passport Size)
+                        </label>
+                        <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-navy-50/50 border border-dashed border-navy-300 rounded-xl">
+                          <div className="w-20 h-24 rounded-lg border border-navy-200 bg-white flex items-center justify-center overflow-hidden shadow-xs relative shrink-0">
+                            {formData.photoUrl ? (
+                              <img src={formData.photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                            ) : (
+                              <User className="w-8 h-8 text-navy-400" />
+                            )}
+                          </div>
+
+                          <div className="space-y-2 text-center sm:text-left flex-1">
+                            <div className="text-xs text-navy-500">
+                              Upload a clean formal portrait (JPG, PNG up to 5MB).
+                            </div>
+                            <label className="univ-btn-secondary text-xs cursor-pointer">
+                              <Upload className="w-3.5 h-3.5 text-navy-500" />
+                              <span>Select Photo File</span>
+                              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                            </label>
+                            {errors.photo && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <AlertCircle className="w-3.5 h-3.5" /> {errors.photo}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-navy-700 mb-1">
+                          Full Legal Name * (As per 10th / Secondary Certificate)
                         </label>
                         <input
-                          type="date"
+                          type="text"
                           required
-                          value={formData.dob}
-                          onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                          className="w-full bg-paper-100 border-2 border-ink px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:bg-white"
+                          value={formData.fullName}
+                          onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                          placeholder="e.g. Rohan Vinod Kulkarni"
                         />
-                        {errors.dob && (
-                          <p className="text-xs font-mono text-red-600 font-bold mt-1">{errors.dob}</p>
+                        {errors.fullName && (
+                          <p className="text-xs text-red-600 font-medium mt-1">{errors.fullName}</p>
                         )}
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          Gender
-                        </label>
-                        <select
-                          value={formData.gender}
-                          onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                          className="w-full bg-paper-100 border-2 border-ink px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:bg-white"
-                        >
-                          <option>Male</option>
-                          <option>Female</option>
-                          <option>Other</option>
-                        </select>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            Date of Birth *
+                          </label>
+                          <input
+                            type="date"
+                            required
+                            value={formData.dob}
+                            onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                          />
+                          {errors.dob && (
+                            <p className="text-xs text-red-600 font-medium mt-1">{errors.dob}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            Gender
+                          </label>
+                          <select
+                            value={formData.gender}
+                            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                          >
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            Blood Group
+                          </label>
+                          <select
+                            value={formData.bloodGroup}
+                            onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                          >
+                            <option>O+</option>
+                            <option>O-</option>
+                            <option>A+</option>
+                            <option>A-</option>
+                            <option>B+</option>
+                            <option>B-</option>
+                            <option>AB+</option>
+                            <option>AB-</option>
+                          </select>
+                        </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          Blood Group
+                        <label className="block text-xs font-semibold text-navy-700 mb-1">
+                          Enrolled Academic Discipline *
                         </label>
                         <select
-                          value={formData.bloodGroup}
-                          onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
-                          className="w-full bg-paper-100 border-2 border-ink px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:bg-white"
+                          value={formData.degreeProgram}
+                          onChange={(e) => setFormData({ ...formData, degreeProgram: e.target.value })}
+                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                         >
-                          <option>O+</option>
-                          <option>O-</option>
-                          <option>A+</option>
-                          <option>A-</option>
-                          <option>B+</option>
-                          <option>B-</option>
-                          <option>AB+</option>
-                          <option>AB-</option>
+                          <option>B.Tech - Computer Science & Engineering</option>
+                          <option>B.Tech - Artificial Intelligence & Data Science</option>
+                          <option>B.Tech - Electronics & Communication</option>
+                          <option>B.Tech - Mechanical Engineering</option>
+                          <option>B.Sc - Computer Applications & IT</option>
+                          <option>MBBS - Medicine & Surgery</option>
+                          <option>B.A. LL.B (Honours) - Integrated Law</option>
+                          <option>BBA / MBA - Integrated Business Administration</option>
                         </select>
                       </div>
+
                     </div>
+                  )}
 
-                    <div>
-                      <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                        Enrolled Degree & Department *
-                      </label>
-                      <select
-                        value={formData.degreeProgram}
-                        onChange={(e) => setFormData({ ...formData, degreeProgram: e.target.value })}
-                        className="w-full bg-paper-100 border-2 border-ink px-3 py-2.5 text-xs font-mono font-bold focus:outline-none focus:bg-white"
-                      >
-                        <option>B.Tech - Computer Science & Engineering</option>
-                        <option>B.Tech - Artificial Intelligence & Data Science</option>
-                        <option>B.Tech - Electronics & Communication</option>
-                        <option>B.Tech - Mechanical Engineering</option>
-                        <option>B.Sc - Computer Applications & IT</option>
-                        <option>MBBS - Medicine & Surgery</option>
-                        <option>B.A. LL.B (Honours) - Integrated Law</option>
-                        <option>BBA / MBA - Integrated Business Administration</option>
-                      </select>
-                    </div>
+                  {/* STEP 2: Contact */}
+                  {currentStep === 2 && (
+                    <div className="space-y-5">
+                      <div className="border-b border-navy-100 pb-3">
+                        <span className="text-xs font-semibold text-brand-600 uppercase">Section 02 of 04</span>
+                        <h2 className="font-display font-bold text-xl sm:text-2xl text-navy-950">
+                          Student Contact & Residence
+                        </h2>
+                      </div>
 
-                  </div>
-                )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            Student Mobile Number *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="tel"
+                              required
+                              value={formData.phone}
+                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                              className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                              placeholder="e.g. 9876543210"
+                            />
+                            <Phone className="w-4 h-4 text-navy-400 absolute left-3.5 top-3.5" />
+                          </div>
+                          {errors.phone && (
+                            <p className="text-xs text-red-600 font-medium mt-1">{errors.phone}</p>
+                          )}
+                        </div>
 
-                {currentStep === 2 && (
-                  <div className="space-y-5">
-                    <div className="border-b-2 border-ink pb-3">
-                      <span className="font-mono text-xs font-bold uppercase text-cjpOrange">SECTION 02 OF 04</span>
-                      <h2 className="font-display font-bold text-2xl uppercase text-ink flex items-center gap-2">
-                        <Phone className="w-5 h-5 text-cjpOrange" />
-                        <span>Student Contact & Address</span>
-                      </h2>
-                    </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            Student Email Address *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="email"
+                              required
+                              value={formData.email}
+                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                              className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                              placeholder="e.g. student@collegecentre.edu"
+                            />
+                            <Mail className="w-4 h-4 text-navy-400 absolute left-3.5 top-3.5" />
+                          </div>
+                          {errors.email && (
+                            <p className="text-xs text-red-600 font-medium mt-1">{errors.email}</p>
+                          )}
+                        </div>
+                      </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          Student Mobile Number *
+                        <label className="block text-xs font-semibold text-navy-700 mb-1">
+                          Permanent Residential Address *
+                        </label>
+                        <textarea
+                          rows={3}
+                          required
+                          value={formData.address}
+                          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                          placeholder="House / Flat No, Street, Locality"
+                        />
+                        {errors.address && (
+                          <p className="text-xs text-red-600 font-medium mt-1">{errors.address}</p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            City / District *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.city}
+                            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                            placeholder="e.g. Bengaluru / Pune"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            Postal PIN Code *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.pincode}
+                            onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                            placeholder="e.g. 560001"
+                          />
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {/* STEP 3: Guardian */}
+                  {currentStep === 3 && (
+                    <div className="space-y-5">
+                      <div className="border-b border-navy-100 pb-3">
+                        <span className="text-xs font-semibold text-brand-600 uppercase">Section 03 of 04</span>
+                        <h2 className="font-display font-bold text-xl sm:text-2xl text-navy-950">
+                          Guardian & Emergency Contact Information
+                        </h2>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            Guardian Full Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.guardianName}
+                            onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                            placeholder="e.g. Vinod S. Kulkarni"
+                          />
+                          {errors.guardianName && (
+                            <p className="text-xs text-red-600 font-medium mt-1">{errors.guardianName}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-navy-700 mb-1">
+                            Relationship *
+                          </label>
+                          <select
+                            value={formData.guardianRelation}
+                            onChange={(e) => setFormData({ ...formData, guardianRelation: e.target.value })}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                          >
+                            <option>Father</option>
+                            <option>Mother</option>
+                            <option>Legal Guardian</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-navy-700 mb-1">
+                          Guardian Mobile Phone * (Notifications & Emergency)
                         </label>
                         <div className="relative">
                           <input
                             type="tel"
                             required
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full bg-paper-100 border-2 border-ink px-3 py-2.5 text-sm font-sans font-semibold focus:outline-none focus:bg-white pl-9"
-                            placeholder="e.g. 9876543210"
+                            value={formData.guardianPhone}
+                            onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                            placeholder="e.g. 9811122233"
                           />
-                          <Phone className="w-4 h-4 text-ink-light absolute left-3 top-3.5" />
+                          <Phone className="w-4 h-4 text-navy-400 absolute left-3.5 top-3.5" />
                         </div>
-                        {errors.phone && (
-                          <p className="text-xs font-mono text-red-600 font-bold mt-1">{errors.phone}</p>
+                        {errors.guardianPhone && (
+                          <p className="text-xs text-red-600 font-medium mt-1">{errors.guardianPhone}</p>
                         )}
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          Student Email Address *
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="email"
-                            required
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full bg-paper-100 border-2 border-ink px-3 py-2.5 text-sm font-sans font-semibold focus:outline-none focus:bg-white pl-9"
-                            placeholder="e.g. student@collegecentre.edu"
-                          />
-                          <Mail className="w-4 h-4 text-ink-light absolute left-3 top-3.5" />
-                        </div>
-                        {errors.email && (
-                          <p className="text-xs font-mono text-red-600 font-bold mt-1">{errors.email}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                        Permanent Residential Address *
-                      </label>
-                      <textarea
-                        rows={3}
-                        required
-                        value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        className="w-full bg-paper-100 border-2 border-ink px-3 py-2 text-sm font-sans font-semibold focus:outline-none focus:bg-white"
-                        placeholder="House / Flat No, Street, Locality"
-                      />
-                      {errors.address && (
-                        <p className="text-xs font-mono text-red-600 font-bold mt-1">{errors.address}</p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          City / District *
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.city}
-                          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                          className="w-full bg-paper-100 border-2 border-ink px-3 py-2 text-sm font-sans font-semibold focus:outline-none focus:bg-white"
-                          placeholder="e.g. Bengaluru / Pune"
-                        />
+                      <div className="p-3.5 bg-brand-50/60 border border-brand-200/70 rounded-xl text-navy-700 text-xs">
+                        ℹ <strong>Parent Portal Notification:</strong> Real-time semester grades and attendance threshold warnings are automatically dispatched to the verified guardian mobile number.
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          Postal PIN Code *
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.pincode}
-                          onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                          className="w-full bg-paper-100 border-2 border-ink px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:bg-white"
-                          placeholder="e.g. 560001"
-                        />
-                      </div>
                     </div>
-
-                  </div>
-                )}
-
-                {currentStep === 3 && (
-                  <div className="space-y-5">
-                    <div className="border-b-2 border-ink pb-3">
-                      <span className="font-mono text-xs font-bold uppercase text-cjpOrange">SECTION 03 OF 04</span>
-                      <h2 className="font-display font-bold text-2xl uppercase text-ink flex items-center gap-2">
-                        <Users className="w-5 h-5 text-cjpOrange" />
-                        <span>Guardian & Emergency Contact Information</span>
-                      </h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="sm:col-span-2">
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          Guardian Full Name *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.guardianName}
-                          onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
-                          className="w-full bg-paper-100 border-2 border-ink px-3 py-2.5 text-sm font-sans font-semibold focus:outline-none focus:bg-white"
-                          placeholder="e.g. Vinod S. Kulkarni"
-                        />
-                        {errors.guardianName && (
-                          <p className="text-xs font-mono text-red-600 font-bold mt-1">{errors.guardianName}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                          Relationship *
-                        </label>
-                        <select
-                          value={formData.guardianRelation}
-                          onChange={(e) => setFormData({ ...formData, guardianRelation: e.target.value })}
-                          className="w-full bg-paper-100 border-2 border-ink px-3 py-2.5 text-xs font-mono font-bold focus:outline-none focus:bg-white"
-                        >
-                          <option>Father</option>
-                          <option>Mother</option>
-                          <option>Legal Guardian</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-mono font-bold uppercase text-ink mb-1">
-                        Guardian Mobile Number * (Emergency & Notifications)
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="tel"
-                          required
-                          value={formData.guardianPhone}
-                          onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
-                          className="w-full bg-paper-100 border-2 border-ink px-3 py-2.5 text-sm font-sans font-semibold focus:outline-none focus:bg-white pl-9"
-                          placeholder="e.g. 9811122233"
-                        />
-                        <Phone className="w-4 h-4 text-ink-light absolute left-3 top-3.5" />
-                      </div>
-                      {errors.guardianPhone && (
-                        <p className="text-xs font-mono text-red-600 font-bold mt-1">{errors.guardianPhone}</p>
-                      )}
-                    </div>
-
-                    <div className="p-3 bg-cjpGold-tint border border-cjpGold/40 text-ink text-xs font-mono">
-                      ℹ <strong>Parent Portal Notification:</strong> Real-time semester grades and attendance threshold warnings are automatically dispatched to the verified guardian mobile number.
-                    </div>
-
-                  </div>
-                )}
-
-                {currentStep === 4 && (
-                  <div className="space-y-5">
-                    <div className="border-b-2 border-ink pb-3">
-                      <span className="font-mono text-xs font-bold uppercase text-cjpOrange">SECTION 04 OF 04</span>
-                      <h2 className="font-display font-bold text-2xl uppercase text-ink flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-cjpGreen" />
-                        <span>Review & Attestation Submission</span>
-                      </h2>
-                    </div>
-
-                    <div className="p-4 bg-paper-100 border-2 border-ink space-y-4 font-mono text-xs">
-                      <div className="flex items-center justify-between border-b border-ink/20 pb-2 font-bold text-sm text-ink">
-                        <span>STUDENT RECORD SUMMARY</span>
-                        <span className="text-cjpOrange">READY TO MINT</span>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <span className="text-[10px] text-ink-light uppercase block">FULL NAME:</span>
-                          <span className="font-bold text-ink">{formData.fullName || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-ink-light uppercase block">DOB / BLOOD:</span>
-                          <span className="font-bold text-ink">{formData.dob || '—'} ({formData.bloodGroup})</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-ink-light uppercase block">STUDENT PHONE:</span>
-                          <span className="font-bold text-ink">{formData.phone || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-ink-light uppercase block">EMAIL:</span>
-                          <span className="font-bold text-ink">{formData.email || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-ink-light uppercase block">GUARDIAN NAME:</span>
-                          <span className="font-bold text-ink">{formData.guardianName || '—'} ({formData.guardianRelation})</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-ink-light uppercase block">GUARDIAN PHONE:</span>
-                          <span className="font-bold text-ink">{formData.guardianPhone || '—'}</span>
-                        </div>
-                      </div>
-
-                      <div className="pt-2 border-t border-ink/10">
-                        <span className="text-[10px] text-ink-light uppercase block">DISCIPLINE PROGRAM:</span>
-                        <span className="font-bold text-cjpOrange">{formData.degreeProgram}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 bg-paper-100 border border-ink/40 text-xs font-sans">
-                      <input type="checkbox" required defaultChecked id="attest" className="mt-1" />
-                      <label htmlFor="attest" className="text-ink-muted">
-                        I hereby attest that the photograph, personal details, student phone, and guardian information supplied above are genuine and accurate as per official university admission standards.
-                      </label>
-                    </div>
-
-                  </div>
-                )}
-
-                <div className="pt-6 border-t-2 border-ink flex items-center justify-between gap-4">
-                  {currentStep > 1 ? (
-                    <button
-                      type="button"
-                      onClick={handlePrev}
-                      className="brutal-btn bg-paper-100 text-ink hover:bg-paper-200 px-5 py-2.5 text-xs flex items-center gap-1.5"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      <span>PREVIOUS STEP</span>
-                    </button>
-                  ) : <div />}
-
-                  {currentStep < 4 ? (
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      className="brutal-btn bg-cjpOrange text-white hover:bg-ink px-6 py-2.5 text-xs flex items-center gap-1.5 shadow-brutal"
-                    >
-                      <span>NEXT SECTION</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={isSubmitting}
-                      className="brutal-btn bg-cjpGreen text-white hover:bg-ink px-8 py-3 text-sm flex items-center gap-2 shadow-brutal font-bold"
-                    >
-                      <ShieldCheck className="w-5 h-5" />
-                      <span>{isSubmitting ? 'ENCRYPTING & SUBMITTING...' : 'SUBMIT STUDENT DATA RECORD →'}</span>
-                    </button>
                   )}
-                </div>
 
-              </div>
-            </div>
-
-            <div className="lg:col-span-4 space-y-4">
-              <div className="text-xs font-mono uppercase font-bold text-ink-light tracking-widest flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-cjpGreen animate-pulse"></span>
-                LIVE STUDENT DOSSIER PREVIEW
-              </div>
-
-              <div className="brutal-card bg-paper-50 p-5 border-2 border-ink shadow-brutal space-y-4">
-                
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-24 border-2 border-ink bg-paper-100 shadow-brutal-sm overflow-hidden flex items-center justify-center relative shrink-0">
-                    {formData.photoUrl ? (
-                      <img src={formData.photoUrl} alt="Student" className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="w-8 h-8 text-ink-light" />
-                    )}
-                    {formData.bloodGroup && (
-                      <div className="absolute bottom-0 inset-x-0 bg-ink text-white font-mono text-[8px] font-bold text-center">
-                        {formData.bloodGroup}
+                  {/* STEP 4: Review & Attestation */}
+                  {currentStep === 4 && (
+                    <div className="space-y-5">
+                      <div className="border-b border-navy-100 pb-3">
+                        <span className="text-xs font-semibold text-brand-600 uppercase">Section 04 of 04</span>
+                        <h2 className="font-display font-bold text-xl sm:text-2xl text-navy-950">
+                          Review & Attestation
+                        </h2>
                       </div>
+
+                      <div className="p-4 bg-navy-50/50 border border-navy-200 rounded-xl space-y-3.5 text-xs">
+                        <div className="flex items-center justify-between border-b border-navy-200 pb-2 font-semibold text-navy-900">
+                          <span>Applicant Details Summary</span>
+                          <span className="text-brand-600 font-mono text-[11px]">Ready for Attestation</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-[10px] text-navy-400 uppercase font-semibold block">Full Name:</span>
+                            <span className="font-medium text-navy-900">{formData.fullName || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-navy-400 uppercase font-semibold block">DOB / Blood:</span>
+                            <span className="font-medium text-navy-900">{formData.dob || '—'} ({formData.bloodGroup})</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-navy-400 uppercase font-semibold block">Phone:</span>
+                            <span className="font-medium text-navy-900">{formData.phone || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-navy-400 uppercase font-semibold block">Email:</span>
+                            <span className="font-medium text-navy-900">{formData.email || '—'}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Name:</span>
+                            <span className="font-medium text-navy-900">{formData.guardianName || '—'} ({formData.guardianRelation})</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Phone:</span>
+                            <span className="font-medium text-navy-900">{formData.guardianPhone || '—'}</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-navy-200">
+                          <span className="text-[10px] text-navy-400 uppercase font-semibold block">Discipline Program:</span>
+                          <span className="font-medium text-brand-700">{formData.degreeProgram}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3.5 bg-navy-50/40 border border-navy-200 rounded-xl text-xs">
+                        <input type="checkbox" required defaultChecked id="attest" className="mt-0.5 rounded text-brand-600" />
+                        <label htmlFor="attest" className="text-navy-600 leading-relaxed">
+                          I hereby attest that the photograph, personal details, student phone, and guardian information supplied above are genuine and accurate as per official university admission standards.
+                        </label>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {/* Form Footer Buttons */}
+                  <div className="pt-6 border-t border-navy-100 flex items-center justify-between gap-4">
+                    {currentStep > 1 ? (
+                      <button
+                        type="button"
+                        onClick={handlePrev}
+                        className="univ-btn-secondary text-xs"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <span>Previous Section</span>
+                      </button>
+                    ) : <div />}
+
+                    {currentStep < 4 ? (
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        className="univ-btn-primary text-xs"
+                      >
+                        <span>Next Section</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className="univ-btn-accent text-xs"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>{isSubmitting ? 'Submitting Application...' : 'Submit Student Record'}</span>
+                      </button>
                     )}
                   </div>
 
-                  <div className="min-w-0 space-y-1">
-                    <span className="bg-cjpOrange text-white font-mono text-[8px] font-bold px-1.5 py-0.5 uppercase">
-                      APPLICANT 2026
-                    </span>
-                    <h3 className="font-display font-bold text-lg text-ink uppercase leading-none truncate">
-                      {formData.fullName || 'Candidate Name'}
-                    </h3>
-                    <p className="font-sans text-[11px] text-ink-muted truncate">
-                      {formData.degreeProgram.split('-')[0]}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border-t border-ink/20 pt-3 space-y-2 font-mono text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-ink-light">DOB:</span>
-                    <span className="font-bold text-ink">{formData.dob || 'YYYY-MM-DD'}</span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-ink-light">PHONE:</span>
-                    <span className="font-bold text-ink">{formData.phone || '+91 —'}</span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-ink-light">GUARDIAN:</span>
-                    <span className="font-bold text-ink truncate max-w-[140px] text-right">
-                      {formData.guardianName || 'Parent Name'}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-ink-light">G-PHONE:</span>
-                    <span className="font-bold text-ink">{formData.guardianPhone || '+91 —'}</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-dashed border-ink/30 text-[10px] font-mono text-cjpGreen font-bold flex items-center justify-between">
-                  <span>ENCRYPTION: AES-256</span>
-                  <span>READY ✓</span>
                 </div>
               </div>
 
-              <div className="p-4 bg-ink text-paper-100 border-2 border-ink font-mono text-[11px] space-y-1.5 shadow-brutal-sm">
-                <div className="font-bold text-cjpOrange flex items-center gap-1.5 uppercase">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>DPDPA 2023 DATA SOVEREIGNTY</span>
+              {/* Sidebar Preview (4 cols) */}
+              <div className="lg:col-span-4 space-y-4">
+                <div className="text-xs font-semibold text-navy-400 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-academic-emerald animate-pulse" />
+                  Live Dossier Preview
                 </div>
-                <p className="text-paper-300 text-[10px] leading-relaxed">
-                  Student and Guardian contact coordinates are encrypted in transit and solely accessible by authorized university examination and registrar controllers.
-                </p>
+
+                <div className="bg-white border border-navy-200/80 rounded-2xl p-5 shadow-card space-y-4">
+                  
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-16 h-20 rounded-xl border border-navy-200 bg-navy-50 overflow-hidden flex items-center justify-center relative shrink-0 shadow-xs">
+                      {formData.photoUrl ? (
+                        <img src={formData.photoUrl} alt="Student" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-7 h-7 text-navy-400" />
+                      )}
+                      {formData.bloodGroup && (
+                        <div className="absolute bottom-0 inset-x-0 bg-navy-950/80 text-white text-[8px] font-bold text-center py-0.5">
+                          {formData.bloodGroup}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 space-y-0.5">
+                      <span className="text-[10px] font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
+                        Applicant 2026
+                      </span>
+                      <h3 className="font-display font-bold text-base text-navy-950 truncate">
+                        {formData.fullName || 'Candidate Name'}
+                      </h3>
+                      <p className="text-xs text-navy-500 truncate">
+                        {formData.degreeProgram.split('-')[0]}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-navy-100 pt-3 space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-navy-400">DOB:</span>
+                      <span className="font-medium text-navy-800">{formData.dob || 'YYYY-MM-DD'}</span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-navy-400">Phone:</span>
+                      <span className="font-medium text-navy-800">{formData.phone || '+91 —'}</span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-navy-400">Guardian:</span>
+                      <span className="font-medium text-navy-800 truncate max-w-[140px] text-right">
+                        {formData.guardianName || 'Parent Name'}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-navy-400">Guardian Phone:</span>
+                      <span className="font-medium text-navy-800">{formData.guardianPhone || '+91 —'}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-navy-100 text-[11px] text-academic-emerald font-semibold flex items-center justify-between">
+                    <span>Encryption: AES-256</span>
+                    <span>Ready ✓</span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-navy-900 text-white rounded-2xl text-xs space-y-1.5 shadow-sm">
+                  <div className="font-semibold text-brand-300 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-academic-emerald" />
+                    <span>DPDPA 2023 Compliant</span>
+                  </div>
+                  <p className="text-navy-300 text-[11px] leading-relaxed">
+                    Student data is encrypted in transit and solely accessible by authorized university registrars and exam controllers.
+                  </p>
+                </div>
+
               </div>
 
             </div>
+          )}
 
+        </div>
+      </main>
+
+      {/* Minimal Footer */}
+      <footer className="bg-white border-t border-navy-200 py-6 px-4 text-xs text-navy-500">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div>
+            © 2026 CollegeCentre University Registry System • DPDPA 2023 & FERPA Compliant.
           </div>
-        )}
+          <div className="text-navy-400">
+            admissions@collegecentre.in
+          </div>
+        </div>
+      </footer>
 
-      </div>
     </div>
   );
 };
