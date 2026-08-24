@@ -13,12 +13,11 @@ import { TestimonialsSection } from './components/TestimonialsSection';
 import { FAQSection } from './components/FAQSection';
 import { DemoModal } from './components/DemoModal';
 import { Footer } from './components/Footer';
-import { AdminPanel } from './components/AdminPanel';
-import { CyberAwarenessModule } from './components/CyberAwarenessModule';
+import { StudentDataCollection } from './components/StudentDataCollection';
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'landing' | 'admin' | 'cyber_drill'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'data_collection'>('landing');
 
   const scrollToSection = (id: string) => {
     if (currentView !== 'landing') {
@@ -33,14 +32,6 @@ export function App() {
     }
   };
 
-  if (currentView === 'admin') {
-    return <AdminPanel onBackToHome={() => setCurrentView('landing')} />;
-  }
-
-  if (currentView === 'cyber_drill') {
-    return <CyberAwarenessModule onBackToHome={() => setCurrentView('landing')} />;
-  }
-
   return (
     <div className="min-h-screen bg-paper-200 text-ink flex flex-col selection:bg-cjpOrange selection:text-white">
       <TopStrip onOpenDemo={() => setDemoModalOpen(true)} />
@@ -48,25 +39,40 @@ export function App() {
       <Navbar
         onOpenDemo={() => setDemoModalOpen(true)}
         onScrollTo={scrollToSection}
-        onOpenAdmin={() => setCurrentView('admin')}
-        onOpenCyberDrill={() => setCurrentView('cyber_drill')}
+        onOpenDataCollection={() => {
+          setCurrentView('data_collection');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
 
-      <main className="flex-grow">
-        <HeroSection
-          onOpenDemo={() => setDemoModalOpen(true)}
-          onScrollTo={scrollToSection}
-        />
-        <MarqueeTicker />
-        <StudentCardGenerator />
-        <VisionSection />
-        <ManifestoSection />
-        <LiveMetricsSection />
-        <ModulesSection />
-        <ChecklistSection onOpenDemo={() => setDemoModalOpen(true)} />
-        <TestimonialsSection />
-        <FAQSection />
-      </main>
+      {currentView === 'data_collection' ? (
+        <main className="flex-grow">
+          <StudentDataCollection onBackToHome={() => {
+            setCurrentView('landing');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }} />
+        </main>
+      ) : (
+        <main className="flex-grow">
+          <HeroSection
+            onOpenDemo={() => setDemoModalOpen(true)}
+            onScrollTo={scrollToSection}
+            onOpenDataCollection={() => {
+              setCurrentView('data_collection');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+          <MarqueeTicker />
+          <StudentCardGenerator />
+          <VisionSection />
+          <ManifestoSection />
+          <LiveMetricsSection />
+          <ModulesSection />
+          <ChecklistSection onOpenDemo={() => setDemoModalOpen(true)} />
+          <TestimonialsSection />
+          <FAQSection />
+        </main>
+      )}
 
       <Footer
         onScrollTo={scrollToSection}

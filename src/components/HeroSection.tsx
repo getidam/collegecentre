@@ -1,16 +1,17 @@
 ﻿import React from 'react';
-import { ArrowRight, IdCard, ShieldCheck, Terminal, BookOpen, Globe, Code2, Users, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, IdCard, ShieldCheck, Terminal, BookOpen, Globe, Code2, Users, CheckCircle2, UserPlus } from 'lucide-react';
 
 interface HeroSectionProps {
   onOpenDemo: () => void;
   onScrollTo: (id: string) => void;
+  onOpenDataCollection?: () => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection }) => {
   const socialPills = [
     { label: 'Registrar Network', icon: Users, href: '#', isHighlight: true },
     { label: 'Campus Registry', icon: Globe, href: '#' },
-    { label: 'GitHub Core', icon: Code2, href: 'https://github.com/getidam/collegecentre.in.git' },
+    { label: 'GitHub Core', icon: Code2, href: 'https://github.com/getidam/collegecentre.git' },
     { label: 'API v3 Docs', icon: Terminal, href: '#' },
     { label: 'Accreditation Shield', icon: ShieldCheck, href: '#' },
   ];
@@ -73,20 +74,32 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo
               <ArrowRight className="w-5 h-5" />
             </button>
 
-            <button
-              onClick={() => onScrollTo('id-generator')}
-              className="w-full sm:w-auto brutal-btn bg-paper-100 text-ink hover:bg-paper-50 px-8 py-4 text-lg font-display tracking-wider flex items-center justify-center gap-2.5 shadow-brutal border-2 border-ink"
-            >
-              <IdCard className="w-5 h-5 text-cjpOrange" />
-              <span>GENERATE DIGITAL ID CARD ★</span>
-            </button>
+            {onOpenDataCollection && (
+              <button
+                onClick={onOpenDataCollection}
+                className="w-full sm:w-auto brutal-btn bg-ink text-paper-100 hover:bg-cjpOrange px-7 py-4 text-lg font-display tracking-wider flex items-center justify-center gap-2.5 shadow-brutal border-2 border-ink"
+              >
+                <UserPlus className="w-5 h-5 text-cjpOrange" />
+                <span>STUDENT DATA PORTAL ★</span>
+              </button>
+            )}
 
             <button
+              onClick={() => onScrollTo('id-generator')}
+              className="w-full sm:w-auto brutal-btn bg-paper-100 text-ink hover:bg-paper-50 px-7 py-4 text-lg font-display tracking-wider flex items-center justify-center gap-2.5 shadow-brutal border-2 border-ink"
+            >
+              <IdCard className="w-5 h-5 text-cjpOrange" />
+              <span>GENERATE ID CARD</span>
+            </button>
+          </div>
+
+          <div className="mt-6">
+            <button
               onClick={() => onScrollTo('manifesto')}
-              className="w-full sm:w-auto font-mono text-sm uppercase font-bold text-ink hover:text-cjpOrange py-3 px-4 underline underline-offset-4 tracking-wider flex items-center justify-center gap-1"
+              className="font-mono text-xs uppercase font-bold text-ink hover:text-cjpOrange underline underline-offset-4 tracking-wider inline-flex items-center gap-1"
             >
               <BookOpen className="w-4 h-4" />
-              <span>READ THE 5 DIRECTIVES</span>
+              <span>READ THE 5 DIRECTIVES & CHARTER</span>
             </button>
           </div>
 
