@@ -116,34 +116,35 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
     <div className="min-h-screen bg-navy-50/40 text-navy-900 flex flex-col font-sans selection:bg-brand-600 selection:text-white">
       
       {/* Minimal Standalone University Header */}
-      <header className="bg-white border-b border-navy-200/80 py-4 px-4 sm:px-8 sticky top-0 z-40 shadow-xs">
+      <header className="bg-white border-b border-navy-200/80 py-3.5 px-3 sm:px-8 sticky top-0 z-40 shadow-xs">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-navy-900 to-brand-700 text-white font-display font-bold flex items-center justify-center shadow-xs">
-              <GraduationCap className="w-5 h-5 text-brand-300" />
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-navy-900 to-brand-700 text-white font-display font-bold flex items-center justify-center shadow-xs shrink-0">
+              <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-brand-300" />
             </div>
-            <div>
-              <span className="font-display font-bold text-lg sm:text-xl text-navy-950 block leading-tight">
+            <div className="min-w-0">
+              <span className="font-display font-bold text-base sm:text-xl text-navy-950 block leading-tight truncate">
                 College<span className="text-brand-600">Centre</span>
               </span>
-              <span className="text-[11px] text-navy-500 font-medium">
-                University Central Admissions & Student Data Intake
+              <span className="text-[10px] sm:text-[11px] text-navy-500 font-medium truncate block">
+                Central Admissions & Intake
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-navy-600 font-medium bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200/60">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="hidden md:flex items-center gap-1.5 text-xs text-navy-600 font-medium bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200/60">
               <Lock className="w-3.5 h-3.5 text-academic-emerald" />
               <span>DPDPA 2023 Encrypted</span>
             </div>
             {onBackToHome && (
               <button
                 onClick={onBackToHome}
-                className="text-xs font-semibold text-navy-700 hover:text-navy-950 flex items-center gap-1 bg-white hover:bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200 shadow-xs transition-colors"
+                className="text-xs font-semibold text-navy-700 hover:text-navy-950 flex items-center gap-1 bg-white hover:bg-navy-50 px-2.5 sm:px-3 py-1.5 rounded-lg border border-navy-200 shadow-xs transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Return to Overview</span>
+                <span className="hidden xs:inline">Return to Overview</span>
+                <span className="xs:hidden">Back</span>
               </button>
             )}
           </div>
@@ -151,19 +152,19 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
       </header>
 
       {/* Main Container */}
-      <main className="flex-grow py-8 sm:py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="flex-grow py-6 sm:py-10">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8">
           
-          <div className="mb-8 pb-4 border-b border-navy-200/80 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div className="mb-6 sm:mb-8 pb-3 sm:pb-4 border-b border-navy-200/80 flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/80 mb-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/80 mb-2">
                 Official Institutional Enrollment
               </span>
-              <h1 className="font-display font-bold text-3xl sm:text-4xl text-navy-950 tracking-tight">
+              <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-navy-950 tracking-tight leading-tight">
                 Student Admission & Data Intake Form
               </h1>
             </div>
-            <div className="text-xs text-navy-500 font-mono">
+            <div className="text-[11px] sm:text-xs text-navy-500 font-mono">
               Academic Intake 2026-27 • Section A
             </div>
           </div>
@@ -171,49 +172,49 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
           {submitted ? (
             /* Success & Printable Slip */
             <div className="space-y-6 animate-in fade-in duration-300">
-              <div className="bg-white border border-navy-200/80 rounded-2xl p-6 sm:p-10 shadow-card">
-                <div className="text-center max-w-xl mx-auto space-y-4 mb-8">
-                  <div className="w-14 h-14 rounded-2xl bg-academic-emerald/10 text-academic-emerald mx-auto flex items-center justify-center">
-                    <CheckCircle2 className="w-8 h-8" />
+              <div className="bg-white border border-navy-200/80 rounded-2xl p-5 sm:p-10 shadow-card">
+                <div className="text-center max-w-xl mx-auto space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-academic-emerald/10 text-academic-emerald mx-auto flex items-center justify-center">
+                    <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />
                   </div>
                   
-                  <h2 className="font-display font-bold text-2xl sm:text-3xl text-navy-950">
+                  <h2 className="font-display font-bold text-xl sm:text-3xl text-navy-950">
                     Student Record Submitted & Indexed
                   </h2>
 
-                  <p className="text-sm text-navy-600">
+                  <p className="text-xs sm:text-sm text-navy-600">
                     Admission dossier for <strong className="text-navy-900">{formData.fullName}</strong> has been encrypted and assigned to the central university ledger.
                   </p>
 
-                  <div className="inline-block bg-navy-900 text-white text-xs font-mono font-bold px-4 py-1.5 rounded-lg">
-                    APPLICATION REFERENCE: {applicationId}
+                  <div className="inline-block bg-navy-900 text-white text-xs font-mono font-bold px-3 sm:px-4 py-1.5 rounded-lg">
+                    REFERENCE: {applicationId}
                   </div>
                 </div>
 
                 {/* Dossier Card */}
-                <div ref={printRef} className="bg-navy-50/40 border border-navy-200 rounded-2xl p-6 shadow-xs font-sans space-y-6">
-                  <div className="flex items-center justify-between border-b border-navy-200 pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-navy-900 text-white font-bold flex items-center justify-center">
+                <div ref={printRef} className="bg-navy-50/40 border border-navy-200 rounded-2xl p-4 sm:p-6 shadow-xs font-sans space-y-4 sm:space-y-6">
+                  <div className="flex items-center justify-between border-b border-navy-200 pb-3 sm:pb-4 gap-2">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-navy-900 text-white font-bold flex items-center justify-center text-xs sm:text-sm shrink-0">
                         CC
                       </div>
-                      <div>
-                        <h3 className="font-display font-bold text-base text-navy-950 leading-tight">
-                          CollegeCentre University Admissions Ledger
+                      <div className="min-w-0">
+                        <h3 className="font-display font-bold text-sm sm:text-base text-navy-950 leading-tight truncate">
+                          CollegeCentre Admissions Ledger
                         </h3>
-                        <span className="text-xs text-navy-500 font-medium">
-                          Official Student Registration Dossier • Academic Year 2026
+                        <span className="text-[10px] sm:text-xs text-navy-500 font-medium truncate block">
+                          Official Student Registration Dossier • 2026
                         </span>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold text-academic-emerald bg-academic-emerald/10 px-2.5 py-1 rounded-full">
+                    <span className="text-[10px] sm:text-xs font-semibold text-academic-emerald bg-academic-emerald/10 px-2 py-0.5 sm:py-1 rounded-full shrink-0">
                       Verified Active
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 items-start">
                     <div className="md:col-span-3 flex flex-col items-center">
-                      <div className="w-28 h-32 rounded-xl border border-navy-200 bg-white overflow-hidden shadow-xs relative">
+                      <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-xl border border-navy-200 bg-white overflow-hidden shadow-xs relative">
                         {formData.photoUrl ? (
                           <img src={formData.photoUrl} alt={formData.fullName} className="w-full h-full object-cover" />
                         ) : (
@@ -222,67 +223,67 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                           </div>
                         )}
                       </div>
-                      <span className="text-[10px] font-semibold text-navy-400 uppercase tracking-wider mt-1.5">
+                      <span className="text-[9px] sm:text-[10px] font-semibold text-navy-400 uppercase tracking-wider mt-1.5">
                         Biometric Passport Seal
                       </span>
                     </div>
 
-                    <div className="md:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
-                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Full Student Name</span>
-                        <span className="text-sm font-semibold text-navy-900">{formData.fullName}</span>
+                    <div className="md:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 text-xs">
+                      <div className="bg-white p-2.5 sm:p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[9px] sm:text-[10px] text-navy-400 uppercase font-semibold block">Full Student Name</span>
+                        <span className="text-xs sm:text-sm font-semibold text-navy-900">{formData.fullName}</span>
                       </div>
 
-                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
-                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Date of Birth & Gender</span>
+                      <div className="bg-white p-2.5 sm:p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[9px] sm:text-[10px] text-navy-400 uppercase font-semibold block">Date of Birth & Gender</span>
                         <span className="text-xs font-semibold text-navy-900">{formData.dob} ({formData.gender}, {formData.bloodGroup})</span>
                       </div>
 
-                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
-                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Student Mobile Phone</span>
+                      <div className="bg-white p-2.5 sm:p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[9px] sm:text-[10px] text-navy-400 uppercase font-semibold block">Student Mobile Phone</span>
                         <span className="text-xs font-semibold text-navy-900">{formData.phone}</span>
                       </div>
 
-                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
-                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Official Student Email</span>
+                      <div className="bg-white p-2.5 sm:p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[9px] sm:text-[10px] text-navy-400 uppercase font-semibold block">Official Student Email</span>
                         <span className="text-xs font-semibold text-navy-900">{formData.email}</span>
                       </div>
 
-                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
-                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Full Name</span>
-                        <span className="text-sm font-semibold text-navy-900">{formData.guardianName} ({formData.guardianRelation})</span>
+                      <div className="bg-white p-2.5 sm:p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[9px] sm:text-[10px] text-navy-400 uppercase font-semibold block">Guardian Full Name</span>
+                        <span className="text-xs sm:text-sm font-semibold text-navy-900">{formData.guardianName} ({formData.guardianRelation})</span>
                       </div>
 
-                      <div className="bg-white p-3 rounded-xl border border-navy-200/70">
-                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Mobile Phone</span>
+                      <div className="bg-white p-2.5 sm:p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[9px] sm:text-[10px] text-navy-400 uppercase font-semibold block">Guardian Mobile Phone</span>
                         <span className="text-xs font-semibold text-navy-900">{formData.guardianPhone}</span>
                       </div>
 
-                      <div className="sm:col-span-2 bg-white p-3 rounded-xl border border-navy-200/70">
-                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Enrolled Program & Discipline</span>
+                      <div className="sm:col-span-2 bg-white p-2.5 sm:p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[9px] sm:text-[10px] text-navy-400 uppercase font-semibold block">Enrolled Program & Discipline</span>
                         <span className="text-xs font-semibold text-brand-700">{formData.degreeProgram} (Batch {formData.admissionYear})</span>
                       </div>
 
-                      <div className="sm:col-span-2 bg-white p-3 rounded-xl border border-navy-200/70">
-                        <span className="text-[10px] text-navy-400 uppercase font-semibold block">Permanent Residential Address</span>
+                      <div className="sm:col-span-2 bg-white p-2.5 sm:p-3 rounded-xl border border-navy-200/70">
+                        <span className="text-[9px] sm:text-[10px] text-navy-400 uppercase font-semibold block">Permanent Residential Address</span>
                         <span className="text-xs text-navy-800">{formData.address}, {formData.city} - {formData.pincode}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-navy-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-navy-500">
+                  <div className="pt-3 sm:pt-4 border-t border-navy-200 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 text-[11px] sm:text-xs text-navy-500 text-center sm:text-left">
                     <div>Digitally timestamped & encrypted with SHA-256 integrity signature.</div>
                     <div className="text-academic-emerald font-semibold">Attestation Verified ✓</div>
                   </div>
                 </div>
 
-                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3">
                   <button
                     onClick={handlePrint}
-                    className="univ-btn-primary px-6 py-3 text-xs"
+                    className="univ-btn-primary px-5 sm:px-6 py-3 text-xs sm:text-sm"
                   >
                     <Printer className="w-4 h-4" />
-                    <span>Print Official Admission Slip</span>
+                    <span>Print Admission Slip</span>
                   </button>
 
                   <button
@@ -307,7 +308,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                         admissionYear: '2026',
                       });
                     }}
-                    className="univ-btn-secondary px-6 py-3 text-xs"
+                    className="univ-btn-secondary px-5 sm:px-6 py-3 text-xs sm:text-sm"
                   >
                     <RefreshCw className="w-4 h-4" />
                     <span>Submit Another Application</span>
@@ -318,24 +319,24 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
           ) : (
 
             /* Multi-step Form */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
               
-              <div className="lg:col-span-8 space-y-6">
+              <div className="lg:col-span-8 space-y-4 sm:space-y-6">
                 
-                {/* Step indicator */}
-                <div className="grid grid-cols-4 gap-2 text-xs font-semibold">
+                {/* Step indicator (Responsive grid) */}
+                <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold">
                   {[
-                    { step: 1, label: '01. Personal' },
-                    { step: 2, label: '02. Contact' },
-                    { step: 3, label: '03. Guardian' },
-                    { step: 4, label: '04. Review' },
+                    { step: 1, num: '01', label: 'Personal' },
+                    { step: 2, num: '02', label: 'Contact' },
+                    { step: 3, num: '03', label: 'Guardian' },
+                    { step: 4, num: '04', label: 'Review' },
                   ].map((s) => (
                     <div
                       key={s.step}
                       onClick={() => {
                         if (s.step < currentStep) setCurrentStep(s.step);
                       }}
-                      className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
+                      className={`p-2 sm:p-3 rounded-xl border text-center cursor-pointer transition-all ${
                         currentStep === s.step
                           ? 'bg-navy-950 text-white border-navy-950 shadow-xs'
                           : currentStep > s.step
@@ -343,20 +344,22 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                           : 'bg-white text-navy-500 border-navy-200/80 hover:bg-navy-50'
                       }`}
                     >
-                      {s.label}
+                      <div className="font-bold sm:hidden">{s.num}</div>
+                      <div className="truncate hidden sm:block">{s.num}. {s.label}</div>
+                      <div className="truncate sm:hidden text-[9px]">{s.label}</div>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-white border border-navy-200/80 rounded-2xl p-6 sm:p-8 shadow-card">
+                <div className="bg-white border border-navy-200/80 rounded-2xl p-4 sm:p-8 shadow-card">
                   
                   {/* STEP 1: Personal */}
                   {currentStep === 1 && (
-                    <div className="space-y-5">
-                      <div className="border-b border-navy-100 pb-3">
-                        <span className="text-xs font-semibold text-brand-600 uppercase">Section 01 of 04</span>
-                        <h2 className="font-display font-bold text-xl sm:text-2xl text-navy-950">
-                          Student Personal Identity & Biometrics
+                    <div className="space-y-4 sm:space-y-5">
+                      <div className="border-b border-navy-100 pb-2.5 sm:pb-3">
+                        <span className="text-[11px] sm:text-xs font-semibold text-brand-600 uppercase">Section 01 of 04</span>
+                        <h2 className="font-display font-bold text-lg sm:text-2xl text-navy-950">
+                          Student Personal Identity
                         </h2>
                       </div>
 
@@ -365,7 +368,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                         <label className="block text-xs font-semibold text-navy-700 mb-1.5">
                           Official Student Portrait * (Passport Size)
                         </label>
-                        <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-navy-50/50 border border-dashed border-navy-300 rounded-xl">
+                        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-navy-50/50 border border-dashed border-navy-300 rounded-xl">
                           <div className="w-20 h-24 rounded-lg border border-navy-200 bg-white flex items-center justify-center overflow-hidden shadow-xs relative shrink-0">
                             {formData.photoUrl ? (
                               <img src={formData.photoUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -376,15 +379,15 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
 
                           <div className="space-y-2 text-center sm:text-left flex-1">
                             <div className="text-xs text-navy-500">
-                              Upload a clean formal portrait (JPG, PNG up to 5MB).
+                              Upload formal passport portrait (JPG, PNG up to 5MB).
                             </div>
-                            <label className="univ-btn-secondary text-xs cursor-pointer">
+                            <label className="univ-btn-secondary text-xs cursor-pointer py-2 px-3 inline-flex">
                               <Upload className="w-3.5 h-3.5 text-navy-500" />
                               <span>Select Photo File</span>
                               <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
                             </label>
                             {errors.photo && (
-                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <p className="text-xs text-red-600 font-medium flex items-center justify-center sm:justify-start gap-1">
                                 <AlertCircle className="w-3.5 h-3.5" /> {errors.photo}
                               </p>
                             )}
@@ -394,14 +397,14 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
 
                       <div>
                         <label className="block text-xs font-semibold text-navy-700 mb-1">
-                          Full Legal Name * (As per 10th / Secondary Certificate)
+                          Full Legal Name * (As per 10th Certificate)
                         </label>
                         <input
                           type="text"
                           required
                           value={formData.fullName}
                           onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
                           placeholder="e.g. Rohan Vinod Kulkarni"
                         />
                         {errors.fullName && (
@@ -409,7 +412,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-navy-700 mb-1">
                             Date of Birth *
@@ -419,7 +422,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                             required
                             value={formData.dob}
                             onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                           />
                           {errors.dob && (
                             <p className="text-xs text-red-600 font-medium mt-1">{errors.dob}</p>
@@ -433,7 +436,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                           <select
                             value={formData.gender}
                             onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                           >
                             <option>Male</option>
                             <option>Female</option>
@@ -448,7 +451,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                           <select
                             value={formData.bloodGroup}
                             onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                           >
                             <option>O+</option>
                             <option>O-</option>
@@ -469,7 +472,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                         <select
                           value={formData.degreeProgram}
                           onChange={(e) => setFormData({ ...formData, degreeProgram: e.target.value })}
-                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                         >
                           <option>B.Tech - Computer Science & Engineering</option>
                           <option>B.Tech - Artificial Intelligence & Data Science</option>
@@ -487,15 +490,15 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
 
                   {/* STEP 2: Contact */}
                   {currentStep === 2 && (
-                    <div className="space-y-5">
-                      <div className="border-b border-navy-100 pb-3">
-                        <span className="text-xs font-semibold text-brand-600 uppercase">Section 02 of 04</span>
-                        <h2 className="font-display font-bold text-xl sm:text-2xl text-navy-950">
+                    <div className="space-y-4 sm:space-y-5">
+                      <div className="border-b border-navy-100 pb-2.5 sm:pb-3">
+                        <span className="text-[11px] sm:text-xs font-semibold text-brand-600 uppercase">Section 02 of 04</span>
+                        <h2 className="font-display font-bold text-lg sm:text-2xl text-navy-950">
                           Student Contact & Residence
                         </h2>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-navy-700 mb-1">
                             Student Mobile Number *
@@ -506,10 +509,10 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                               required
                               value={formData.phone}
                               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                              className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                              className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
                               placeholder="e.g. 9876543210"
                             />
-                            <Phone className="w-4 h-4 text-navy-400 absolute left-3.5 top-3.5" />
+                            <Phone className="w-4 h-4 text-navy-400 absolute left-3.5 top-3 sm:top-3.5" />
                           </div>
                           {errors.phone && (
                             <p className="text-xs text-red-600 font-medium mt-1">{errors.phone}</p>
@@ -526,10 +529,10 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                               required
                               value={formData.email}
                               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                              className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                              className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
                               placeholder="e.g. student@collegecentre.edu"
                             />
-                            <Mail className="w-4 h-4 text-navy-400 absolute left-3.5 top-3.5" />
+                            <Mail className="w-4 h-4 text-navy-400 absolute left-3.5 top-3 sm:top-3.5" />
                           </div>
                           {errors.email && (
                             <p className="text-xs text-red-600 font-medium mt-1">{errors.email}</p>
@@ -546,7 +549,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                           required
                           value={formData.address}
                           onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                          className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-sm sm:text-base text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
                           placeholder="House / Flat No, Street, Locality"
                         />
                         {errors.address && (
@@ -554,7 +557,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-navy-700 mb-1">
                             City / District *
@@ -563,7 +566,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                             type="text"
                             value={formData.city}
                             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
                             placeholder="e.g. Bengaluru / Pune"
                           />
                         </div>
@@ -576,7 +579,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                             type="text"
                             value={formData.pincode}
                             onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                             placeholder="e.g. 560001"
                           />
                         </div>
@@ -587,15 +590,15 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
 
                   {/* STEP 3: Guardian */}
                   {currentStep === 3 && (
-                    <div className="space-y-5">
-                      <div className="border-b border-navy-100 pb-3">
-                        <span className="text-xs font-semibold text-brand-600 uppercase">Section 03 of 04</span>
-                        <h2 className="font-display font-bold text-xl sm:text-2xl text-navy-950">
-                          Guardian & Emergency Contact Information
+                    <div className="space-y-4 sm:space-y-5">
+                      <div className="border-b border-navy-100 pb-2.5 sm:pb-3">
+                        <span className="text-[11px] sm:text-xs font-semibold text-brand-600 uppercase">Section 03 of 04</span>
+                        <h2 className="font-display font-bold text-lg sm:text-2xl text-navy-950">
+                          Guardian Information
                         </h2>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
                         <div className="sm:col-span-2">
                           <label className="block text-xs font-semibold text-navy-700 mb-1">
                             Guardian Full Name *
@@ -605,7 +608,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                             required
                             value={formData.guardianName}
                             onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
                             placeholder="e.g. Vinod S. Kulkarni"
                           />
                           {errors.guardianName && (
@@ -620,7 +623,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                           <select
                             value={formData.guardianRelation}
                             onChange={(e) => setFormData({ ...formData, guardianRelation: e.target.value })}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                           >
                             <option>Father</option>
                             <option>Mother</option>
@@ -631,7 +634,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
 
                       <div>
                         <label className="block text-xs font-semibold text-navy-700 mb-1">
-                          Guardian Mobile Phone * (Notifications & Emergency)
+                          Guardian Mobile Phone * (Emergency & Alerts)
                         </label>
                         <div className="relative">
                           <input
@@ -639,43 +642,43 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                             required
                             value={formData.guardianPhone}
                             onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
-                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
+                            className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-navy-900 pl-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium"
                             placeholder="e.g. 9811122233"
                           />
-                          <Phone className="w-4 h-4 text-navy-400 absolute left-3.5 top-3.5" />
+                          <Phone className="w-4 h-4 text-navy-400 absolute left-3.5 top-3 sm:top-3.5" />
                         </div>
                         {errors.guardianPhone && (
                           <p className="text-xs text-red-600 font-medium mt-1">{errors.guardianPhone}</p>
                         )}
                       </div>
 
-                      <div className="p-3.5 bg-brand-50/60 border border-brand-200/70 rounded-xl text-navy-700 text-xs">
+                      <div className="p-3 sm:p-3.5 bg-brand-50/60 border border-brand-200/70 rounded-xl text-navy-700 text-xs">
                         ℹ <strong>Parent Portal Notification:</strong> Real-time semester grades and attendance threshold warnings are automatically dispatched to the verified guardian mobile number.
                       </div>
 
                     </div>
                   )}
 
-                  {/* STEP 4: Review & Attestation */}
+                  {/* STEP 4: Review */}
                   {currentStep === 4 && (
-                    <div className="space-y-5">
-                      <div className="border-b border-navy-100 pb-3">
-                        <span className="text-xs font-semibold text-brand-600 uppercase">Section 04 of 04</span>
-                        <h2 className="font-display font-bold text-xl sm:text-2xl text-navy-950">
+                    <div className="space-y-4 sm:space-y-5">
+                      <div className="border-b border-navy-100 pb-2.5 sm:pb-3">
+                        <span className="text-[11px] sm:text-xs font-semibold text-brand-600 uppercase">Section 04 of 04</span>
+                        <h2 className="font-display font-bold text-lg sm:text-2xl text-navy-950">
                           Review & Attestation
                         </h2>
                       </div>
 
-                      <div className="p-4 bg-navy-50/50 border border-navy-200 rounded-xl space-y-3.5 text-xs">
+                      <div className="p-3.5 sm:p-4 bg-navy-50/50 border border-navy-200 rounded-xl space-y-3 text-xs">
                         <div className="flex items-center justify-between border-b border-navy-200 pb-2 font-semibold text-navy-900">
                           <span>Applicant Details Summary</span>
-                          <span className="text-brand-600 font-mono text-[11px]">Ready for Attestation</span>
+                          <span className="text-brand-600 font-mono text-[10px] sm:text-[11px]">Ready for Attestation</span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                           <div>
                             <span className="text-[10px] text-navy-400 uppercase font-semibold block">Full Name:</span>
-                            <span className="font-medium text-navy-900">{formData.fullName || '—'}</span>
+                            <span className="font-medium text-navy-900 text-xs sm:text-sm">{formData.fullName || '—'}</span>
                           </div>
                           <div>
                             <span className="text-[10px] text-navy-400 uppercase font-semibold block">DOB / Blood:</span>
@@ -687,7 +690,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                           </div>
                           <div>
                             <span className="text-[10px] text-navy-400 uppercase font-semibold block">Email:</span>
-                            <span className="font-medium text-navy-900">{formData.email || '—'}</span>
+                            <span className="font-medium text-navy-900 truncate block">{formData.email || '—'}</span>
                           </div>
                           <div>
                             <span className="text-[10px] text-navy-400 uppercase font-semibold block">Guardian Name:</span>
@@ -705,9 +708,9 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-3 p-3.5 bg-navy-50/40 border border-navy-200 rounded-xl text-xs">
-                        <input type="checkbox" required defaultChecked id="attest" className="mt-0.5 rounded text-brand-600" />
-                        <label htmlFor="attest" className="text-navy-600 leading-relaxed">
+                      <div className="flex items-start gap-2.5 sm:gap-3 p-3 bg-navy-50/40 border border-navy-200 rounded-xl text-xs">
+                        <input type="checkbox" required defaultChecked id="attest" className="mt-0.5 rounded text-brand-600 shrink-0" />
+                        <label htmlFor="attest" className="text-navy-600 leading-relaxed text-[11px] sm:text-xs">
                           I hereby attest that the photograph, personal details, student phone, and guardian information supplied above are genuine and accurate as per official university admission standards.
                         </label>
                       </div>
@@ -716,15 +719,15 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                   )}
 
                   {/* Form Footer Buttons */}
-                  <div className="pt-6 border-t border-navy-100 flex items-center justify-between gap-4">
+                  <div className="pt-4 sm:pt-6 border-t border-navy-100 flex items-center justify-between gap-3">
                     {currentStep > 1 ? (
                       <button
                         type="button"
                         onClick={handlePrev}
-                        className="univ-btn-secondary text-xs"
+                        className="univ-btn-secondary text-xs px-3 sm:px-5 py-2 sm:py-2.5"
                       >
                         <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Previous Section</span>
+                        <span>Previous</span>
                       </button>
                     ) : <div />}
 
@@ -732,9 +735,9 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                       <button
                         type="button"
                         onClick={handleNext}
-                        className="univ-btn-primary text-xs"
+                        className="univ-btn-primary text-xs px-4 sm:px-6 py-2 sm:py-2.5"
                       >
-                        <span>Next Section</span>
+                        <span>Next Step</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     ) : (
@@ -742,10 +745,10 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                         type="button"
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="univ-btn-accent text-xs"
+                        className="univ-btn-accent text-xs px-5 sm:px-6 py-2.5 sm:py-3"
                       >
                         <ShieldCheck className="w-4 h-4" />
-                        <span>{isSubmitting ? 'Submitting Application...' : 'Submit Student Record'}</span>
+                        <span>{isSubmitting ? 'Submitting...' : 'Submit Student Record'}</span>
                       </button>
                     )}
                   </div>
@@ -760,14 +763,14 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                   Live Dossier Preview
                 </div>
 
-                <div className="bg-white border border-navy-200/80 rounded-2xl p-5 shadow-card space-y-4">
+                <div className="bg-white border border-navy-200/80 rounded-2xl p-4 sm:p-5 shadow-card space-y-3.5 sm:space-y-4">
                   
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-20 rounded-xl border border-navy-200 bg-navy-50 overflow-hidden flex items-center justify-center relative shrink-0 shadow-xs">
+                  <div className="flex items-center gap-3 sm:gap-3.5">
+                    <div className="w-14 h-18 sm:w-16 sm:h-20 rounded-xl border border-navy-200 bg-navy-50 overflow-hidden flex items-center justify-center relative shrink-0 shadow-xs">
                       {formData.photoUrl ? (
                         <img src={formData.photoUrl} alt="Student" className="w-full h-full object-cover" />
                       ) : (
-                        <User className="w-7 h-7 text-navy-400" />
+                        <User className="w-6 h-6 sm:w-7 sm:h-7 text-navy-400" />
                       )}
                       {formData.bloodGroup && (
                         <div className="absolute bottom-0 inset-x-0 bg-navy-950/80 text-white text-[8px] font-bold text-center py-0.5">
@@ -777,19 +780,19 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                     </div>
 
                     <div className="min-w-0 space-y-0.5">
-                      <span className="text-[10px] font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
+                      <span className="text-[9px] sm:text-[10px] font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
                         Applicant 2026
                       </span>
-                      <h3 className="font-display font-bold text-base text-navy-950 truncate">
+                      <h3 className="font-display font-bold text-sm sm:text-base text-navy-950 truncate">
                         {formData.fullName || 'Candidate Name'}
                       </h3>
-                      <p className="text-xs text-navy-500 truncate">
+                      <p className="text-[11px] sm:text-xs text-navy-500 truncate">
                         {formData.degreeProgram.split('-')[0]}
                       </p>
                     </div>
                   </div>
 
-                  <div className="border-t border-navy-100 pt-3 space-y-2 text-xs">
+                  <div className="border-t border-navy-100 pt-3 space-y-1.5 sm:space-y-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-navy-400">DOB:</span>
                       <span className="font-medium text-navy-800">{formData.dob || 'YYYY-MM-DD'}</span>
@@ -813,15 +816,15 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-navy-100 text-[11px] text-academic-emerald font-semibold flex items-center justify-between">
+                  <div className="pt-2 border-t border-navy-100 text-[10px] sm:text-[11px] text-academic-emerald font-semibold flex items-center justify-between">
                     <span>Encryption: AES-256</span>
                     <span>Ready ✓</span>
                   </div>
                 </div>
 
-                <div className="p-4 bg-navy-900 text-white rounded-2xl text-xs space-y-1.5 shadow-sm">
-                  <div className="font-semibold text-brand-300 flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-academic-emerald" />
+                <div className="p-3.5 sm:p-4 bg-navy-900 text-white rounded-2xl text-xs space-y-1 shadow-sm">
+                  <div className="font-semibold text-brand-300 flex items-center gap-1.5 text-xs">
+                    <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-academic-emerald shrink-0" />
                     <span>DPDPA 2023 Compliant</span>
                   </div>
                   <p className="text-navy-300 text-[11px] leading-relaxed">
@@ -838,12 +841,12 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
       </main>
 
       {/* Minimal Footer */}
-      <footer className="bg-white border-t border-navy-200 py-6 px-4 text-xs text-navy-500">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div>
+      <footer className="bg-white border-t border-navy-200 py-4 sm:py-6 px-4 text-xs text-navy-500">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 text-center sm:text-left">
+          <div className="text-[11px] sm:text-xs">
             © 2026 CollegeCentre University Registry System • DPDPA 2023 & FERPA Compliant.
           </div>
-          <div className="text-navy-400">
+          <div className="text-navy-400 text-[11px] sm:text-xs">
             admissions@collegecentre.in
           </div>
         </div>
