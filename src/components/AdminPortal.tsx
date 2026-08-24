@@ -466,6 +466,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
   useEffect(() => {
     fetchData();
+    if (resendApiKey && !localStorage.getItem('cc_resend_apikey')) {
+      localStorage.setItem('cc_resend_apikey', resendApiKey);
+    }
   }, []);
 
   const handleStatusChange = async (id: string, newStatus: 'Verified' | 'Pending Review' | 'Enrolled') => {
