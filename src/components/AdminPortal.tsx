@@ -646,85 +646,153 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-navy-50/70 border-b border-navy-200 text-navy-600 font-semibold uppercase text-[10px]">
-                        <tr>
-                          <th className="py-3 px-4">Student Scholar</th>
-                          <th className="py-3 px-4">DOB / Gender</th>
-                          <th className="py-3 px-4">Direct Contact</th>
-                          <th className="py-3 px-4">Guardian Contact</th>
-                          <th className="py-3 px-4">Program & Campus</th>
-                          <th className="py-3 px-4">Status</th>
-                          <th className="py-3 px-4 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-navy-100">
-                        {filteredRecords.map((r) => (
-                          <tr key={r.id} className="hover:bg-navy-50/50 transition-colors cursor-pointer" onClick={() => setSelectedStudent(r)}>
-                            <td className="py-3.5 px-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-11 rounded-lg border border-navy-200 bg-navy-50 overflow-hidden shrink-0">
-                                  {r.photo_url ? (
-                                    <img src={r.photo_url} alt={r.full_name} className="w-full h-full object-cover" />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-navy-400">
-                                      <User className="w-5 h-5" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div>
-                                  <div className="font-semibold text-sm text-navy-950">{r.full_name}</div>
-                                  <div className="font-mono text-[10px] text-brand-600 font-bold">{r.id}</div>
-                                </div>
+                  <>
+                    {/* Mobile Card List (Visible on Phone Screens) */}
+                    <div className="block sm:hidden divide-y divide-navy-100">
+                      {filteredRecords.map((r) => (
+                        <div 
+                          key={r.id} 
+                          onClick={() => setSelectedStudent(r)}
+                          className="p-4 space-y-3 hover:bg-navy-50/50 transition-colors active:bg-navy-100/50 cursor-pointer"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-14 rounded-xl border border-navy-200 bg-navy-50 overflow-hidden shrink-0 shadow-xs">
+                                {r.photo_url ? (
+                                  <img src={r.photo_url} alt={r.full_name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-navy-400">
+                                    <User className="w-6 h-6" />
+                                  </div>
+                                )}
                               </div>
-                            </td>
-                            <td className="py-3.5 px-4 text-navy-600">
-                              <div className="font-medium text-navy-900">{r.dob || '—'}</div>
-                              <div className="text-[11px] text-navy-500">{r.gender || '—'} • {r.blood_group || '—'}</div>
-                            </td>
-                            <td className="py-3.5 px-4 text-navy-600">
-                              <div className="font-medium text-navy-900">{r.phone || '—'}</div>
-                              <div className="text-[11px] text-navy-500 truncate max-w-[160px]">{r.email || '—'}</div>
-                            </td>
-                            <td className="py-3.5 px-4 text-navy-600">
-                              <div className="font-medium text-navy-900">{r.guardian_name || '—'}</div>
-                              <div className="text-[11px] text-navy-500">{r.guardian_relation || 'Guardian'} • {r.guardian_phone || '—'}</div>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <div className="font-medium text-navy-900 truncate max-w-[180px]">{r.degree_program || '—'}</div>
-                              <div className="text-[10px] text-brand-700 font-semibold font-mono">
-                                {r.campus_slug ? `${r.campus_slug}.collegecentre.in` : 'Main Campus'}
+                              <div>
+                                <div className="font-semibold text-sm text-navy-950">{r.full_name}</div>
+                                <div className="font-mono text-[10px] text-brand-600 font-bold">{r.id}</div>
+                                <div className="text-[11px] text-navy-500 mt-0.5">{r.degree_program}</div>
                               </div>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                r.status === 'Verified' ? 'bg-academic-emerald/10 text-academic-emerald' : 'bg-brand-50 text-brand-700'
-                              }`}>
-                                {r.status}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-1">
-                                <button
-                                  onClick={() => setSelectedStudent(r)}
-                                  className="p-1.5 rounded-lg text-navy-500 hover:text-brand-600 hover:bg-navy-100"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteStudent(r.id)}
-                                  className="p-1.5 rounded-lg text-navy-400 hover:text-red-600 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
+                            </div>
+
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                              r.status === 'Verified' ? 'bg-academic-emerald/10 text-academic-emerald' : 'bg-brand-50 text-brand-700'
+                            }`}>
+                              {r.status}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-[11px] bg-navy-50/70 p-2.5 rounded-xl text-navy-600">
+                            <div>
+                              <span className="text-[9px] text-navy-400 font-semibold block uppercase">Campus</span>
+                              <span className="font-medium truncate block">{r.campus_slug ? `${r.campus_slug}.collegecentre.in` : 'Main Campus'}</span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] text-navy-400 font-semibold block uppercase">Phone</span>
+                              <span className="font-medium truncate block">{r.phone || '—'}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setSelectedStudent(r)}
+                              className="univ-btn-secondary text-xs px-3 py-1.5 flex items-center gap-1"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-brand-600" />
+                              <span>View Dossier</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteStudent(r.id)}
+                              className="text-xs text-red-600 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 flex items-center gap-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop Table View (Visible on Tablet and Desktop) */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-navy-50/70 border-b border-navy-200 text-navy-600 font-semibold uppercase text-[10px]">
+                          <tr>
+                            <th className="py-3 px-4">Student Scholar</th>
+                            <th className="py-3 px-4">DOB / Gender</th>
+                            <th className="py-3 px-4">Direct Contact</th>
+                            <th className="py-3 px-4">Guardian Contact</th>
+                            <th className="py-3 px-4">Program & Campus</th>
+                            <th className="py-3 px-4">Status</th>
+                            <th className="py-3 px-4 text-right">Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="divide-y divide-navy-100">
+                          {filteredRecords.map((r) => (
+                            <tr key={r.id} className="hover:bg-navy-50/50 transition-colors cursor-pointer" onClick={() => setSelectedStudent(r)}>
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-11 rounded-lg border border-navy-200 bg-navy-50 overflow-hidden shrink-0">
+                                    {r.photo_url ? (
+                                      <img src={r.photo_url} alt={r.full_name} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-navy-400">
+                                        <User className="w-5 h-5" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="font-semibold text-sm text-navy-950">{r.full_name}</div>
+                                    <div className="font-mono text-[10px] text-brand-600 font-bold">{r.id}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 text-navy-600">
+                                <div className="font-medium text-navy-900">{r.dob || '—'}</div>
+                                <div className="text-[11px] text-navy-500">{r.gender || '—'} • {r.blood_group || '—'}</div>
+                              </td>
+                              <td className="py-3.5 px-4 text-navy-600">
+                                <div className="font-medium text-navy-900">{r.phone || '—'}</div>
+                                <div className="text-[11px] text-navy-500 truncate max-w-[160px]">{r.email || '—'}</div>
+                              </td>
+                              <td className="py-3.5 px-4 text-navy-600">
+                                <div className="font-medium text-navy-900">{r.guardian_name || '—'}</div>
+                                <div className="text-[11px] text-navy-500">{r.guardian_relation || 'Guardian'} • {r.guardian_phone || '—'}</div>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <div className="font-medium text-navy-900 truncate max-w-[180px]">{r.degree_program || '—'}</div>
+                                <div className="text-[10px] text-brand-700 font-semibold font-mono">
+                                  {r.campus_slug ? `${r.campus_slug}.collegecentre.in` : 'Main Campus'}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                  r.status === 'Verified' ? 'bg-academic-emerald/10 text-academic-emerald' : 'bg-brand-50 text-brand-700'
+                                }`}>
+                                  {r.status}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    onClick={() => setSelectedStudent(r)}
+                                    className="p-1.5 rounded-lg text-navy-500 hover:text-brand-600 hover:bg-navy-100"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteStudent(r.id)}
+                                    className="p-1.5 rounded-lg text-navy-400 hover:text-red-600 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
                 )}
               </div>
 

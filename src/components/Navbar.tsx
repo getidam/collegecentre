@@ -5,9 +5,10 @@ interface NavbarProps {
   onOpenDemo: () => void;
   onScrollTo: (id: string) => void;
   onOpenDataCollection: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection, onOpenAdmin }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modulesDropdownOpen, setModulesDropdownOpen] = useState(false);
 
@@ -228,6 +229,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenDa
               >
                 Request Institutional Sandbox →
               </button>
+
+              {onOpenAdmin && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAdmin();
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-navy-900 text-navy-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 border border-navy-800"
+                >
+                  <Shield className="w-3.5 h-3.5 text-brand-400" />
+                  <span>Registrar Console (Admin)</span>
+                </button>
+              )}
             </div>
 
           </div>

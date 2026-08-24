@@ -165,6 +165,7 @@ export function App() {
         onOpenDemo={() => setDemoModalOpen(true)}
         onScrollTo={scrollToSection}
         onOpenDataCollection={openDataCollectionPage}
+        onOpenAdmin={openAdminPage}
       />
 
       <main className="flex-grow">
@@ -183,6 +184,7 @@ export function App() {
         onScrollTo={scrollToSection}
         onOpenDemo={() => setDemoModalOpen(true)}
         onOpenDataCollection={openDataCollectionPage}
+        onOpenAdmin={openAdminPage}
       />
 
       <DemoModal
