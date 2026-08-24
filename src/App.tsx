@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { TopStrip } from './components/TopStrip';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
@@ -13,9 +13,20 @@ import { TestimonialsSection } from './components/TestimonialsSection';
 import { FAQSection } from './components/FAQSection';
 import { DemoModal } from './components/DemoModal';
 import { Footer } from './components/Footer';
-import { StudentDataCollection } from './components/StudentDataCollection';
-import { AdminPortal } from './components/AdminPortal';
 import { getSubdomain } from './lib/subdomain';
+
+// Lazy-load heavy components — only download when actually needed
+const StudentDataCollection = lazy(() => import('./components/StudentDataCollection').then(m => ({ default: m.StudentDataCollection })));
+const AdminPortal = lazy(() => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })));
+
+const PageLoader = () => (
+  <div className="min-h-screen bg-navy-950 flex items-center justify-center">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-10 h-10 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+      <span className="text-navy-400 text-sm font-medium">Loading...</span>
+    </div>
+  </div>
+);
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -176,20 +187,24 @@ export function App() {
   // IF ON STUDENT DATA COLLECTION PAGE: Render ONLY the form page
   if (currentView === 'data_collection') {
     return (
-      <StudentDataCollection 
-        onBackToHome={backToLandingPage} 
-        campusSlug={activeCampusSlug}
-      />
+      <Suspense fallback={<PageLoader />}>
+        <StudentDataCollection 
+          onBackToHome={backToLandingPage} 
+          campusSlug={activeCampusSlug}
+        />
+      </Suspense>
     );
   }
 
   // IF ON ADMIN / REGISTRAR PORTAL: Render ONLY the Admin Data Directory
   if (currentView === 'admin') {
     return (
-      <AdminPortal 
-        onBackToHome={backToLandingPage} 
-        onOpenDataCollection={openDataCollectionPage} 
-      />
+      <Suspense fallback={<PageLoader />}>
+        <AdminPortal 
+          onBackToHome={backToLandingPage} 
+          onOpenDataCollection={openDataCollectionPage} 
+        />
+      </Suspense>
     );
   }
 
