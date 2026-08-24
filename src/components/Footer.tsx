@@ -1,12 +1,14 @@
 import React from 'react';
-import { ArrowUp, Code2, Shield } from 'lucide-react';
+import { ArrowUp, Code2, Shield, Users, UserCheck } from 'lucide-react';
 
 interface FooterProps {
   onScrollTo: (id: string) => void;
   onOpenDemo: () => void;
+  onOpenAdmin?: () => void;
+  onOpenDataCollection?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo }) => {
+export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo, onOpenAdmin, onOpenDataCollection }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -25,12 +27,23 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo }) => {
               Join 180+ leading universities ending student paperwork and data silos today.
             </p>
           </div>
-          <button
-            onClick={onOpenDemo}
-            className="px-6 py-3.5 rounded-xl bg-white text-navy-950 hover:bg-navy-100 font-semibold text-sm transition-all shrink-0 shadow-md"
-          >
-            Request Institutional Sandbox →
-          </button>
+          <div className="flex items-center gap-3 flex-wrap">
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="px-5 py-3.5 rounded-xl bg-navy-800/90 text-white hover:bg-navy-700 font-semibold text-sm border border-navy-700 transition-all shrink-0 flex items-center gap-2"
+              >
+                <Users className="w-4 h-4 text-brand-300" />
+                <span>Registrar Data Directory</span>
+              </button>
+            )}
+            <button
+              onClick={onOpenDemo}
+              className="px-6 py-3.5 rounded-xl bg-white text-navy-950 hover:bg-navy-100 font-semibold text-sm transition-all shrink-0 shadow-md"
+            >
+              Request Campus Sandbox →
+            </button>
+          </div>
         </div>
       </div>
 
@@ -59,28 +72,34 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo }) => {
 
             <div className="flex items-center gap-2 text-xs text-academic-emerald font-semibold">
               <span className="w-2 h-2 rounded-full bg-academic-emerald animate-pulse" />
-              <span>Core Gateway Status: Operational (99.99% SLA)</span>
+              <span>Central Registry Status: Operational (99.99% SLA)</span>
             </div>
           </div>
 
           <div>
             <h4 className="font-display font-semibold text-xs text-brand-400 mb-3.5 uppercase tracking-wider">
-              Core Architecture
+              Core Portals
             </h4>
             <ul className="space-y-2 text-xs text-navy-300 font-normal">
+              {onOpenAdmin && (
+                <li>
+                  <button onClick={onOpenAdmin} className="hover:text-white text-brand-300 font-semibold flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Registrar Student Directory</span>
+                  </button>
+                </li>
+              )}
+              {onOpenDataCollection && (
+                <li>
+                  <button onClick={onOpenDataCollection} className="hover:text-white flex items-center gap-1.5">
+                    <UserCheck className="w-3.5 h-3.5" />
+                    <span>Student Admission Intake</span>
+                  </button>
+                </li>
+              )}
               <li>
-                <button onClick={() => onScrollTo('vision')} className="hover:text-white transition-colors">
-                  System Architecture
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onScrollTo('manifesto')} className="hover:text-white transition-colors">
-                  5 Core Standards
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onScrollTo('modules')} className="hover:text-white transition-colors">
-                  Modular System
+                <button onClick={() => onScrollTo('id-generator')} className="hover:text-white transition-colors">
+                  Digital Smart-Pass
                 </button>
               </li>
               <li>
@@ -121,14 +140,9 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo }) => {
 
           <div>
             <h4 className="font-display font-semibold text-xs text-brand-400 mb-3.5 uppercase tracking-wider">
-              Resources & Code
+              Governance & Code
             </h4>
             <ul className="space-y-2 text-xs text-navy-300 font-normal">
-              <li>
-                <button onClick={() => onScrollTo('id-generator')} className="hover:text-white text-brand-300 font-medium transition-colors">
-                  ★ Digital Student Pass
-                </button>
-              </li>
               <li>
                 <a href="https://github.com/getidam/collegecentre.git" target="_blank" rel="noopener noreferrer" className="hover:text-white flex items-center gap-1">
                   <Code2 className="w-3.5 h-3.5" />
@@ -137,7 +151,7 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenDemo }) => {
               </li>
               <li>
                 <button onClick={() => onScrollTo('checklist')} className="hover:text-white transition-colors">
-                  Compliance Matrix
+                  NAAC Compliance Matrix
                 </button>
               </li>
               <li>

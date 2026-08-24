@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { TopStrip } from './components/TopStrip';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
@@ -14,17 +14,29 @@ import { FAQSection } from './components/FAQSection';
 import { DemoModal } from './components/DemoModal';
 import { Footer } from './components/Footer';
 import { StudentDataCollection } from './components/StudentDataCollection';
+import { AdminPortal } from './components/AdminPortal';
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'landing' | 'data_collection'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'data_collection' | 'admin'>('landing');
 
-  // Detect URL path or parameter on initial load (e.g., /form or /register or ?page=form)
+  // Detect URL path or parameter on initial load
   useEffect(() => {
     const path = window.location.pathname.toLowerCase();
     const search = window.location.search.toLowerCase();
     const hash = window.location.hash.toLowerCase();
+
     if (
+      path.includes('admin') ||
+      path.includes('record') ||
+      path.includes('portal') ||
+      search.includes('admin') ||
+      search.includes('record') ||
+      hash.includes('admin') ||
+      hash.includes('record')
+    ) {
+      setCurrentView('admin');
+    } else if (
       path.includes('form') ||
       path.includes('register') ||
       path.includes('student') ||
@@ -38,7 +50,9 @@ export function App() {
 
     const handlePopState = () => {
       const p = window.location.pathname.toLowerCase();
-      if (p.includes('form') || p.includes('register') || p.includes('student')) {
+      if (p.includes('admin') || p.includes('record') || p.includes('portal')) {
+        setCurrentView('admin');
+      } else if (p.includes('form') || p.includes('register') || p.includes('student')) {
         setCurrentView('data_collection');
       } else {
         setCurrentView('landing');
@@ -53,6 +67,16 @@ export function App() {
     setCurrentView('data_collection');
     try {
       window.history.pushState({}, '', '/form');
+    } catch {
+      // ignore
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const openAdminPage = () => {
+    setCurrentView('admin');
+    try {
+      window.history.pushState({}, '', '/admin');
     } catch {
       // ignore
     }
@@ -82,20 +106,36 @@ export function App() {
     }
   };
 
-  // IF ON STUDENT DATA COLLECTION PAGE: Render ONLY the form page (completely isolated, no landing page elements)
+  // IF ON STUDENT DATA COLLECTION PAGE: Render ONLY the form page
   if (currentView === 'data_collection') {
-    return <StudentDataCollection onBackToHome={backToLandingPage} />;
+    return (
+      <StudentDataCollection 
+        onBackToHome={backToLandingPage} 
+        onOpenAdmin={openAdminPage}
+      />
+    );
+  }
+
+  // IF ON ADMIN / REGISTRAR PORTAL: Render ONLY the Admin Data Directory
+  if (currentView === 'admin') {
+    return (
+      <AdminPortal 
+        onBackToHome={backToLandingPage} 
+        onOpenDataCollection={openDataCollectionPage} 
+      />
+    );
   }
 
   // OTHERWISE: Render the Landing Page
   return (
-    <div className="min-h-screen bg-paper-200 text-ink flex flex-col selection:bg-cjpOrange selection:text-white">
+    <div className="min-h-screen bg-white text-navy-900 flex flex-col font-sans selection:bg-brand-600 selection:text-white">
       <TopStrip onOpenDemo={() => setDemoModalOpen(true)} />
       
       <Navbar
         onOpenDemo={() => setDemoModalOpen(true)}
         onScrollTo={scrollToSection}
         onOpenDataCollection={openDataCollectionPage}
+        onOpenAdmin={openAdminPage}
       />
 
       <main className="flex-grow">
@@ -103,6 +143,7 @@ export function App() {
           onOpenDemo={() => setDemoModalOpen(true)}
           onScrollTo={scrollToSection}
           onOpenDataCollection={openDataCollectionPage}
+          onOpenAdmin={openAdminPage}
         />
         <MarqueeTicker />
         <StudentCardGenerator />
@@ -118,6 +159,8 @@ export function App() {
       <Footer
         onScrollTo={scrollToSection}
         onOpenDemo={() => setDemoModalOpen(true)}
+        onOpenAdmin={openAdminPage}
+        onOpenDataCollection={openDataCollectionPage}
       />
 
       <DemoModal

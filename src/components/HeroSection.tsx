@@ -1,13 +1,14 @@
 import React from 'react';
-import { ArrowRight, ShieldCheck, CheckCircle2, UserPlus, IdCard, Building2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, UserPlus, IdCard, Building2, Users } from 'lucide-react';
 
 interface HeroSectionProps {
   onOpenDemo: () => void;
   onScrollTo: (id: string) => void;
   onOpenDataCollection?: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo, onOpenDataCollection, onOpenAdmin }) => {
   const trustedUniversities = [
     'National Institutes of Technology',
     'State Autonomous Universities',
@@ -69,12 +70,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo
           </div>
 
           {/* Action CTAs */}
-          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 px-3 sm:px-0">
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 px-3 sm:px-0 flex-wrap">
             <button
               onClick={onOpenDemo}
               className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-navy-950 text-white hover:bg-navy-800 font-semibold text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm"
             >
-              <span>Schedule Institutional Walkthrough</span>
+              <span>Schedule Campus Walkthrough</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
@@ -85,6 +86,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenDemo, onScrollTo
               >
                 <UserPlus className="w-4 h-4 text-brand-600" />
                 <span>Student Admission Form</span>
+              </button>
+            )}
+
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-navy-50 text-navy-800 hover:bg-navy-100 font-semibold text-sm border border-navy-200 transition-all duration-150 flex items-center justify-center gap-2 shadow-xs"
+              >
+                <Users className="w-4 h-4 text-brand-600" />
+                <span>View Student Records</span>
               </button>
             )}
 

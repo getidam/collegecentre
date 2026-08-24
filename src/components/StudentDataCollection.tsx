@@ -8,9 +8,10 @@ import confetti from 'canvas-confetti';
 
 interface StudentDataCollectionProps {
   onBackToHome?: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ onBackToHome }) => {
+export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ onBackToHome, onOpenAdmin }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -96,6 +97,42 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
     const autoId = 'CC-ADM-' + Math.floor(100000 + Math.random() * 900000);
     setApplicationId(autoId);
 
+    // Save record to local registry database
+    try {
+      const now = new Date();
+      const formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const newRecord = {
+        id: autoId,
+        fullName: formData.fullName,
+        dob: formData.dob,
+        gender: formData.gender,
+        bloodGroup: formData.bloodGroup,
+        photoUrl: formData.photoUrl,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city || 'Campus Registered',
+        pincode: formData.pincode || '—',
+        guardianName: formData.guardianName,
+        guardianRelation: formData.guardianRelation,
+        guardianPhone: formData.guardianPhone,
+        degreeProgram: formData.degreeProgram,
+        admissionYear: formData.admissionYear,
+        submissionDate: formattedDate,
+        status: 'Verified',
+      };
+
+      const existing = localStorage.getItem('cc_student_records');
+      let recordsList = [];
+      if (existing) {
+        recordsList = JSON.parse(existing);
+      }
+      recordsList.unshift(newRecord);
+      localStorage.setItem('cc_student_records', JSON.stringify(recordsList));
+    } catch (err) {
+      console.error('Failed to save to local storage', err);
+    }
+
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
@@ -133,6 +170,15 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-200/80 shadow-xs transition-colors"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Registrar Directory</span>
+              </button>
+            )}
             <div className="hidden md:flex items-center gap-1.5 text-xs text-navy-600 font-medium bg-navy-50 px-3 py-1.5 rounded-lg border border-navy-200/60">
               <Lock className="w-3.5 h-3.5 text-academic-emerald" />
               <span>DPDPA 2023 Encrypted</span>
@@ -143,7 +189,7 @@ export const StudentDataCollection: React.FC<StudentDataCollectionProps> = ({ on
                 className="text-xs font-semibold text-navy-700 hover:text-navy-950 flex items-center gap-1 bg-white hover:bg-navy-50 px-2.5 sm:px-3 py-1.5 rounded-lg border border-navy-200 shadow-xs transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Return to Overview</span>
+                <span className="hidden xs:inline">Overview</span>
                 <span className="xs:hidden">Back</span>
               </button>
             )}
