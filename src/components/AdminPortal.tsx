@@ -247,12 +247,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     let alertMsg = '';
 
     const key = resendApiKey.trim();
-    const fromAddr = resendFromEmail.trim() || 'onboarding@resend.dev';
+    const rawFrom = resendFromEmail.trim() || 'verify@collegecentre.in';
+    // Ensure clean RFC-5322 format: always send as "CollegeCentre <email>"
+    const fromAddr = rawFrom.includes('<') ? rawFrom : `CollegeCentre <${rawFrom}>`;
 
     if (key) {
       try {
         const payload = {
-          from: fromAddr.includes('<') ? fromAddr : `CollegeCentre <${fromAddr}>`,
+          from: fromAddr,
           to: [cleanEmail],
           subject: emailSubject.trim(),
           text: emailContent.trim(),
