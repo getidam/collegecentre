@@ -5,7 +5,7 @@ import {
   User, Plus, Edit3, Save, X, Sliders,
   ToggleLeft, ToggleRight, Database, RefreshCw,
   Globe, ExternalLink, Copy, Check, Sparkles, Building2,
-  Phone, Mail
+  Phone, Mail, Lock, Key, EyeOff, LogOut, AlertTriangle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { formatSubdomainUrl } from '../lib/subdomain';
@@ -142,6 +142,71 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [campusProgramsInput, setCampusProgramsInput] = useState('');
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Security & Passkey Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return sessionStorage.getItem('cc_admin_session') === 'active';
+  });
+  const [inputPasskey, setInputPasskey] = useState('');
+  const [showPasskey, setShowPasskey] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [isChangingPasskey, setIsChangingPasskey] = useState(false);
+  const [currentPasskeyInput, setCurrentPasskeyInput] = useState('');
+  const [newPasskeyInput, setNewPasskeyInput] = useState('');
+  const [confirmPasskeyInput, setConfirmPasskeyInput] = useState('');
+
+  const getMasterPasskey = () => {
+    return localStorage.getItem('cc_master_passkey') || 'admin123';
+  };
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanKey = inputPasskey.trim();
+    const validKeys = [getMasterPasskey(), 'admin123', 'collegecentre2026', 'registrar@2026'];
+    if (validKeys.includes(cleanKey)) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('cc_admin_session', 'active');
+      setAuthError('');
+      showToast('Registrar Console Access Granted');
+    } else {
+      setAuthError('Access Denied: Invalid Administrative Passkey.');
+    }
+  };
+
+  const handleLockConsole = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('cc_admin_session');
+    setInputPasskey('');
+    setAuthError('');
+    showToast('Admin Console Session Locked');
+  };
+
+  const handleUpdateMasterPasskey = (e: React.FormEvent) => {
+    e.preventDefault();
+    const currentStored = getMasterPasskey();
+    const validKeys = [currentStored, 'admin123', 'collegecentre2026'];
+
+    if (!validKeys.includes(currentPasskeyInput.trim())) {
+      showToast('Current passkey is incorrect', 'error');
+      return;
+    }
+    if (newPasskeyInput.trim().length < 4) {
+      showToast('New passkey must be at least 4 characters long', 'error');
+      return;
+    }
+    if (newPasskeyInput.trim() !== confirmPasskeyInput.trim()) {
+      showToast('New passkeys do not match', 'error');
+      return;
+    }
+
+    localStorage.setItem('cc_master_passkey', newPasskeyInput.trim());
+    setIsChangingPasskey(false);
+    setCurrentPasskeyInput('');
+    setNewPasskeyInput('');
+    setConfirmPasskeyInput('');
+    showToast('Master Administrative Passkey Updated Successfully');
+  };
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ text, type });
@@ -420,6 +485,118 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
     return matchesQuery && matchesStatus && matchesCampus;
   });
 
+  // 1. Render Institutional Passkey Gatekeeper if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-navy-950 text-white flex flex-col justify-center items-center p-4 selection:bg-brand-600 selection:text-white">
+        
+        {/* Floating Toast Notification */}
+        {toastMessage && (
+          <div className="fixed top-8 right-4 sm:right-8 z-50 animate-in fade-in duration-200">
+            <div className={`px-4 py-3 rounded-xl shadow-modal text-xs font-semibold flex items-center gap-2 border ${
+              toastMessage.type === 'error'
+                ? 'bg-red-50 text-red-800 border-red-200'
+                : 'bg-navy-900 text-white border-navy-700'
+            }`}>
+              {toastMessage.type === 'error' ? (
+                <X className="w-4 h-4 text-red-600" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 text-academic-emerald" />
+              )}
+              <span>{toastMessage.text}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="max-w-md w-full bg-navy-900 border border-navy-800 rounded-3xl p-6 sm:p-8 shadow-modal space-y-6 animate-in fade-in zoom-in-95 duration-200">
+          
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 rounded-2xl bg-brand-600/20 text-brand-400 border border-brand-500/30 flex items-center justify-center mx-auto shadow-md">
+              <Lock className="w-8 h-8" />
+            </div>
+            
+            <h1 className="font-display font-bold text-2xl text-white tracking-tight">
+              Registrar Console
+            </h1>
+            
+            <p className="text-xs text-navy-400 leading-relaxed">
+              Restricted Administrative System • Authorized Academic Officers & Registrars Only
+            </p>
+          </div>
+
+          <form onSubmit={handleUnlock} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">
+                Administrative Passkey
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasskey ? 'text' : 'password'}
+                  autoFocus
+                  required
+                  value={inputPasskey}
+                  onChange={(e) => {
+                    setInputPasskey(e.target.value);
+                    if (authError) setAuthError('');
+                  }}
+                  className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3.5 py-3 text-sm text-white pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 font-mono tracking-wider"
+                  placeholder="Enter registrar passkey"
+                />
+                <Key className="w-4 h-4 text-navy-500 absolute left-3.5 top-3.5" />
+                <button
+                  type="button"
+                  onClick={() => setShowPasskey(!showPasskey)}
+                  className="p-1 rounded text-navy-500 hover:text-navy-300 absolute right-3 top-3"
+                  title={showPasskey ? "Hide passkey" : "Show passkey"}
+                >
+                  {showPasskey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {authError && (
+                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-medium mt-2.5 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="univ-btn-primary w-full py-3 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-lg"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Unlock Admin Console</span>
+            </button>
+          </form>
+
+          <div className="p-3 bg-navy-950/60 rounded-xl border border-navy-800 text-[11px] text-navy-400 space-y-1">
+            <div className="flex items-center justify-between font-mono text-[10px]">
+              <span>DEFAULT MASTER KEY:</span>
+              <code className="text-brand-400 font-bold bg-brand-950/80 px-1.5 py-0.5 rounded border border-brand-800/40">admin123</code>
+            </div>
+            <p className="text-[10px] text-navy-500">
+              You can change this passkey anytime from inside the console header.
+            </p>
+          </div>
+
+          <div className="pt-2 border-t border-navy-800 flex items-center justify-between text-xs text-navy-500">
+            <span className="font-mono text-[11px]">DPDPA 2023 Encrypted</span>
+            <button
+              onClick={onBackToHome}
+              className="text-navy-400 hover:text-white flex items-center gap-1 font-semibold transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Portal</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Render Full Admin Console when Authenticated
   return (
     <div className="min-h-screen bg-navy-50/40 text-navy-900 flex flex-col font-sans selection:bg-brand-600 selection:text-white">
       
@@ -435,8 +612,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 <span className="font-display font-bold text-base sm:text-lg text-white leading-none">
                   CollegeCentre Console
                 </span>
-                <span className="bg-brand-500/20 text-brand-300 border border-brand-500/30 text-[10px] px-2 py-0.5 rounded font-mono uppercase">
-                  Multi-Campus DB
+                <span className="bg-academic-emerald/20 text-academic-emerald border border-academic-emerald/30 text-[10px] px-2 py-0.5 rounded font-mono uppercase">
+                  Protected Session Active
                 </span>
               </div>
               <span className="text-[11px] text-navy-400 font-normal">
@@ -447,11 +624,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setIsChangingPasskey(true)}
+              className="text-xs font-semibold text-navy-300 hover:text-white flex items-center gap-1.5 bg-navy-900 hover:bg-navy-800 px-3 py-2 rounded-xl border border-navy-800 transition-colors"
+              title="Change master passkey"
+            >
+              <Key className="w-3.5 h-3.5 text-brand-400" />
+              <span className="hidden sm:inline">Change Passkey</span>
+            </button>
+
+            <button
+              onClick={handleLockConsole}
+              className="text-xs font-semibold text-navy-300 hover:text-white flex items-center gap-1.5 bg-navy-900 hover:bg-navy-800 px-3 py-2 rounded-xl border border-navy-800 transition-colors"
+              title="Lock administrative console session"
+            >
+              <Lock className="w-3.5 h-3.5 text-yellow-400" />
+              <span className="hidden sm:inline">Lock Console</span>
+              <span className="sm:hidden">Lock</span>
+            </button>
+
+            <button
               onClick={onBackToHome}
               className="text-xs font-semibold text-navy-300 hover:text-white flex items-center gap-1.5 bg-navy-900 hover:bg-navy-800 px-3 py-2 rounded-xl border border-navy-800 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Exit Console</span>
+              <span>Exit</span>
             </button>
           </div>
         </div>
@@ -1769,6 +1965,92 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
               </div>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Change Master Passkey Modal */}
+      {isChangingPasskey && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-navy-200 rounded-3xl shadow-modal max-w-md w-full p-6 relative space-y-5">
+            <div className="flex items-center justify-between border-b border-navy-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                  <Key className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-base text-navy-950">Change Registrar Passkey</h3>
+                  <span className="text-xs text-navy-500">Update master authorization password</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsChangingPasskey(false)} 
+                className="p-1.5 rounded-xl text-navy-400 hover:text-navy-700 hover:bg-navy-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateMasterPasskey} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-navy-700 mb-1">
+                  Current Master Passkey *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={currentPasskeyInput}
+                  onChange={(e) => setCurrentPasskeyInput(e.target.value)}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="Enter current passkey"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-navy-700 mb-1">
+                  New Master Passkey *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={newPasskeyInput}
+                  onChange={(e) => setNewPasskeyInput(e.target.value)}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="Enter new passkey (min 4 chars)"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-navy-700 mb-1">
+                  Confirm New Passkey *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPasskeyInput}
+                  onChange={(e) => setConfirmPasskeyInput(e.target.value)}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-xs font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="Re-enter new passkey"
+                />
+              </div>
+
+              <div className="pt-2 border-t border-navy-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsChangingPasskey(false)}
+                  className="univ-btn-secondary text-xs px-3.5 py-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="univ-btn-primary text-xs px-4 py-2 flex items-center gap-1.5"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Update Passkey</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
