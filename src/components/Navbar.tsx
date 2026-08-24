@@ -1,12 +1,13 @@
 ﻿import React, { useState } from 'react';
-import { Menu, X, ChevronDown, GraduationCap, FileCheck, Layers, Database, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ChevronDown, GraduationCap, FileCheck, Layers, Database, ArrowUpRight, FolderLock } from 'lucide-react';
 
 interface NavbarProps {
   onOpenDemo: () => void;
   onScrollTo: (id: string) => void;
+  onOpenAdmin: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo, onOpenAdmin }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modulesDropdownOpen, setModulesDropdownOpen] = useState(false);
 
@@ -119,6 +120,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo }) => {
 
           <div className="hidden sm:flex items-center gap-3">
             <button
+              onClick={onOpenAdmin}
+              className="px-3.5 py-2 border-2 border-ink bg-paper-200 hover:bg-ink hover:text-paper-100 transition-colors text-xs font-mono font-bold flex items-center gap-1.5 shadow-brutal-sm uppercase"
+            >
+              <FolderLock className="w-3.5 h-3.5 text-cjpOrange" />
+              <span>Admin Root</span>
+            </button>
+
+            <button
               onClick={onOpenDemo}
               className="brutal-btn bg-cjpOrange text-paper-100 hover:bg-ink px-5 py-2.5 text-sm font-display tracking-wider flex items-center gap-2"
             >
@@ -156,6 +165,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDemo, onScrollTo }) => {
                 )}
               </button>
             ))}
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenAdmin();
+              }}
+              className="w-full text-left px-3 py-2.5 text-sm uppercase font-bold border-b border-ink/10 bg-paper-200 hover:bg-ink hover:text-paper-100 flex items-center gap-2"
+            >
+              <FolderLock className="w-4 h-4 text-cjpOrange" />
+              <span>Admin Root (Create /Folder)</span>
+            </button>
           </div>
 
           <div className="pt-3">
