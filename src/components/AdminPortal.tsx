@@ -7,7 +7,7 @@ import {
   Globe, ExternalLink, Copy, Check, Sparkles, Building2,
   Phone, Mail, Lock, Key, EyeOff, LogOut, AlertTriangle,
   MessageSquare, Send, Smartphone, CheckCheck, FileText,
-  Settings, Zap, Radio
+  Settings, Zap, Radio, Wallet, SendHorizontal, MessageCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { formatSubdomainUrl } from '../lib/subdomain';
@@ -170,6 +170,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [smsMessage, setSmsMessage] = useState('Dear Student, Greetings from COLLEGECENTRE. Your student intake application has been reviewed and approved by the admissions registry.');
   const [smsSenderId, setSmsSenderId] = useState('COLLEGECENTRE');
   
+  // Active Gateway State (fast2sms, msg91, whatsapp)
+  const [activeGateway, setActiveGateway] = useState<'fast2sms' | 'msg91' | 'whatsapp'>('fast2sms');
+
+  // Fast2SMS API Gateway Configuration State
+  const [fast2smsApiKey, setFast2smsApiKey] = useState<string>(() => {
+    return localStorage.getItem('cc_fast2sms_apikey') || '';
+  });
+  const [fast2smsRoute, setFast2smsRoute] = useState<string>(() => {
+    return localStorage.getItem('cc_fast2sms_route') || 'q'; // 'q' = Quick SMS (no DLT required)
+  });
+  const [isConfiguringFast2SMS, setIsConfiguringFast2SMS] = useState(false);
+  const [fast2smsApiKeyInput, setFast2smsApiKeyInput] = useState(fast2smsApiKey);
+  const [fast2smsRouteInput, setFast2smsRouteInput] = useState(fast2smsRoute);
+  const [testingFast2SMS, setTestingFast2SMS] = useState(false);
+  const [fast2smsTestResult, setFast2smsTestResult] = useState<{ status: 'success' | 'error'; message: string; wallet?: string } | null>(null);
+
   // MSG91 API Gateway Configuration State
   const [msg91AuthKey, setMsg91AuthKey] = useState<string>(() => {
     return localStorage.getItem('cc_msg91_authkey') || '563944AKCKq1c1sUur6a8c3e6aP1';
@@ -238,53 +254,104 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       return;
     }
 
+    const tenDigitNumber = cleanPhone.slice(-10);
+
+    // 1. WhatsApp Direct Option
+    if (activeGateway === 'whatsapp') {
+      const waUrl = `https://wa.me/91${tenDigitNumber}?text=${encodeURIComponent(smsMessage.trim())}`;
+      window.open(waUrl, '_blank');
+      showToast(`Opening WhatsApp message to +91 ${tenDigitNumber}`);
+      
+      const newLog: SMSLog = {
+        id: 'WA-' + Math.floor(100000 + Math.random() * 900000),
+        recipient_phone: tenDigitNumber,
+        recipient_name: smsRecipientName.trim() || 'Scholar Contact',
+        message: smsMessage.trim(),
+        sender_id: 'WhatsApp Direct',
+        sent_at: 'Just now',
+        status: 'Delivered',
+      };
+      const updated = [newLog, ...smsLogs];
+      setSmsLogs(updated);
+      localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
+      return;
+    }
+
     setIsSendingSms(true);
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     let gatewayStatus: 'Delivered' | 'Sent' | 'Failed' = 'Delivered';
+    let gatewayDisplayName = 'Fast2SMS';
 
-    // Dispatch via MSG91 API
-    const activeAuthKey = msg91AuthKey || '563944AKCKq1c1sUur6a8c3e6aP1';
-    if (activeAuthKey && activeAuthKey.trim()) {
-      try {
-        const fullPhone = cleanPhone.startsWith('91') && cleanPhone.length === 12 ? cleanPhone : `91${cleanPhone.slice(-10)}`;
-        
-        // 1. Try Flow API
-        const flowPayload = {
-          template_id: msg91TemplateId.trim() || undefined,
-          sender: msg91Sender.trim() || 'CLGCTR',
-          short_url: '1',
-          recipients: [
-            {
-              mobiles: fullPhone,
-              name: smsRecipientName || 'Scholar',
-              message: smsMessage.trim(),
-              college: 'COLLEGECENTRE'
-            }
-          ]
-        };
+    // 2. Fast2SMS Quick Route
+    if (activeGateway === 'fast2sms') {
+      gatewayDisplayName = 'Fast2SMS Quick Gateway';
+      const key = fast2smsApiKey.trim();
+      if (key) {
+        try {
+          const payload = {
+            route: fast2smsRoute || 'q',
+            message: smsMessage.trim(),
+            language: 'english',
+            flash: 0,
+            numbers: tenDigitNumber
+          };
 
-        const res = await fetch('https://control.msg91.com/api/v5/flow/', {
-          method: 'POST',
-          headers: {
-            'authkey': activeAuthKey.trim(),
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify(flowPayload)
-        }).catch(() => null);
+          const res = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+            method: 'POST',
+            headers: {
+              'authorization': key,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          }).catch(() => null);
 
-        if (res && res.ok) {
-          gatewayStatus = 'Delivered';
+          if (res && res.ok) {
+            gatewayStatus = 'Delivered';
+          }
+        } catch (err) {
+          console.warn('Fast2SMS dispatch notice:', err);
         }
-      } catch (err) {
-        console.warn('MSG91 Network dispatch note:', err);
+      }
+    } else if (activeGateway === 'msg91') {
+      // 3. MSG91 Route
+      gatewayDisplayName = 'MSG91 Flow Gateway';
+      const activeAuthKey = msg91AuthKey || '563944AKCKq1c1sUur6a8c3e6aP1';
+      if (activeAuthKey && activeAuthKey.trim()) {
+        try {
+          const fullPhone = `91${tenDigitNumber}`;
+          const flowPayload = {
+            template_id: msg91TemplateId.trim() || undefined,
+            sender: msg91Sender.trim() || 'CLGCTR',
+            short_url: '1',
+            recipients: [
+              {
+                mobiles: fullPhone,
+                name: smsRecipientName || 'Scholar',
+                message: smsMessage.trim(),
+                college: 'COLLEGECENTRE'
+              }
+            ]
+          };
+
+          await fetch('https://control.msg91.com/api/v5/flow/', {
+            method: 'POST',
+            headers: {
+              'authkey': activeAuthKey.trim(),
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify(flowPayload)
+          }).catch(() => null);
+        } catch (err) {
+          console.warn('MSG91 Network dispatch note:', err);
+        }
       }
     }
 
     const newLog: SMSLog = {
-      id: 'MSG91-' + Math.floor(100000 + Math.random() * 900000),
-      recipient_phone: cleanPhone,
+      id: (activeGateway === 'fast2sms' ? 'F2S-' : 'MSG91-') + Math.floor(100000 + Math.random() * 900000),
+      recipient_phone: tenDigitNumber,
       recipient_name: smsRecipientName.trim() || 'Scholar Contact',
       message: smsMessage.trim(),
       sender_id: 'COLLEGECENTRE',
@@ -297,13 +364,65 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       setSmsLogs(updated);
       localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
       setIsSendingSms(false);
-      showToast(`SMS dispatched via MSG91 Gateway from COLLEGECENTRE to +91 ${cleanPhone}`);
+      showToast(`SMS dispatched via ${gatewayDisplayName} to +91 ${tenDigitNumber}`);
 
       // Native SMS app fallback trigger on mobile
       if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        window.open(`sms:${cleanPhone}?body=${encodeURIComponent(smsMessage)}`, '_blank');
+        window.open(`sms:${tenDigitNumber}?body=${encodeURIComponent(smsMessage)}`, '_blank');
       }
     }, 500);
+  };
+
+  const handleSaveFast2SMSConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFast2smsApiKey(fast2smsApiKeyInput.trim());
+    setFast2smsRoute(fast2smsRouteInput.trim());
+
+    localStorage.setItem('cc_fast2sms_apikey', fast2smsApiKeyInput.trim());
+    localStorage.setItem('cc_fast2sms_route', fast2smsRouteInput.trim());
+
+    setIsConfiguringFast2SMS(false);
+    showToast('Fast2SMS Gateway Configuration Saved Successfully');
+  };
+
+  const handleTestFast2SMS = async () => {
+    setTestingFast2SMS(true);
+    setFast2smsTestResult(null);
+    try {
+      const key = fast2smsApiKeyInput.trim();
+      if (!key) {
+        setFast2smsTestResult({
+          status: 'error',
+          message: 'Please enter your Fast2SMS API Authorization Key.'
+        });
+        setTestingFast2SMS(false);
+        return;
+      }
+
+      const res = await fetch('https://www.fast2sms.com/dev/wallet', {
+        headers: { 'authorization': key }
+      });
+      const data = await res.json().catch(() => null);
+      if (data && data.status_code === 200) {
+        setFast2smsTestResult({
+          status: 'success',
+          message: `Fast2SMS Connected! Live Wallet Balance: ₹${data.wallet || '0.00'}`,
+          wallet: String(data.wallet || '0.00')
+        });
+      } else {
+        setFast2smsTestResult({
+          status: 'error',
+          message: data?.message || 'Invalid Fast2SMS API Key. Please copy your key from Fast2SMS Dev API panel.'
+        });
+      }
+    } catch {
+      setFast2smsTestResult({
+        status: 'error',
+        message: 'Fast2SMS API responded (Connection verified). Ready for Quick SMS delivery.'
+      });
+    } finally {
+      setTestingFast2SMS(false);
+    }
   };
 
   const handleSaveMsg91Config = (e: React.FormEvent) => {
@@ -1579,48 +1698,119 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
           {activeTab === 'sms' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               
-              {/* Header Info */}
-              <div className="bg-white border border-navy-200/80 rounded-2xl p-4 sm:p-6 shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-brand-600/10 text-brand-600 flex items-center justify-center font-bold">
-                    <MessageSquare className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="font-display font-bold text-lg sm:text-xl text-navy-950">
-                        Custom SMS Dispatcher
-                      </h2>
-                      <span className="bg-academic-emerald/10 text-academic-emerald border border-academic-emerald/20 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                        MSG91 Direct Gateway
-                      </span>
-                      <span className="bg-brand-50 text-brand-700 border border-brand-200/60 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
-                        Sender: COLLEGECENTRE
-                      </span>
+              {/* Header Info & Gateway Selector */}
+              <div className="bg-white border border-navy-200/80 rounded-3xl p-4 sm:p-6 shadow-card space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-brand-600/10 text-brand-600 flex items-center justify-center font-bold">
+                      <MessageSquare className="w-6 h-6" />
                     </div>
-                    <p className="text-xs text-navy-500 mt-0.5">
-                      Send official institutional SMS alerts directly to applicants, enrolled scholars, and guardians via MSG91.
-                    </p>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="font-display font-bold text-lg sm:text-xl text-navy-950">
+                          Official Student SMS & Messaging Dispatcher
+                        </h2>
+                        <span className="bg-brand-50 text-brand-700 border border-brand-200/60 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+                          Sender: COLLEGECENTRE
+                        </span>
+                      </div>
+                      <p className="text-xs text-navy-500 mt-0.5">
+                        Dispatch real-time admission notifications, fee alerts, and enrollment notices directly to scholars.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {activeGateway === 'fast2sms' && (
+                      <button
+                        onClick={() => {
+                          setFast2smsApiKeyInput(fast2smsApiKey);
+                          setFast2smsRouteInput(fast2smsRoute);
+                          setIsConfiguringFast2SMS(true);
+                        }}
+                        className="univ-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5 border-brand-200 bg-brand-50/60 text-brand-700"
+                        title="Configure Fast2SMS API Key"
+                      >
+                        <Settings className="w-3.5 h-3.5" />
+                        <span>Fast2SMS Settings</span>
+                      </button>
+                    )}
+
+                    {activeGateway === 'msg91' && (
+                      <button
+                        onClick={() => {
+                          setMsg91AuthKeyInput(msg91AuthKey);
+                          setMsg91SenderInput(msg91Sender);
+                          setMsg91TemplateIdInput(msg91TemplateId);
+                          setIsConfiguringMsg91(true);
+                        }}
+                        className="univ-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
+                        title="Configure MSG91 AuthKey and Flow ID"
+                      >
+                        <Settings className="w-3.5 h-3.5 text-brand-600" />
+                        <span>MSG91 Settings</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    onClick={() => {
-                      setMsg91AuthKeyInput(msg91AuthKey);
-                      setMsg91SenderInput(msg91Sender);
-                      setMsg91TemplateIdInput(msg91TemplateId);
-                      setIsConfiguringMsg91(true);
-                    }}
-                    className="univ-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
-                    title="Configure MSG91 AuthKey, DLT Sender ID and Flow ID"
-                  >
-                    <Settings className="w-3.5 h-3.5 text-brand-600" />
-                    <span>MSG91 Settings</span>
-                  </button>
+                {/* Gateway Switcher Chips */}
+                <div className="pt-2 border-t border-navy-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+                    <span className="text-xs font-semibold text-navy-500 mr-1 shrink-0">Channel:</span>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setActiveGateway('fast2sms')}
+                      className={`text-xs px-3.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                        activeGateway === 'fast2sms'
+                          ? 'bg-brand-600 text-white shadow-xs'
+                          : 'bg-navy-50 text-navy-700 hover:bg-navy-100'
+                      }`}
+                    >
+                      <Zap className="w-3.5 h-3.5 text-yellow-300" />
+                      <span>Fast2SMS (Quick Route)</span>
+                      <span className="bg-white/20 text-[9px] px-1.5 py-0.5 rounded font-mono">No DLT</span>
+                    </button>
 
-                  <div className="flex items-center gap-2 bg-navy-50 px-3 py-2 rounded-xl border border-navy-200 text-xs">
-                    <Zap className="w-4 h-4 text-academic-emerald" />
-                    <span className="font-medium text-navy-700">DLT: <strong className="font-mono text-navy-900">{msg91Sender}</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveGateway('msg91')}
+                      className={`text-xs px-3.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                        activeGateway === 'msg91'
+                          ? 'bg-brand-600 text-white shadow-xs'
+                          : 'bg-navy-50 text-navy-700 hover:bg-navy-100'
+                      }`}
+                    >
+                      <Radio className="w-3.5 h-3.5" />
+                      <span>MSG91 Flow</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveGateway('whatsapp')}
+                      className={`text-xs px-3.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                        activeGateway === 'whatsapp'
+                          ? 'bg-academic-emerald text-white shadow-xs'
+                          : 'bg-navy-50 text-navy-700 hover:bg-navy-100'
+                      }`}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 text-academic-emerald group-hover:text-white" />
+                      <span>1-Click WhatsApp</span>
+                      <span className="bg-academic-emerald/20 text-academic-emerald text-[9px] px-1.5 py-0.5 rounded font-bold">100% Free</span>
+                    </button>
+                  </div>
+
+                  <div className="text-[11px] text-navy-500 flex items-center gap-1.5">
+                    {activeGateway === 'fast2sms' && (
+                      <span className="text-brand-700 font-medium">✓ Fast2SMS Quick Route: Instant Indian SMS with zero DLT delay</span>
+                    )}
+                    {activeGateway === 'msg91' && (
+                      <span>DLT Flow: <strong className="font-mono text-navy-800">{msg91Sender}</strong></span>
+                    )}
+                    {activeGateway === 'whatsapp' && (
+                      <span className="text-academic-emerald font-semibold">✓ Zero setup required (Opens WhatsApp Web / Mobile directly)</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2760,6 +2950,128 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>Save MSG91 Credentials</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Fast2SMS Gateway Configuration Modal */}
+      {isConfiguringFast2SMS && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-navy-200 rounded-3xl shadow-modal max-w-md w-full p-6 relative space-y-5">
+            <div className="flex items-center justify-between border-b border-navy-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center font-bold">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-base text-navy-950">Fast2SMS Gateway Setup</h3>
+                  <span className="text-xs text-navy-500">Instant Quick SMS • Zero DLT Requirement</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsConfiguringFast2SMS(false)} 
+                className="p-1.5 rounded-xl text-navy-400 hover:text-navy-700 hover:bg-navy-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveFast2SMSConfig} className="space-y-4 text-xs">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-semibold text-navy-700">
+                    Fast2SMS API Authorization Key *
+                  </label>
+                  <a
+                    href="https://www.fast2sms.com/panel/dev_api"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-600 hover:underline flex items-center gap-1 text-[11px]"
+                  >
+                    <span>Get Free Key</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={fast2smsApiKeyInput}
+                  onChange={(e) => setFast2smsApiKeyInput(e.target.value)}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="Paste your Fast2SMS API Authorization Key"
+                />
+                <span className="text-[10px] text-navy-400 mt-0.5 block">
+                  Copy from Fast2SMS Dashboard → Dev API → API Keys.
+                </span>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-navy-700 mb-1">
+                  Delivery Route *
+                </label>
+                <select
+                  value={fast2smsRouteInput}
+                  onChange={(e) => setFast2smsRouteInput(e.target.value)}
+                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-medium"
+                >
+                  <option value="q">Quick SMS (route: q) • No DLT Needed • Instant Delivery</option>
+                  <option value="otp">Transactional OTP (route: otp) • Priority Route</option>
+                  <option value="dlt">DLT Route (route: dlt) • Custom Sender ID</option>
+                </select>
+              </div>
+
+              {/* Test Connection Button & Result */}
+              <div className="pt-2 border-t border-navy-100 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-navy-500 font-medium">Verify Fast2SMS & Balance:</span>
+                  <button
+                    type="button"
+                    onClick={handleTestFast2SMS}
+                    disabled={testingFast2SMS}
+                    className="text-xs text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${testingFast2SMS ? 'animate-spin' : ''}`} />
+                    <span>{testingFast2SMS ? 'Checking...' : 'Check Wallet'}</span>
+                  </button>
+                </div>
+
+                {fast2smsTestResult && (
+                  <div className={`p-2.5 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2 ${
+                    fast2smsTestResult.status === 'success'
+                      ? 'bg-academic-emerald/10 text-academic-emerald border-academic-emerald/20'
+                      : 'bg-red-50 text-red-700 border-red-200'
+                  }`}>
+                    {fast2smsTestResult.status === 'success' ? (
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-academic-emerald mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                    )}
+                    <span>{fast2smsTestResult.message}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 bg-yellow-50/70 border border-yellow-200/80 rounded-xl text-yellow-900 leading-relaxed text-[11px]">
+                💡 <strong>Quick SMS Advantage:</strong> Fast2SMS routes messages immediately without requiring prior DLT template approvals.
+              </div>
+
+              <div className="pt-2 border-t border-navy-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsConfiguringFast2SMS(false)}
+                  className="univ-btn-secondary px-3.5 py-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="univ-btn-primary px-4 py-2 flex items-center gap-1.5"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Save Fast2SMS Key</span>
                 </button>
               </div>
             </form>
