@@ -7,7 +7,7 @@ import {
   Globe, ExternalLink, Copy, Check, Sparkles, Building2,
   Phone, Mail, Lock, Key, EyeOff, LogOut, AlertTriangle,
   MessageSquare, Send, Smartphone, CheckCheck, FileText,
-  Settings, Zap, Radio, Wallet, SendHorizontal, MessageCircle
+  Settings, Zap, Wallet
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { formatSubdomainUrl } from '../lib/subdomain';
@@ -170,9 +170,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [smsMessage, setSmsMessage] = useState('Dear Student, Greetings from COLLEGECENTRE. Your student intake application has been reviewed and approved by the admissions registry.');
   const [smsSenderId, setSmsSenderId] = useState('COLLEGECENTRE');
   
-  // Active Gateway State (fast2sms, msg91, whatsapp)
-  const [activeGateway, setActiveGateway] = useState<'fast2sms' | 'msg91' | 'whatsapp'>('fast2sms');
-
   // Fast2SMS API Gateway Configuration State
   const [fast2smsApiKey, setFast2smsApiKey] = useState<string>(() => {
     return localStorage.getItem('cc_fast2sms_apikey') || 'bu0XMwQ9aik5dEnyr8mS4FCD6YOT2hUNpjeAL7JcfsZBvHKVqzfUJF0jsOaLmthoqGnX9WZcbIDy5TvK';
@@ -185,23 +182,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
   const [fast2smsRouteInput, setFast2smsRouteInput] = useState(fast2smsRoute);
   const [testingFast2SMS, setTestingFast2SMS] = useState(false);
   const [fast2smsTestResult, setFast2smsTestResult] = useState<{ status: 'success' | 'error'; message: string; wallet?: string } | null>(null);
-
-  // MSG91 API Gateway Configuration State
-  const [msg91AuthKey, setMsg91AuthKey] = useState<string>(() => {
-    return localStorage.getItem('cc_msg91_authkey') || '563944AKCKq1c1sUur6a8c3e6aP1';
-  });
-  const [msg91Sender, setMsg91Sender] = useState<string>(() => {
-    return localStorage.getItem('cc_msg91_sender') || 'CLGCTR';
-  });
-  const [msg91TemplateId, setMsg91TemplateId] = useState<string>(() => {
-    return localStorage.getItem('cc_msg91_template_id') || '65e066a7d6fc0575382029a2';
-  });
-  const [isConfiguringMsg91, setIsConfiguringMsg91] = useState(false);
-  const [msg91AuthKeyInput, setMsg91AuthKeyInput] = useState(msg91AuthKey);
-  const [msg91SenderInput, setMsg91SenderInput] = useState(msg91Sender);
-  const [msg91TemplateIdInput, setMsg91TemplateIdInput] = useState(msg91TemplateId);
-  const [testingMsg91, setTestingMsg91] = useState(false);
-  const [msg91TestResult, setMsg91TestResult] = useState<{ status: 'success' | 'error'; message: string } | null>(null);
 
   const [smsLogs, setSmsLogs] = useState<SMSLog[]>(() => {
     try {
@@ -256,101 +236,43 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
 
     const tenDigitNumber = cleanPhone.slice(-10);
 
-    // 1. WhatsApp Direct Option
-    if (activeGateway === 'whatsapp') {
-      const waUrl = `https://wa.me/91${tenDigitNumber}?text=${encodeURIComponent(smsMessage.trim())}`;
-      window.open(waUrl, '_blank');
-      showToast(`Opening WhatsApp message to +91 ${tenDigitNumber}`);
-      
-      const newLog: SMSLog = {
-        id: 'WA-' + Math.floor(100000 + Math.random() * 900000),
-        recipient_phone: tenDigitNumber,
-        recipient_name: smsRecipientName.trim() || 'Scholar Contact',
-        message: smsMessage.trim(),
-        sender_id: 'WhatsApp Direct',
-        sent_at: 'Just now',
-        status: 'Delivered',
-      };
-      const updated = [newLog, ...smsLogs];
-      setSmsLogs(updated);
-      localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
-      return;
-    }
-
     setIsSendingSms(true);
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     let gatewayStatus: 'Delivered' | 'Sent' | 'Failed' = 'Delivered';
-    let gatewayDisplayName = 'Fast2SMS';
 
-    // 2. Fast2SMS Quick Route
-    if (activeGateway === 'fast2sms') {
-      gatewayDisplayName = 'Fast2SMS Quick Gateway';
-      const key = fast2smsApiKey.trim();
-      if (key) {
-        try {
-          const payload = {
-            route: fast2smsRoute || 'q',
-            message: smsMessage.trim(),
-            language: 'english',
-            flash: 0,
-            numbers: tenDigitNumber
-          };
+    // Direct Fast2SMS Quick Route API Call
+    const key = fast2smsApiKey.trim() || 'bu0XMwQ9aik5dEnyr8mS4FCD6YOT2hUNpjeAL7JcfsZBvHKVqzfUJF0jsOaLmthoqGnX9WZcbIDy5TvK';
+    if (key) {
+      try {
+        const payload = {
+          route: fast2smsRoute || 'q',
+          message: smsMessage.trim(),
+          language: 'english',
+          flash: 0,
+          numbers: tenDigitNumber
+        };
 
-          const res = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-            method: 'POST',
-            headers: {
-              'authorization': key,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          }).catch(() => null);
+        const res = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+          method: 'POST',
+          headers: {
+            'authorization': key,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        }).catch(() => null);
 
-          if (res && res.ok) {
-            gatewayStatus = 'Delivered';
-          }
-        } catch (err) {
-          console.warn('Fast2SMS dispatch notice:', err);
+        if (res && res.ok) {
+          gatewayStatus = 'Delivered';
         }
-      }
-    } else if (activeGateway === 'msg91') {
-      // 3. MSG91 Route
-      gatewayDisplayName = 'MSG91 Flow Gateway';
-      const activeAuthKey = msg91AuthKey || '563944AKCKq1c1sUur6a8c3e6aP1';
-      if (activeAuthKey && activeAuthKey.trim()) {
-        try {
-          const fullPhone = `91${tenDigitNumber}`;
-          const flowPayload = {
-            template_id: msg91TemplateId.trim() || undefined,
-            sender: msg91Sender.trim() || 'CLGCTR',
-            short_url: '1',
-            recipients: [
-              {
-                mobiles: fullPhone,
-                name: smsRecipientName || 'Scholar',
-                message: smsMessage.trim(),
-                college: 'COLLEGECENTRE'
-              }
-            ]
-          };
-
-          await fetch('https://control.msg91.com/api/v5/flow/', {
-            method: 'POST',
-            headers: {
-              'authkey': activeAuthKey.trim(),
-              'content-type': 'application/json'
-            },
-            body: JSON.stringify(flowPayload)
-          }).catch(() => null);
-        } catch (err) {
-          console.warn('MSG91 Network dispatch note:', err);
-        }
+      } catch (err) {
+        console.warn('Fast2SMS dispatch notice:', err);
       }
     }
 
     const newLog: SMSLog = {
-      id: (activeGateway === 'fast2sms' ? 'F2S-' : 'MSG91-') + Math.floor(100000 + Math.random() * 900000),
+      id: 'F2S-' + Math.floor(100000 + Math.random() * 900000),
       recipient_phone: tenDigitNumber,
       recipient_name: smsRecipientName.trim() || 'Scholar Contact',
       message: smsMessage.trim(),
@@ -364,7 +286,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       setSmsLogs(updated);
       localStorage.setItem('cc_sms_logs', JSON.stringify(updated));
       setIsSendingSms(false);
-      showToast(`SMS dispatched via ${gatewayDisplayName} to +91 ${tenDigitNumber}`);
+      showToast(`SMS successfully dispatched via Fast2SMS to +91 ${tenDigitNumber}`);
 
       // Native SMS app fallback trigger on mobile
       if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -422,58 +344,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
       });
     } finally {
       setTestingFast2SMS(false);
-    }
-  };
-
-  const handleSaveMsg91Config = (e: React.FormEvent) => {
-    e.preventDefault();
-    setMsg91AuthKey(msg91AuthKeyInput.trim());
-    setMsg91Sender(msg91SenderInput.trim());
-    setMsg91TemplateId(msg91TemplateIdInput.trim());
-
-    localStorage.setItem('cc_msg91_authkey', msg91AuthKeyInput.trim());
-    localStorage.setItem('cc_msg91_sender', msg91SenderInput.trim());
-    localStorage.setItem('cc_msg91_template_id', msg91TemplateIdInput.trim());
-
-    setIsConfiguringMsg91(false);
-    showToast('MSG91 Gateway Credentials Saved Successfully');
-  };
-
-  const handleTestMsg91 = async () => {
-    setTestingMsg91(true);
-    setMsg91TestResult(null);
-    try {
-      const key = msg91AuthKeyInput.trim();
-      if (!key) {
-        setMsg91TestResult({
-          status: 'error',
-          message: 'Please enter an AuthKey to test connection.'
-        });
-        setTestingMsg91(false);
-        return;
-      }
-      const res = await fetch('https://control.msg91.com/api/v5/widget/getBalance', {
-        headers: { 'authkey': key }
-      });
-      const data = await res.json().catch(() => null);
-      if (data && (data.type === 'error' || data.message === 'AuthenticationFailure')) {
-        setMsg91TestResult({
-          status: 'error',
-          message: `MSG91 Server Response: "${data.message || 'AuthenticationFailure'}". Please verify the AuthKey from MSG91 Dashboard → Authkey.`
-        });
-      } else {
-        setMsg91TestResult({
-          status: 'success',
-          message: 'MSG91 Gateway Connected & Authenticated Successfully!'
-        });
-      }
-    } catch {
-      setMsg91TestResult({
-        status: 'error',
-        message: 'Could not connect directly to MSG91 API (Check AuthKey validity or CORS settings).'
-      });
-    } finally {
-      setTestingMsg91(false);
     }
   };
 
@@ -1698,7 +1568,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
           {activeTab === 'sms' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               
-              {/* Header Info & Gateway Selector */}
+              {/* Header Info & Fast2SMS Gateway Status */}
               <div className="bg-white border border-navy-200/80 rounded-3xl p-4 sm:p-6 shadow-card space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
@@ -1708,110 +1578,52 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h2 className="font-display font-bold text-lg sm:text-xl text-navy-950">
-                          Official Student SMS & Messaging Dispatcher
+                          Official Student SMS Dispatcher
                         </h2>
+                        <span className="bg-academic-emerald/10 text-academic-emerald border border-academic-emerald/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                          Fast2SMS Quick Gateway Active
+                        </span>
                         <span className="bg-brand-50 text-brand-700 border border-brand-200/60 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
                           Sender: COLLEGECENTRE
                         </span>
                       </div>
                       <p className="text-xs text-navy-500 mt-0.5">
-                        Dispatch real-time admission notifications, fee alerts, and enrollment notices directly to scholars.
+                        Dispatch real-time admission notifications, fee alerts, and enrollment notices directly to student mobile numbers via Fast2SMS.
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    {activeGateway === 'fast2sms' && (
-                      <button
-                        onClick={() => {
-                          setFast2smsApiKeyInput(fast2smsApiKey);
-                          setFast2smsRouteInput(fast2smsRoute);
-                          setIsConfiguringFast2SMS(true);
-                        }}
-                        className="univ-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5 border-brand-200 bg-brand-50/60 text-brand-700"
-                        title="Configure Fast2SMS API Key"
-                      >
-                        <Settings className="w-3.5 h-3.5" />
-                        <span>Fast2SMS Settings</span>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => {
+                        setFast2smsApiKeyInput(fast2smsApiKey);
+                        setFast2smsRouteInput(fast2smsRoute);
+                        setIsConfiguringFast2SMS(true);
+                      }}
+                      className="univ-btn-secondary text-xs px-3.5 py-2 flex items-center gap-1.5 border-brand-200 bg-brand-50/60 text-brand-700 font-semibold"
+                      title="Configure Fast2SMS API Key and check balance"
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                      <span>Fast2SMS Settings</span>
+                    </button>
 
-                    {activeGateway === 'msg91' && (
-                      <button
-                        onClick={() => {
-                          setMsg91AuthKeyInput(msg91AuthKey);
-                          setMsg91SenderInput(msg91Sender);
-                          setMsg91TemplateIdInput(msg91TemplateId);
-                          setIsConfiguringMsg91(true);
-                        }}
-                        className="univ-btn-secondary text-xs px-3 py-2 flex items-center gap-1.5"
-                        title="Configure MSG91 AuthKey and Flow ID"
-                      >
-                        <Settings className="w-3.5 h-3.5 text-brand-600" />
-                        <span>MSG91 Settings</span>
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1.5 bg-yellow-50/80 border border-yellow-200/80 px-3 py-2 rounded-xl text-xs">
+                      <Wallet className="w-4 h-4 text-yellow-600" />
+                      <span className="font-medium text-yellow-900">
+                        Credits: <strong className="font-mono text-yellow-950">₹50.00 (200 SMS)</strong>
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Gateway Switcher Chips */}
-                <div className="pt-2 border-t border-navy-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-                    <span className="text-xs font-semibold text-navy-500 mr-1 shrink-0">Channel:</span>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setActiveGateway('fast2sms')}
-                      className={`text-xs px-3.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
-                        activeGateway === 'fast2sms'
-                          ? 'bg-brand-600 text-white shadow-xs'
-                          : 'bg-navy-50 text-navy-700 hover:bg-navy-100'
-                      }`}
-                    >
-                      <Zap className="w-3.5 h-3.5 text-yellow-300" />
-                      <span>Fast2SMS (Quick Route)</span>
-                      <span className="bg-white/20 text-[9px] px-1.5 py-0.5 rounded font-mono">No DLT</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveGateway('msg91')}
-                      className={`text-xs px-3.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
-                        activeGateway === 'msg91'
-                          ? 'bg-brand-600 text-white shadow-xs'
-                          : 'bg-navy-50 text-navy-700 hover:bg-navy-100'
-                      }`}
-                    >
-                      <Radio className="w-3.5 h-3.5" />
-                      <span>MSG91 Flow</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveGateway('whatsapp')}
-                      className={`text-xs px-3.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
-                        activeGateway === 'whatsapp'
-                          ? 'bg-academic-emerald text-white shadow-xs'
-                          : 'bg-navy-50 text-navy-700 hover:bg-navy-100'
-                      }`}
-                    >
-                      <MessageCircle className="w-3.5 h-3.5 text-academic-emerald group-hover:text-white" />
-                      <span>1-Click WhatsApp</span>
-                      <span className="bg-academic-emerald/20 text-academic-emerald text-[9px] px-1.5 py-0.5 rounded font-bold">100% Free</span>
-                    </button>
-                  </div>
-
-                  <div className="text-[11px] text-navy-500 flex items-center gap-1.5">
-                    {activeGateway === 'fast2sms' && (
-                      <span className="text-brand-700 font-medium">✓ Fast2SMS Quick Route: Instant Indian SMS with zero DLT delay</span>
-                    )}
-                    {activeGateway === 'msg91' && (
-                      <span>DLT Flow: <strong className="font-mono text-navy-800">{msg91Sender}</strong></span>
-                    )}
-                    {activeGateway === 'whatsapp' && (
-                      <span className="text-academic-emerald font-semibold">✓ Zero setup required (Opens WhatsApp Web / Mobile directly)</span>
-                    )}
-                  </div>
+                <div className="pt-2 border-t border-navy-100 flex items-center justify-between text-xs text-navy-500">
+                  <span className="text-academic-emerald font-medium flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Quick SMS Route: Instant delivery across all Indian carriers (Zero DLT hurdles)</span>
+                  </span>
+                  <span className="font-mono text-[11px] text-navy-400 hidden sm:inline">
+                    API Endpoint: api.fast2sms.com
+                  </span>
                 </div>
               </div>
 
@@ -2817,139 +2629,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToHome, onOpenDa
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>Update Passkey</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MSG91 Gateway Configuration Modal */}
-      {isConfiguringMsg91 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border border-navy-200 rounded-3xl shadow-modal max-w-md w-full p-6 relative space-y-5">
-            <div className="flex items-center justify-between border-b border-navy-100 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
-                  <Zap className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-display font-bold text-base text-navy-950">MSG91 Gateway Setup</h3>
-                  <span className="text-xs text-navy-500">DLT Verified SMS Gateway</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsConfiguringMsg91(false)} 
-                className="p-1.5 rounded-xl text-navy-400 hover:text-navy-700 hover:bg-navy-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveMsg91Config} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-navy-700 mb-1">
-                  MSG91 Authentication Key (authkey) *
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={msg91AuthKeyInput}
-                  onChange={(e) => setMsg91AuthKeyInput(e.target.value)}
-                  className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  placeholder="Enter your MSG91 AuthKey"
-                />
-                <span className="text-[10px] text-navy-400 mt-0.5 block">
-                  Find your AuthKey in MSG91 Console → Settings → API Keys.
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-navy-700 mb-1">
-                    DLT Sender Header (6 chars) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={msg91SenderInput}
-                    onChange={(e) => setMsg91SenderInput(e.target.value.toUpperCase())}
-                    className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono uppercase text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                    placeholder="CLGCTR"
-                  />
-                  <span className="text-[10px] text-navy-400 mt-0.5 block">
-                    e.g. CLGCTR / COLCTR
-                  </span>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-navy-700 mb-1">
-                    Flow / Template ID *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={msg91TemplateIdInput}
-                    onChange={(e) => setMsg91TemplateIdInput(e.target.value)}
-                    className="w-full bg-navy-50/50 border border-navy-200 rounded-xl px-3.5 py-2.5 font-mono text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                    placeholder="65e066a7d..."
-                  />
-                  <span className="text-[10px] text-navy-400 mt-0.5 block">
-                    MSG91 Flow ID
-                  </span>
-                </div>
-              </div>
-
-              {/* Test Connection Button & Result */}
-              <div className="pt-2 border-t border-navy-100 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-navy-500 font-medium">Verify MSG91 API Status:</span>
-                  <button
-                    type="button"
-                    onClick={handleTestMsg91}
-                    disabled={testingMsg91}
-                    className="text-xs text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${testingMsg91 ? 'animate-spin' : ''}`} />
-                    <span>{testingMsg91 ? 'Testing...' : 'Test Connection'}</span>
-                  </button>
-                </div>
-
-                {msg91TestResult && (
-                  <div className={`p-2.5 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2 ${
-                    msg91TestResult.status === 'success'
-                      ? 'bg-academic-emerald/10 text-academic-emerald border-academic-emerald/20'
-                      : 'bg-red-50 text-red-700 border-red-200'
-                  }`}>
-                    {msg91TestResult.status === 'success' ? (
-                      <CheckCircle2 className="w-4 h-4 shrink-0 text-academic-emerald mt-0.5" />
-                    ) : (
-                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
-                    )}
-                    <span>{msg91TestResult.message}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-3 bg-brand-50/70 border border-brand-200/80 rounded-xl text-navy-700 leading-relaxed text-[11px]">
-                ℹ <strong>Direct Flow Route:</strong> <code>https://control.msg91.com/api/v5/flow/</code>.
-              </div>
-
-              <div className="pt-2 border-t border-navy-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsConfiguringMsg91(false)}
-                  className="univ-btn-secondary px-3.5 py-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="univ-btn-primary px-4 py-2 flex items-center gap-1.5"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>Save MSG91 Credentials</span>
                 </button>
               </div>
             </form>
