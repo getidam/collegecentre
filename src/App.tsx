@@ -1,248 +1,80 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { TopStrip } from './components/TopStrip';
+import { useState, lazy, Suspense } from 'react';
 import { Navbar } from './components/Navbar';
-import { HeroSection } from './components/HeroSection';
-import { MarqueeTicker } from './components/MarqueeTicker';
-import { StudentCardGenerator } from './components/StudentCardGenerator';
-import { VisionSection } from './components/VisionSection';
-import { ManifestoSection } from './components/ManifestoSection';
-import { LiveMetricsSection } from './components/LiveMetricsSection';
-import { ModulesSection } from './components/ModulesSection';
-import { ChecklistSection } from './components/ChecklistSection';
-import { TestimonialsSection } from './components/TestimonialsSection';
-import { FAQSection } from './components/FAQSection';
-import { DemoModal } from './components/DemoModal';
-import { Footer } from './components/Footer';
-import { getSubdomain } from './lib/subdomain';
 
-// Lazy-load heavy components — only download when actually needed
-const StudentDataCollection = lazy(() => import('./components/StudentDataCollection').then(m => ({ default: m.StudentDataCollection })));
-const AdminPortal = lazy(() => import('./components/AdminPortal').then(m => ({ default: m.AdminPortal })));
+const HeroSection = lazy(() => import('./components/HeroSection').then(m => ({ default: m.HeroSection })));
+const ResourcesPage = lazy(() => import('./components/ResourcesPage').then(m => ({ default: m.ResourcesPage })));
+const InternshipsPage = lazy(() => import('./components/InternshipsPage').then(m => ({ default: m.InternshipsPage })));
+const ScholarshipsPage = lazy(() => import('./components/ScholarshipsPage').then(m => ({ default: m.ScholarshipsPage })));
+const ForumPage = lazy(() => import('./components/ForumPage').then(m => ({ default: m.ForumPage })));
+const UploadPage = lazy(() => import('./components/UploadPage').then(m => ({ default: m.UploadPage })));
 
 const PageLoader = () => (
-  <div className="min-h-screen bg-navy-950 flex items-center justify-center">
+  <div className="min-h-screen bg-slate-50 flex items-center justify-center">
     <div className="flex flex-col items-center gap-3">
-      <div className="w-10 h-10 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      <span className="text-navy-400 text-sm font-medium">Loading...</span>
+      <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <span className="text-slate-400 text-sm font-medium">Loading CollegeCentre...</span>
     </div>
   </div>
 );
 
+export type View = 'home' | 'resources' | 'internships' | 'scholarships' | 'forum' | 'upload' | 'alerts';
+
 export function App() {
-  const [demoModalOpen, setDemoModalOpen] = useState(false);
-  const detectedSubdomain = getSubdomain();
+  const [currentView, setCurrentView] = useState<View>('home');
 
-  const [currentView, setCurrentView] = useState<'landing' | 'data_collection' | 'admin'>(() => {
-    if (typeof window === 'undefined') return 'landing';
-    const path = window.location.pathname.toLowerCase();
-    const search = window.location.search.toLowerCase();
-    const hash = window.location.hash.toLowerCase();
-
-    if (path.includes('admin') || search.includes('admin') || hash.includes('admin')) {
-      return 'admin';
-    }
-    // Any subdomain or direct form query/path directly renders the dedicated form
-    if (detectedSubdomain) {
-      return 'data_collection';
-    }
-    if (
-      path.includes('form') ||
-      path.includes('register') ||
-      path.includes('student') ||
-      path.includes('portal') ||
-      search.includes('form') ||
-      search.includes('register') ||
-      hash.includes('form')
-    ) {
-      return 'data_collection';
-    }
-    return 'landing';
-  });
-
-  const [activeCampusSlug, setActiveCampusSlug] = useState<string | undefined>(detectedSubdomain || undefined);
-
-  // Detect URL path or parameter on initial load
-  useEffect(() => {
-    const path = window.location.pathname.toLowerCase();
-    const search = window.location.search.toLowerCase();
-    const hash = window.location.hash.toLowerCase();
-
-    const detectedCampus = getSubdomain();
-
-    if (detectedCampus) {
-      setActiveCampusSlug(detectedCampus);
-      if (!path.includes('admin') && !search.includes('admin') && !hash.includes('admin')) {
-        setCurrentView('data_collection');
-        return;
-      }
-    }
-
-    if (
-      path.includes('admin') ||
-      path.includes('record') ||
-      path.includes('portal-admin') ||
-      search.includes('admin') ||
-      search.includes('record') ||
-      hash.includes('admin') ||
-      hash.includes('record')
-    ) {
-      setCurrentView('admin');
-    } else if (
-      detectedCampus ||
-      path.includes('form') ||
-      path.includes('register') ||
-      path.includes('student') ||
-      path.includes('portal') ||
-      search.includes('form') ||
-      search.includes('register') ||
-      hash.includes('form') ||
-      hash.includes('register')
-    ) {
-      setCurrentView('data_collection');
-    }
-
-    const handlePopState = () => {
-      const p = window.location.pathname.toLowerCase();
-      const dSub = getSubdomain();
-      if (p.includes('admin') || p.includes('record')) {
-        setCurrentView('admin');
-      } else if (dSub || p.includes('form') || p.includes('register') || p.includes('student')) {
-        setCurrentView('data_collection');
-      } else {
-        setCurrentView('landing');
-      }
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
-        e.preventDefault();
-        setCurrentView(prev => (prev === 'admin' ? (detectedCampus ? 'data_collection' : 'landing') : 'admin'));
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  const openDataCollectionPage = (campusSlug?: string) => {
-    if (campusSlug) {
-      setActiveCampusSlug(campusSlug);
-    }
-    setCurrentView('data_collection');
-    try {
-      if (campusSlug && campusSlug !== 'main') {
-        window.history.pushState({}, '', `/?campus=${campusSlug}`);
-      } else {
-        window.history.pushState({}, '', '/form');
-      }
-    } catch {
-      // ignore
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const openAdminPage = () => {
-    setCurrentView('admin');
-    try {
-      window.history.pushState({}, '', '/admin');
-    } catch {
-      // ignore
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const backToLandingPage = () => {
-    if (detectedSubdomain) {
-      // If on a custom subdomain, redirect to central university
-      window.location.href = 'https://collegecentre.in';
-      return;
-    }
-    setActiveCampusSlug(undefined);
-    setCurrentView('landing');
-    try {
-      window.history.pushState({}, '', '/');
-    } catch {
-      // ignore
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const scrollToSection = (id: string) => {
-    if (currentView !== 'landing') {
-      setCurrentView('landing');
-      setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 50);
+  const navigate = (view: string) => {
+    if (view === 'alerts') {
+      setCurrentView('scholarships');
     } else {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      setCurrentView(view as View);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const renderPage = () => {
+    switch (currentView) {
+      case 'resources': return <ResourcesPage />;
+      case 'internships': return <InternshipsPage />;
+      case 'scholarships': 
+      case 'alerts':
+        return <ScholarshipsPage />;
+      case 'forum': return <ForumPage />;
+      case 'upload': return <UploadPage />;
+      default: return <HeroSection onNavigate={navigate} />;
     }
   };
 
-  // IF ON STUDENT DATA COLLECTION PAGE: Render ONLY the form page
-  if (currentView === 'data_collection') {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <StudentDataCollection 
-          onBackToHome={backToLandingPage} 
-          campusSlug={activeCampusSlug}
-        />
-      </Suspense>
-    );
-  }
-
-  // IF ON ADMIN / REGISTRAR PORTAL: Render ONLY the Admin Data Directory
-  if (currentView === 'admin') {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <AdminPortal 
-          onBackToHome={backToLandingPage} 
-          onOpenDataCollection={openDataCollectionPage} 
-        />
-      </Suspense>
-    );
-  }
-
-  // OTHERWISE: Render the Minimal, Serious University Landing Page
   return (
-    <div className="min-h-screen bg-white text-navy-900 flex flex-col font-sans selection:bg-brand-600 selection:text-white">
-      <TopStrip onOpenDemo={() => setDemoModalOpen(true)} />
+    <div className="min-h-screen bg-white font-sans flex flex-col selection:bg-blue-600 selection:text-white">
+      <Navbar currentView={currentView} onNavigate={navigate} />
       
-      <Navbar
-        onOpenDemo={() => setDemoModalOpen(true)}
-        onScrollTo={scrollToSection}
-        onOpenDataCollection={openDataCollectionPage}
-        onOpenAdmin={openAdminPage}
-      />
-
       <main className="flex-grow">
-        <HeroSection
-          onOpenDemo={() => setDemoModalOpen(true)}
-          onScrollTo={scrollToSection}
-          onOpenDataCollection={openDataCollectionPage}
-        />
-        <LiveMetricsSection />
-        <StudentCardGenerator />
-        <ModulesSection />
-        <VisionSection />
+        <Suspense fallback={<PageLoader />}>
+          {renderPage()}
+        </Suspense>
       </main>
 
-      <Footer
-        onScrollTo={scrollToSection}
-        onOpenDemo={() => setDemoModalOpen(true)}
-        onOpenDataCollection={openDataCollectionPage}
-        onOpenAdmin={openAdminPage}
-      />
+      <footer className="bg-slate-900 text-slate-400 py-12 px-4 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="text-center sm:text-left">
+            <h3 className="text-white font-extrabold text-lg tracking-tight">CollegeCentre</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              All-in-one student resource hub · Free notes, PYQs, internships, and student community.
+            </p>
+          </div>
 
-      <DemoModal
-        isOpen={demoModalOpen}
-        onClose={() => setDemoModalOpen(false)}
-      />
+          <div className="flex flex-wrap items-center justify-center gap-5 text-xs font-semibold text-slate-300">
+            <button onClick={() => navigate('resources')} className="hover:text-white transition-colors">Study Material</button>
+            <button onClick={() => navigate('internships')} className="hover:text-white transition-colors">Internships</button>
+            <button onClick={() => navigate('scholarships')} className="hover:text-white transition-colors">Scholarships</button>
+            <button onClick={() => navigate('forum')} className="hover:text-white transition-colors">Campus Forum</button>
+            <button onClick={() => navigate('upload')} className="hover:text-white transition-colors">Contribute</button>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-slate-800/80 text-center text-xs text-slate-500">
+          © 2026 CollegeCentre · Built with pride for Indian college students 🇮🇳
+        </div>
+      </footer>
     </div>
   );
 }
