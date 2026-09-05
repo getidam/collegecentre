@@ -1,4 +1,4 @@
-﻿/** @type {import('tailwindcss').Config} */
+/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -7,6 +7,44 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: 'var(--color-background)',
+        foreground: 'var(--color-foreground)',
+        card: {
+          DEFAULT: 'var(--color-card)',
+          foreground: 'var(--color-card-foreground)',
+        },
+        popover: {
+          DEFAULT: 'var(--color-popover)',
+          foreground: 'var(--color-popover-foreground)',
+        },
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          foreground: 'var(--color-primary-foreground)',
+        },
+        secondary: {
+          DEFAULT: 'var(--color-secondary)',
+          foreground: 'var(--color-secondary-foreground)',
+        },
+        muted: {
+          DEFAULT: 'var(--color-muted)',
+          foreground: 'var(--color-muted-foreground)',
+        },
+        accent: {
+          DEFAULT: 'var(--color-accent)',
+          foreground: 'var(--color-accent-foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--color-destructive)',
+          foreground: 'var(--color-destructive-foreground)',
+        },
+        border: 'var(--color-border)',
+        input: 'var(--color-input)',
+        ring: 'var(--color-ring)',
+        good: 'var(--color-good)',
+        warn: 'var(--color-warn)',
+        faint: 'var(--color-faint)',
+        sidebar: 'var(--color-sidebar)',
+
         brand: {
           50: '#f0f7ff',
           100: '#e0effe',
@@ -33,24 +71,15 @@ export default {
           900: '#0f172a',
           950: '#020617',
         },
-        academic: {
-          crimson: '#991b1b',
-          gold: '#b45309',
-          emerald: '#047857',
-          royal: '#1d4ed8',
-        }
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        sans: ['Figtree', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        display: ['Fraunces', 'Iowan Old Style', 'Palatino Linotype', 'serif'],
         mono: ['JetBrains Mono', 'Menlo', 'monospace'],
-        serif: ['Newsreader', 'Georgia', 'serif'],
       },
       boxShadow: {
-        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
-        'card-hover': '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
-        'subtle': '0 4px 20px -2px rgba(15, 23, 42, 0.06)',
-        'modal': '0 25px 50px -12px rgba(15, 23, 42, 0.15)',
+        'card': 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
       },
       borderRadius: {
         'xl': '0.75rem',
